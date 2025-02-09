@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "INotify (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "INotify (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
