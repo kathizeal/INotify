@@ -1,4 +1,5 @@
 ﻿using INotifyLibrary.DBHandler.Contract;
+using INotifyLibrary.Model.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,13 +10,17 @@ using WinSQLiteDBAdapter.Contract;
 
 namespace INotifyLibrary.DBHandler
 {
-    public sealed class NotifyDBHandler : DBHandlerBase, INotifyDBHandler
+    public sealed partial class NotifyDBHandler : DBHandlerBase, INotifyDBHandler
     {
         public NotifyDBHandler(IDBAdapter dbAdapter) : base(dbAdapter) { }
 
         public List<Type> GetDBModels()
         {
-            return new();
+            List<Type> dbModels = new()
+            {
+                typeof(KToastNotification)
+            };
+            return dbModels;
         }
 
         public async Task InitializeDBAsync(string dbFolderPath, string dbuserId, string dbRefId = null)

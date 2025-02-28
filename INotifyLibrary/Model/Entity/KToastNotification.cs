@@ -10,11 +10,11 @@ namespace INotifyLibrary.Model.Entity
 {
     public class KToastNotification : ObservableObject, IKToastNotification
     {
-        public required string NotificationId { get ; set;}
-        public required string PackageId { get ; set;}
-        public required DateTimeOffset CreatedTime { get ; set;}
-        public required string NotificationTitle { get ; set;}
-        public required string NotificationMessage { get ; set;}
+        public  string NotificationId { get ; set;}
+        public  string PackageId { get ; set;}
+        public  DateTimeOffset CreatedTime { get ; set;}
+        public  string NotificationTitle { get ; set;}
+        public  string NotificationMessage { get ; set;}
         public KToastNotification() { }
     }
 }

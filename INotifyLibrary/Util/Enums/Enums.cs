@@ -12,7 +12,14 @@ namespace INotifyLibrary.Util.Enums
         High,
         Medium,
         Low,
-
     }
+
+    public enum ViewType
+    {
+        Space,
+        Priority,
+        Filters
+    }
+
 
 }

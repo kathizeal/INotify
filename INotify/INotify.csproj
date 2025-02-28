@@ -12,6 +12,9 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="KToastView\View\KToastListControl.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -45,6 +48,17 @@
     <ProjectReference Include="..\INotifyLibrary\INotifyLibrary.csproj" />
     <ProjectReference Include="..\WinUI3Component\WinUI3Component.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="KToastView\ViewContract\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="KToastView\View\KToastListControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <WebView2UseWinRT>False</WebView2UseWinRT>
+  </PropertyGroup>
 
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution

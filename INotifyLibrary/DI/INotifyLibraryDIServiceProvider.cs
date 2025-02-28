@@ -1,5 +1,7 @@
-﻿using INotifyLibrary.DBHandler;
+﻿using INotifyLibrary.DataManger;
+using INotifyLibrary.DBHandler;
 using INotifyLibrary.DBHandler.Contract;
+using INotifyLibrary.Domain;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -22,6 +24,8 @@ namespace INotifyLibrary.DI
         public void Initialize(IServiceCollection services)
         {
             services.AddSingleton<INotifyDBHandler, NotifyDBHandler>();
+            services.AddSingleton<IGetKToastsDataManager, GetKToastDataManager>();
+            services.AddSingleton<IUpdateKToastDataManager, UpdateKToastDataManager>();
             BuildServiceProvider(services);
         }
 
