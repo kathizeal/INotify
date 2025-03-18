@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:INotify.KToastView.View"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:entity="using:INotifyLibrary.Model.Entity"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:entity="using:INotifyLibrary.Model.Entity" xmlns:model="using:INotify.KToastView.Model"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
@@ -15,24 +15,38 @@
     </UserControl.Resources>
 
     <Grid>
-        <ListView x:Name="ToastItems" ItemsSource="{x:Bind _VM.KToastNotifications, Mode=OneWay}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button x:Name="ViewTypeBt" Content="View Type">
+            <Button.Flyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem x:Name="All" Text="All" Click="All_Click"/>
+                    <MenuFlyoutItem x:Name="Space" Text="Space" Click="Space_Click"/>
+                    <MenuFlyoutItem x:Name="Priority" Text="Priority" Click="Priority_Click"/>
+                    <MenuFlyoutItem x:Name="AppBy" Text="AppBy" Click="AppBy_Click"/>
+                </MenuFlyout>
+            </Button.Flyout>
+        </Button>
+        <ListView x:Name="ToastItems" Grid.Row="1" ItemsSource="{x:Bind _VM.KToastNotifications, Mode=OneWay}">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="entity:KToastNotification">
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock Style="{StaticResource NormalTextStyle}" Text="{x:Bind NotificationTitle, Mode=OneWay}"/>
-                        <TextBlock Style="{StaticResource NormalTextStyle}" Text="{x:Bind NotificationMessage, Mode=OneWay}"/>
-                        <TextBlock Style="{StaticResource NormalTextStyle}" Text="{x:Bind CreatedTime, Mode=OneWay}"/>
-                        <TextBlock Style="{StaticResource NormalTextStyle}" Text="{x:Bind PackageId, Mode=OneWay}"/>
+                <DataTemplate x:DataType="model:KToastViewData">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" BorderThickness="0"  BorderBrush="Salmon">
+                        <Image Source="{x:Bind AppIcon, Mode=OneWay}" HorizontalAlignment="Left" Width="64" Height="64" />
+                        <StackPanel HorizontalAlignment="Left">
+                            <TextBlock Text="{x:Bind ToastPackageProfile.AppDisplayName, Mode=OneWay}" HorizontalAlignment="Left" FontWeight="Bold"/>
+                            <TextBlock Text="{x:Bind NotificationData.NotificationMessage, Mode=OneWay}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{x:Bind NotificationData.DisplayTime, Mode=OneWay}"/>
+                        </StackPanel>
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-                  
-                  
     </Grid>
 </UserControl>

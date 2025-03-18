@@ -1,4 +1,5 @@
 ﻿using INotifyLibrary.DI;
+using INotifyLibrary.Model;
 using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util.Enums;
 using System;
@@ -23,24 +24,30 @@ namespace INotifyLibrary.Domain
 
     public class GetKToastsRequest : ZRequest
     {
+        public NotificatioRequestType NotificationRequestType { get; set; }
         public ViewType ViewType { get; set; }
-        public string Id { get; set; }
+        public string PackageId { get; set; }
 
-        public GetKToastsRequest(ViewType viewType, string id, string userId) : base(RequestType.LocalStorage, userId, default)
+        public GetKToastsRequest(NotificatioRequestType notificationRequestType, ViewType viewType, string packageId, string userId) : base(RequestType.LocalStorage, userId, default)
         {
-            ViewType = viewType;
-            Id = id;
+            NotificationRequestType = notificationRequestType;
+          ViewType = viewType;
+            PackageId = packageId;
         }
     }
 
     public class GetKToastsResponse
     {
-        public ObservableCollection<KToastNotification> KToastNotifications { get; set; }
-        public string Id { get; set; }
-        public GetKToastsResponse(string id, ObservableCollection<KToastNotification> kToastNotifications)
+        public NotificatioRequestType NotificationRequestType { get; set; }
+        public ViewType ViewType { get; set; }
+        public ObservableCollection<KToastBObj> ToastDataNotifications { get; set; }
+        public string PackageId { get; set; }
+        public GetKToastsResponse(string packageId, NotificatioRequestType notificationRequestType, ViewType viewType ,ObservableCollection<KToastBObj> toastDataNotifications)
         {
-            KToastNotifications = kToastNotifications;
-            Id = id;
+            NotificationRequestType = notificationRequestType;
+            ViewType = viewType;
+            PackageId = packageId;
+            ToastDataNotifications = toastDataNotifications;
         }
 
     }

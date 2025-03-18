@@ -1,10 +1,6 @@
-﻿using INotifyLibrary.Model.Entity;
-using System;
-using System.Collections.Generic;
+﻿using INotifyLibrary.Model;
+using INotifyLibrary.Model.Entity;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WinSQLiteDBAdapter.Contract;
 
 namespace INotifyLibrary.DBHandler.Contract
@@ -14,8 +10,25 @@ namespace INotifyLibrary.DBHandler.Contract
         Task InitializeDBAsync(string dbFolderPath, string dbuserId, string dbRefId = null);
         List<Type> GetDBModels();
         List<Type> GetServiceDBModels();
-        IList<KToastNotification> GetKToastAllNotifications(string userId);
-        void UpdateOrReplaceKToastNotification(ObservableCollection<KToastNotification> toastNotifications, string userId);
+        IList<KToastNotification> GetToastNotificationByUserId(string userId);
+        IList<KToastNotification> GetKToastNotificationsByPackageId(string packageId, string userId);
 
+
+        #region PackageProfile
+
+        KPackageProfile GetPackageProfile(string packageId, string userId);
+        IList<KPackageProfile> GetKPackageProfiles(string userId);
+
+
+        #endregion
+        void UpdateOrReplaceKToastNotification(ObservableCollection<KToastNotification> toastNotifications, string userId);
+        void UpdateOrReplaceKToastNotification(KToastBObj toastData, string userId);
+
+        IList<KPackageProfile> GetPackagesBySpaceId(string spaceId, string userId);
+
+        IList<KSpace> GetAllSpaces(string userId);
+
+        bool AddPackageToSpace(KSpaceMapper mapper);
     }
+
 }

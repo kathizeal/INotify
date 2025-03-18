@@ -1,4 +1,5 @@
 using INotify.KToastDI;
+using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
 using INotifyLibrary.Model.Entity;
 using Microsoft.UI.Xaml;
@@ -33,7 +34,7 @@ namespace INotify.KToastView.View
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-
+            _VM.LoadControl();
         }
 
         public void UpdateNotificationsList(ObservableCollection<KToastNotification> currentSystemNotifications)
@@ -41,9 +42,29 @@ namespace INotify.KToastView.View
             _VM.UpdateKToastNotifications(currentSystemNotifications);
         }
 
-        public void AddToastControl(KToastNotification notification)
+        public void AddToastControl(KToastVObj notification)
         {
-            _VM.KToastNotifications.Add(notification);
+            _VM.UpdateKToastNotification(notification);
+        }
+
+        private void All_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Space_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AppBy_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Priority_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

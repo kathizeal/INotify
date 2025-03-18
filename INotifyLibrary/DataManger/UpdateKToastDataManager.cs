@@ -1,5 +1,6 @@
 ﻿using INotifyLibrary.DBHandler.Contract;
 using INotifyLibrary.Domain;
+using INotifyLibrary.Model;
 using INotifyLibrary.Model.Entity;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,9 @@ namespace INotifyLibrary.DataManger
         {
             try
             {
-                DBHandler.UpdateOrReplaceKToastNotification(request.KToastNotifications, request.UserId);
+                DBHandler.UpdateOrReplaceKToastNotification(request.ToastData, request.UserId);
+                ZResponse<UpdateKToastResponse> zResponse = new ZResponse<UpdateKToastResponse>(ResponseType.LocalStorage) { Data = new UpdateKToastResponse(request.ToastData) };
+                callback.OnSuccess(zResponse);
             }
             catch (Exception ex)
             {

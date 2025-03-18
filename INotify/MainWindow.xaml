@@ -10,11 +10,6 @@
     Title="INotify">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-        </Grid.RowDefinitions>
-
-        <view:KToastListControl x:Name="KToastListViewControl" Grid.Row="1"/>
+        <view:KToastListControl x:Name="KToastListViewControl" />
     </Grid>
 </Window>

@@ -1,4 +1,5 @@
 ﻿using INotifyLibrary.DI;
+using INotifyLibrary.Model;
 using INotifyLibrary.Model.Entity;
 using System;
 using System.Collections.Generic;
@@ -20,21 +21,20 @@ namespace INotifyLibrary.Domain
     public interface IUpdateKToastPresenterCallback : ICallback<UpdateKToastResponse> { }
     public class UpdateKToastRequest:ZRequest
     {
-        public ObservableCollection<KToastNotification> KToastNotifications { get; set; }
-
-        public UpdateKToastRequest(ObservableCollection<KToastNotification> kToastNotifications, string userId) : base(RequestType.LocalStorage, userId, default)  
+        public KToastBObj ToastData { get; set; }
+        public UpdateKToastRequest(KToastBObj toastData, string userId) : base(RequestType.LocalStorage, userId, default)  
         {
-            KToastNotifications = kToastNotifications;   
+            ToastData = toastData;
         }
 
     }
-
+                                                                                         
     public class UpdateKToastResponse
     {
-        public ObservableCollection<KToastNotification> KToastNotifications { get; set; }
-        public UpdateKToastResponse(ObservableCollection<KToastNotification> kToastNotifications)
+        public KToastBObj KToastData { get; set; }
+        public UpdateKToastResponse(KToastBObj kToastData)
         {
-            KToastNotifications = kToastNotifications;
+            KToastData = kToastData;
         }
     }
 
@@ -49,6 +49,7 @@ namespace INotifyLibrary.Domain
         }
         protected override async void Action()
         {
+            DataManager.UpdateKToast(Request, new UsecaseCallback(this));
         }
 
         private sealed class UsecaseCallback : CallbackBase<UpdateKToastResponse>

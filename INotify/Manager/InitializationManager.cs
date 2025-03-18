@@ -47,7 +47,7 @@ namespace INotify.Manager
         {
             Logger.Info(LogManager.GetCallerInfo(), "START: Initialize librabry services for user");
             var dbFolderPath = WinUI3CommonUtil.GetRootDBFolderPath();
-            await LibraryServiceManager.IntializeDB(dbFolderPath, NotifyConstant.CurrentUser);
+            await LibraryServiceManager.IntializeDB(dbFolderPath, INotifyConstant.CurrentUser);
         }
 
 

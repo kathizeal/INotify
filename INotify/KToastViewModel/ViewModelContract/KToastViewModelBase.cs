@@ -10,13 +10,14 @@ using Windows.UI.Core;
 using WinLogger.Contract;
 using WinLogger;
 using Microsoft.UI.Dispatching;
+using INotifyLibrary.Util.Enums;
 
 namespace INotify.KToastViewModel.ViewModelContract
 {
     public abstract class KToastViewModelBase : ObservableObject, ICleanup
     {
         #region Properties
-
+        public ViewType ViewType { get; set; }
         public readonly ILogger Logger = LogManager.GetLogger();
         public CancellationTokenSource cts { get; private set; }
 

@@ -16,10 +16,18 @@ namespace INotifyLibrary.Util.Enums
 
     public enum ViewType
     {
+        All = 0,
         Space,
         Priority,
         Filters
     }
+
+    public enum NotificatioRequestType
+    { 
+        ALL,
+        Individual
+    }
+
 
 
 }

@@ -18,7 +18,10 @@ namespace INotifyLibrary.DBHandler
         {
             List<Type> dbModels = new()
             {
-                typeof(KToastNotification)
+                typeof(KToastNotification),
+                typeof(KPackageProfile),
+                typeof(KSpace),
+                typeof(KSpaceMapper)
             };
             return dbModels;
         }
