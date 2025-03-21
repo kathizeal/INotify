@@ -16,6 +16,8 @@ namespace INotifyLibrary.Util
     public static class KToastUtil
     {
 
+
+
         public static async Task<(BitmapImage, bool)> SetAppIcon(this KToastVObj kToastViewData)
         {
             try
