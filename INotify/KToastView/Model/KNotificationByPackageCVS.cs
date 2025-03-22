@@ -2,27 +2,21 @@
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using WinCommon.Util;
 
 namespace INotify.KToastView.Model
 {
-    public class KNotificationByPackageCVS : ObservableObject
-    {
-
-        private ObservableCollection<KToastVObj> _notificationList;
-
-        public ObservableCollection<KToastVObj> kToastNotifications
-        {
-            get { return _notificationList; }
-            set { SetProperty(ref _notificationList, value); }
-        }
+    public class KNotificationByPackageCVS : ObservableCollection<KToastVObj>, INotifyPropertyChanged
+    {       
 
         private KPackageProfileVObj _Profile;
 
         public KPackageProfileVObj Profile
         {
             get { return _Profile; }
-            set => SetIfDifferent(ref _Profile, value);
+            set => SetProperty(ref _Profile, value);
         }
 
         public ViewType ViewType { get; set; }
@@ -34,7 +28,18 @@ namespace INotify.KToastView.Model
         public string DisplayName
         {
             get { return _DisplayName; }
-            set => SetIfDifferent(ref _DisplayName, value);        }
+            set => SetProperty(ref _DisplayName, value);        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        protected void SetProperty<T>(ref T field, T val, [CallerMemberName] string propertyName = null)
+        {
+            field = val;
+            OnPropertyChanged(propertyName);
+        }
 
     }
 }

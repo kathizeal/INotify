@@ -27,13 +27,78 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         public override void LoadControl()
         {
-            GetAllNotifications();
+            PoputeAllNotifications();
         }
 
         public override void UpdateViewType(ViewType viewType)
         {
             ViewType = viewType;
+            switch(viewType)
+            {
+                case ViewType.All:
+                    PoputeAllNotifications();
+                    break;
+                case ViewType.Space:
+                    PopulateSpaceCVS();
+                    break;
+                case ViewType.Package:
+                    PopulatePackageCVS();
+                    break;
+            }
         }
+
+        public void PoputeAllNotifications()                                                      
+        {
+            if(View is null)
+            {
+                return;
+            }
+            View.KToastListView.ItemTemplate = View.ToastTemplate;
+            View.KToastListView.ItemsSource = KToastNotifications;
+            GetAllNotifications();
+        }
+
+        public void PopulateSpaceCVS()
+        {
+            if (View is null)
+            {
+                return;
+            }
+
+            View.KToastListView.HeaderTemplate = View.NotificationBySpaceTemplate;
+            View.KToastListView.ItemTemplate = View.PackageTemplate;
+            View.KToastCollectionViewSource.Source = KToastNotificationSpaceCVS;
+            View.KToastListView.ItemsSource = View.KToastCollectionViewSource.View;
+            GetAllSpace();
+        }
+
+        public void PopulatePackageCVS()
+        {
+            if (View is null)
+            {
+                return;
+            }
+            View.KToastListView.HeaderTemplate = View.NotificationByPackageTemplate;
+            View.KToastListView.ItemTemplate = View.ToastTemplate;
+            View.KToastCollectionViewSource.Source = KToastNotificationPackageCVS;
+            View.KToastListView.ItemsSource = View.KToastCollectionViewSource.View;
+            GetAllPackages();
+        }
+
+
+        //public void PopulatePriorityCVS()
+        //{
+        //    if (View is null)
+        //    {
+        //        return;
+        //    }
+
+        //    View.KToastCollectionViewSource.Source = KToastNotificationSpaceCVS;
+        //    View.KToastListView.ItemsSource = View.KToastCollectionViewSource.View;
+        //}
+
+
+
 
         [Obsolete]
         public override void UpdateKToastNotifications(ObservableCollection<KToastNotification> kToastNotifications)
@@ -78,7 +143,7 @@ namespace INotify.KToastViewModel.ViewModelContract
                 foreach (var toastData in kToastDataNotifications)
                 {
                     var data = await AddKToastNotification(toastData);
-                    package.kToastNotifications.Add(data);
+                    package.Add(data);
                 }
             }
             else
@@ -116,6 +181,13 @@ namespace INotify.KToastViewModel.ViewModelContract
             getAllSpace.Execute();
         }
 
+        public override void GetAllPackages()
+        {
+            var getAllPackageRequest = new GetAllKPackageProfilesRequest(INotifyConstant.CurrentUser);
+            var getAllPackage = new GetAllKPackageProfiles(getAllPackageRequest, new GetAllKPackageProfilesPresenterCallback(this));
+            getAllPackage.Execute();
+        }
+
         public override void GetPackagesBySpaceById(string spaceId)
         {
             var getPackageBySpaceRequest = new GetPackageBySpaceRequest(spaceId, INotifyConstant.CurrentUser);
@@ -148,12 +220,32 @@ namespace INotify.KToastViewModel.ViewModelContract
                     var packageProfileVObj = new KPackageProfileVObj();
                     packageProfileVObj.Update(packageProfile);
                     packageProfileVObj.PopulateAppIconAsync();
-                    space.KPackageProfileList.Add(packageProfileVObj);
+                    space.Add(packageProfileVObj);
                 }
             }
             else
             {
                 // Handle case where space is not found
+            }
+        }
+
+        public override void PopulatePackages(ObservableCollection<KPackageProfile> packageProfiles)
+        {
+            foreach (var packageProfile in packageProfiles)
+            {
+                var packageProfileVObj = new KPackageProfileVObj();
+                packageProfileVObj.Update(packageProfile);
+                packageProfileVObj.PopulateAppIconAsync();
+
+                var notificationByPackage = new KNotificationByPackageCVS
+                {
+                    Profile = packageProfileVObj,
+                    ViewType = ViewType.Package,
+                    HeaderId = packageProfile.PackageId,
+                    DisplayName = packageProfile.AppDisplayName
+                };
+
+                KToastNotificationPackageCVS.Add(notificationByPackage);
             }
         }
 
@@ -163,10 +255,10 @@ namespace INotify.KToastViewModel.ViewModelContract
             if (space != null)
             {
                 if (packageProfile is KPackageProfile packageProfileObj)
-                {
+                {                                                                                                 
                     var packageProfileVObj = new KPackageProfileVObj();
                     packageProfileVObj.Update(packageProfileObj);
-                    space.KPackageProfileList.Add(packageProfileVObj);
+                    space.Add(packageProfileVObj);
                     AddPackageToSpace(packageProfileVObj, spaceId);
                 }
                 else
@@ -208,7 +300,6 @@ namespace INotify.KToastViewModel.ViewModelContract
             var notificationBySpace = new KNotificationBySpaceCVS
             {
                 Space = kToastViewSpace,
-                KPackageProfileList = new ObservableCollection<KPackageProfileVObj>()
             };
             KToastNotificationSpaceCVS.Add(notificationBySpace);
         }
@@ -404,6 +495,49 @@ namespace INotify.KToastViewModel.ViewModelContract
                 //{
                 //    _presenter.OnPackageAddedToSpace(response.Data.IsSuccess);
                 //});
+            }
+        }
+
+        public class GetAllKPackageProfilesPresenterCallback : IGetAllKPackageProfilesPresenterCallback
+        {
+            private KToastListViewModel _presenter;
+
+            public GetAllKPackageProfilesPresenterCallback(KToastListViewModel presenter)
+            {
+                _presenter = presenter;
+            }
+
+            public void OnCanceled(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+                // Handle cancellation
+            }
+
+            public void OnError(ZError error)
+            {
+                // Handle error
+            }
+
+            public void OnFailed(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+                // Handle failure
+            }
+
+            public void OnIgnored(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+                // Handle ignored response
+            }
+
+            public void OnProgress(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+                // Handle progress
+            }
+
+            public async void OnSuccess(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+                _presenter.DispatcherQueue.TryEnqueue(() =>
+                {
+                    _presenter.PopulatePackages(response.Data.KPackageProfiles);
+                });
             }
         }
 

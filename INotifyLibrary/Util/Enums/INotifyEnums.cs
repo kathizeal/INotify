@@ -18,6 +18,7 @@ namespace INotifyLibrary.Util.Enums
     {
         All = 0,
         Space,
+        Package,
         Priority,
         Filters
     }

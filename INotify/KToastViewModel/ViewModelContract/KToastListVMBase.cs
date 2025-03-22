@@ -1,4 +1,5 @@
 ﻿using INotify.KToastView.Model;
+using INotify.KToastView.View.ViewContract;
 using INotifyLibrary.Model;
 using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util.Enums;
@@ -16,6 +17,7 @@ namespace INotify.KToastViewModel.ViewModelContract
     public abstract class KToastListVMBase : KToastViewModelBase
     {
 
+        public IKToastListView View { get; set; }
         public ViewType CurrentViewType { get; set; }
 
 
@@ -85,13 +87,14 @@ namespace INotify.KToastViewModel.ViewModelContract
         public abstract Task PopulateKToastNotifications(ObservableCollection<KToastBObj> kToastDataNotifications);
         public abstract Task PopulateKToastNotificationsByPackageId(string packageId, ObservableCollection<KToastBObj> kToastDataNotifications);
         public abstract Task<KToastVObj> AddKToastNotification(KToastBObj toastData);
+        public abstract void GetAllPackages();
         public abstract void GetAllSpace();
         public abstract Task PopulateSpaces(ObservableCollection<KSpace> kSpaceDataNotifications);
         public abstract void GetPackagesBySpaceById(string spaceId);
         public abstract void PopulatePackageBySpaceId(string spaceId, ObservableCollection<KPackageProfile> packageProfiles);
         public abstract void AddPackageToSpace(KPackageProfile package, string spaceId);
         public abstract void PopulateAddPackageToSpace(KPackageProfile PackageProfile, string spaceId);
-
+        public abstract void PopulatePackages(ObservableCollection<KPackageProfile> packageProfiles);
         public abstract void GetKToastNotificationByPackageId(string packageId);
         #endregion
 

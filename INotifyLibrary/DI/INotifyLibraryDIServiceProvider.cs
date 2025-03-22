@@ -26,6 +26,12 @@ namespace INotifyLibrary.DI
             services.AddSingleton<INotifyDBHandler, NotifyDBHandler>();
             services.AddSingleton<IGetKToastsDataManager, GetKToastDataManager>();
             services.AddSingleton<IUpdateKToastDataManager, UpdateKToastDataManager>();
+            services.AddSingleton<IGetAllSpaceDataManager, GetAllSpaceDataManager>();
+            services.AddSingleton<IGetAllKPackageProfilesDataManager, GetAllKPackageProfilesDataManager>();
+            services.AddSingleton<IAddPackageToSpaceDataManager, AddPackageToSpaceDataManager>();
+            services.AddSingleton<IGetPackageBySpaceDataManager, GetPackageBySpaceDataManager>();
+
+
             BuildServiceProvider(services);
         }
 

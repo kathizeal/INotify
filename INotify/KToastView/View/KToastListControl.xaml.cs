@@ -1,34 +1,42 @@
 using INotify.KToastDI;
 using INotify.KToastView.Model;
+using INotify.KToastView.View.ViewContract;
 using INotify.KToastViewModel.ViewModelContract;
 using INotifyLibrary.Model.Entity;
+using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace INotify.KToastView.View
 {
-    public sealed partial class KToastListControl : UserControl
+    public sealed partial class KToastListControl : UserControl, IKToastListView
     {
         private KToastListVMBase _VM;
+
+        public CollectionViewSource KToastCollectionViewSource => CVS;
+
+        public ListView KToastListView => ToastListView;
+
+        public DataTemplate ToastTemplate => Resources["KToastTemplate"] as DataTemplate;
+
+        public DataTemplate PackageTemplate => Resources["KPackageTemplate"] as DataTemplate;
+
+        public DataTemplate SpaceTemplate => Resources["KSpaceTemplate"] as DataTemplate;
+
+        public DataTemplate NotificationByPackageTemplate => Resources["KNotificationByPackageTemplate"] as DataTemplate;
+
+        public DataTemplate NotificationBySpaceTemplate => Resources["KNotificationBySpaceTemplate"] as DataTemplate;
+
         public KToastListControl()
         {
             _VM = KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
+            _VM.View = this;
             this.InitializeComponent();
         }
 
@@ -49,22 +57,22 @@ namespace INotify.KToastView.View
 
         private void All_Click(object sender, RoutedEventArgs e)
         {
-
+            _VM.UpdateViewType(ViewType.All);
         }
 
         private void Space_Click(object sender, RoutedEventArgs e)
         {
-
+            _VM.UpdateViewType(ViewType.Space);
         }
 
         private void AppBy_Click(object sender, RoutedEventArgs e)
         {
-
+            _VM.UpdateViewType(ViewType.Package);
         }
 
         private void Priority_Click(object sender, RoutedEventArgs e)
         {
-
+            _VM.UpdateViewType(ViewType.Priority);
         }
     }
 }

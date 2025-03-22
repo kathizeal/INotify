@@ -91,5 +91,10 @@ namespace INotifyLibrary.DBHandler
         }
 
 
+        public void UpdateSpaces(IEnumerable<KSpace> spaces, string userId)
+        {
+            IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
+            dBConnection.InsertOrReplaceAll(spaces);
+        }
     }
 }

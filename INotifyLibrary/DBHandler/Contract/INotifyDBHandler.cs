@@ -1,6 +1,7 @@
 ﻿using INotifyLibrary.Model;
 using INotifyLibrary.Model.Entity;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using WinSQLiteDBAdapter.Contract;
 
 namespace INotifyLibrary.DBHandler.Contract
@@ -27,6 +28,7 @@ namespace INotifyLibrary.DBHandler.Contract
         IList<KPackageProfile> GetPackagesBySpaceId(string spaceId, string userId);
 
         IList<KSpace> GetAllSpaces(string userId);
+        void UpdateSpaces(IEnumerable<KSpace> kSpaces, string userId);
 
         bool AddPackageToSpace(KSpaceMapper mapper);
     }

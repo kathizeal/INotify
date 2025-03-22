@@ -71,6 +71,7 @@ namespace INotifyLibrary.Util
                     StorageFile file = await StorageFile.GetFileFromPathAsync(kPackageProfileVObj.LogoFilePath);
                     if (file != null)
                     {
+                        kPackageProfileVObj.AppIcon = new BitmapImage();
                         using (IRandomAccessStream readStream = await file.OpenAsync(FileAccessMode.Read))
                         {
                             await kPackageProfileVObj.AppIcon.SetSourceAsync(readStream);

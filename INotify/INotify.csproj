@@ -13,6 +13,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="KToastView\ViewContract\**" />
+    <EmbeddedResource Remove="KToastView\ViewContract\**" />
+    <None Remove="KToastView\ViewContract\**" />
+    <Page Remove="KToastView\ViewContract\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Remove="Assets\DefaultIcon\DefaultNotificationIcon.png" />
     <Content Remove="Assets\DefaultIcon\DefaultWorkSpaceIcon.png" />
   </ItemGroup>
@@ -53,9 +59,6 @@
     <ProjectReference Include="..\WinUI3Component\WinUI3Component.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="KToastView\ViewContract\" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="KToastView\View\KToastListControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -80,4 +83,7 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
   </PropertyGroup>
+  <ItemGroup>
+    <PRIResource Remove="KToastView\ViewContract\**" />
+  </ItemGroup>
 </Project>
