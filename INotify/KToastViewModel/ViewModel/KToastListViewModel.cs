@@ -114,6 +114,7 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         public override void GetKToastNotificationByPackageId(string packageId)
         {
+
             var getKToastsRequest = new GetKToastsRequest(NotificatioRequestType.Individual, ViewType, packageId, INotifyConstant.CurrentUser);
             var getKToasts = new GetKToasts(getKToastsRequest, new GetAllKToastsNotificationPresenterCallback(this));
             getKToasts.Execute();
@@ -137,7 +138,7 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         public override async Task PopulateKToastNotificationsByPackageId(string packageId, ObservableCollection<KToastBObj> kToastDataNotifications)
         {
-            var package = KToastNotificationPackageCVS.FirstOrDefault(s => s.Profile.PackageId == packageId);
+            KNotificationByPackageCVS? package = KToastNotificationPackageCVS.FirstOrDefault(s => s.Profile.PackageId == packageId);
             if (package != null)
             {
                 foreach (var toastData in kToastDataNotifications)
@@ -145,11 +146,18 @@ namespace INotify.KToastViewModel.ViewModelContract
                     var data = await AddKToastNotification(toastData);
                     package.Add(data);
                 }
+                
             }
             else
             {
                 // Handle case where space is not found
             }
+            if (View is null)
+            {
+                return;
+            }
+            View.KToastListView.ItemTemplate = View.ToastTemplate;
+            View.KToastListView.ItemsSource = package?.GetItems() ?? new ObservableCollection<KToastVObj>();
         }
 
         public override async Task<KToastVObj> AddKToastNotification(KToastBObj toastData)
@@ -379,7 +387,14 @@ namespace INotify.KToastViewModel.ViewModelContract
             {
                 _presenter.DispatcherQueue.TryEnqueue(() =>
                 {
-                    _ = _presenter.PopulateKToastNotifications(response.Data.ToastDataNotifications);
+                    if(response.Data.ViewType is ViewType.Package)
+                    {
+                        _ = _presenter.PopulateKToastNotificationsByPackageId(response.Data.PackageId,response.Data.ToastDataNotifications);
+                    }
+                    else
+                    {
+                        _ = _presenter.PopulateKToastNotifications(response.Data.ToastDataNotifications);
+                    }
                 });
             }
         }

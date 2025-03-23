@@ -48,7 +48,10 @@
             x:Key="KNotificationByPackageTemplate"
             x:Name="KNotificationByPackageTemplate"
             x:DataType="model:KNotificationByPackageCVS">
-            <StackPanel Orientation="Horizontal">
+            <StackPanel
+                Orientation="Horizontal"
+                Tag="{x:Bind Profile, Mode=OneWay}"
+                Tapped="StackPanel_Tapped">
                 <Image
                     Width="64"
                     Height="64"
@@ -150,6 +153,8 @@
         <ListView
             x:Name="ToastListView"
             Grid.Row="1"
+            IsItemClickEnabled="True"
+            ItemClick="ToastListView_ItemClick"
             ItemsSource="{x:Bind CVS.View, Mode=OneWay}">
             <ListView.GroupStyle>
                 <GroupStyle HeaderTemplateSelector="{StaticResource ToastHeaderTemplateSelector}" />

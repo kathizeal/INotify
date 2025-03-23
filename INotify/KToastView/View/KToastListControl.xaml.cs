@@ -74,5 +74,35 @@ namespace INotify.KToastView.View
         {
             _VM.UpdateViewType(ViewType.Priority);
         }
+
+        private void ToastListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            switch(_VM.CurrentViewType)
+            {
+                case ViewType.All:
+                   if(e.ClickedItem is KToastVObj toast)
+                    {
+
+                    }
+                    break;
+                case ViewType.Package:
+                    if(e.ClickedItem is KPackageProfileVObj package)
+                    {
+                        _VM.GetKToastNotificationByPackageId(package.PackageId);
+                    }
+                    break;
+            }
+        }
+
+        private void StackPanel_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            if(sender is StackPanel sp)
+            {
+                if(sp.Tag is KPackageProfileVObj pp)
+                {
+                    _VM.GetKToastNotificationByPackageId(pp.PackageId);
+                }
+            }
+        }
     }
 }

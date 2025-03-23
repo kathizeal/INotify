@@ -41,5 +41,10 @@ namespace INotify.KToastView.Model
             OnPropertyChanged(propertyName);
         }
 
+        public ObservableCollection<KToastVObj> GetItems()
+        {
+            return this;
+        }
+
     }
 }
