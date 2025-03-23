@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using INotify.KToastView.Model;
 using INotifyLibrary.Model.Entity;
+using Microsoft.UI.Windowing;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -20,12 +22,15 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
+using Windows.Graphics;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Notifications;
 using Windows.UI.Notifications.Management;
 using WinRT;
+using Microsoft.UI.Input;
+using AppWindow = Microsoft.UI.Windowing.AppWindow;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -38,14 +43,63 @@ namespace INotify
     public sealed partial class MainWindow : Window
     {
         UserNotificationListener _listener = default;
+        private AppWindow _appWindow;
+        private IntPtr _hwnd;
+        private OverlappedPresenter _presenter;
         public MainWindow()
         {
             this.InitializeComponent();
+            GetAppWindowAndPresenter();
+            _appWindow.IsShownInSwitchers = false;
+            _presenter.SetBorderAndTitleBar(false, false);
+            _appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
+            _appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            _appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            _appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            _appWindow.TitleBar.BackgroundColor = Colors.Transparent;
+            _appWindow.TitleBar.InactiveBackgroundColor = Colors.Transparent;
+            _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(_hwnd);
+            _appWindow = AppWindow.GetFromWindowId(windowId);
+
+            // Set initial position & size
+            _appWindow.Resize(new SizeInt32(300, 200));
+            _appWindow.Move(new PointInt32(100, 100));
             CheckFeatureSupport();
             _listener.NotificationChanged += _listener_NotificationChanged;
         }
 
-     
+
+        public void GetAppWindowAndPresenter()
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId myWndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            _appWindow = AppWindow.GetFromWindowId(myWndId);
+
+            _presenter = _appWindow.Presenter as OverlappedPresenter;
+        }
+
+        private void RootGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            //Gets the close button element. Refer to the Visual Tree.
+            //var contentPresenter = VisualTreeHelper.GetParent(this.Content);
+            //var layoutRoot = VisualTreeHelper.GetParent(contentPresenter);
+            //var titleBar = VisualTreeHelper.GetChild(layoutRoot, 1) as Grid;
+            //var buttonContainer = VisualTreeHelper.GetChild(titleBar, 0) as Grid;
+            //buttonContainer.Visibility = Visibility.Collapsed;
+            //var closeButton = VisualTreeHelper.GetChild(buttonContainer, 2) as Button;
+            //if (closeButton != null)
+            //{
+            //    closeButton.Visibility = Visibility.Collapsed; //Hides the button.
+            //}
+        }
+
+        //private void OpenNormalWindow(object sender, RoutedEventArgs e)
+        //{
+        //    NormalWindow normalWindow = new NormalWindow();
+        //    normalWindow.Activate();
+        //    this.Close(); // Close overlay if needed
+        //}
 
         private void CheckFeatureSupport()
         {
@@ -239,6 +293,10 @@ namespace INotify
                 if (notification != null) CreateKToastModel(notification);
             });
         }
-       
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+
+        }
     }
 }
