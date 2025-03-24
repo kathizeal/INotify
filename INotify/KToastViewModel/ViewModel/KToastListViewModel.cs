@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using WinCommon.Error;
 using WinCommon.Extension;
 using WinCommon.Util;
+using Windows.ApplicationModel;
 using Windows.UI.Core;
 
 namespace INotify.KToastViewModel.ViewModelContract
@@ -49,7 +50,8 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         public void PoputeAllNotifications()                                                      
         {
-            if(View is null)
+            KToastNotifications.Clear();
+            if (View is null)
             {
                 return;
             }
@@ -241,6 +243,12 @@ namespace INotify.KToastViewModel.ViewModelContract
         {
             foreach (var packageProfile in packageProfiles)
             {
+                KNotificationByPackageCVS? package = KToastNotificationPackageCVS.FirstOrDefault(s => s.Profile.PackageId == packageProfile.PackageId);
+                if (package != null)
+                {
+                    continue;
+
+                }
                 var packageProfileVObj = new KPackageProfileVObj();
                 packageProfileVObj.Update(packageProfile);
                 packageProfileVObj.PopulateAppIconAsync();
