@@ -25,7 +25,7 @@ namespace INotifyLibrary.Util.Enums
 
     public enum NotificatioRequestType
     { 
-        ALL,
+        All,
         Individual
     }
 

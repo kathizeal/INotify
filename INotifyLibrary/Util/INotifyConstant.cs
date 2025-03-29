@@ -13,15 +13,13 @@ namespace INotifyLibrary.Util
         public const string CurrentUser = "CurrentUser0";
     }
 
-
     public static class IKPackageProfileConstant
     {
         public const string DefaultPackageId = "DefaultPackageId";
         public const string DefaultPackageFamilyName = "DefaultPackageFamilyName";
-        public const string DefaultAppDisplayName = "WindowsSuggestedFamilyName";
+        public const string DefaultAppDisplayName = "DefaultAppDisplayName";
         public const string DefaultAppDescription = "DefaultAppDescription";
         public const string DefaultLogoFilePath = @"Z:\SideKick\INotify\INotify\Assets\DefaultIcon\DefaultNotificationIcon.png";
-        public const bool DefaultIsIconAvailable = true;
     }
 
     public static class IKSpaceConstant

@@ -8,10 +8,10 @@ namespace INotifyLibrary.Model.Contract
 {
     internal interface IKPackageProfile
     {
-        string PackageId { get; set; }
-        string PackageFamilyName { get; set; }
-        string AppDisplayName { get; set; }
-        string AppDescription { get; set; }
-        string? LogoFilePath { get; set; }
+        string PackageId { get; }
+        string PackageFamilyName { get; }
+        string AppDisplayName { get; }
+        string AppDescription { get; }
+        string LogoFilePath { get; }
     }
 }

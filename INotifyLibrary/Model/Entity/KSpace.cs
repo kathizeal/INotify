@@ -5,14 +5,14 @@ namespace INotifyLibrary.Model.Entity
 {
     public class KSpace : ObservableObject
     {
-        public string SpaceId { get; set; }
+        public string SpaceId { get;  set; }
 
         private string _SpaceName;
 
         public string SpaceName
         {
             get { return _SpaceName; }
-            set => SetIfDifferent(ref _SpaceName, string.IsNullOrWhiteSpace(value) ? _SpaceName : value);
+            set => SetIfDifferent(ref _SpaceName, value);
         }
 
         private string _SpaceDescription;
@@ -20,7 +20,7 @@ namespace INotifyLibrary.Model.Entity
         public string SpaceDescription
         {
             get { return _SpaceDescription; }
-            set { _SpaceDescription = value; }
+            set => SetIfDifferent(ref _SpaceDescription, value);
         }
 
         public string SpaceIconLogoPath { get; set; }

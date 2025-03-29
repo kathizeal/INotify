@@ -109,7 +109,7 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         public void GetAllNotifications()
         {
-            var getKToastsRequest = new GetKToastsRequest(NotificatioRequestType.ALL, ViewType, default, INotifyConstant.CurrentUser);
+            var getKToastsRequest = new GetKToastsRequest(NotificatioRequestType.All, ViewType, default, INotifyConstant.CurrentUser);
             var getKToasts = new GetKToasts(getKToastsRequest, new GetAllKToastsNotificationPresenterCallback(this));
             getKToasts.Execute();
         }

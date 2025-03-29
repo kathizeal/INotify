@@ -14,7 +14,7 @@ namespace INotify.KToastView.Model
         public BitmapImage AppIcon
         {
             get { return _appIcon; }
-            set { SetProperty(ref _appIcon, value); }
+            set { SetIfDifferent(ref _appIcon, value); }
         }
        
     }

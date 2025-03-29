@@ -18,7 +18,6 @@ namespace INotifyLibrary.Util
                 AppDisplayName = IKPackageProfileConstant.DefaultAppDisplayName,
                 AppDescription = IKPackageProfileConstant.DefaultAppDescription,
                 LogoFilePath = IKPackageProfileConstant.DefaultLogoFilePath,
-                IsIconAvailable = IKPackageProfileConstant.DefaultIsIconAvailable
             };
         }
 

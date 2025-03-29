@@ -12,53 +12,36 @@ namespace INotifyLibrary.Model.Entity
 {
     public class KToastNotification : ObservableObject, IKToastNotification
     {
-        private string _notificationId;
-        private string _packageId;
         private DateTimeOffset _createdTime;
         private string _notificationTitle;
         private string _notificationMessage;
 
 
         [PrimaryKey]
-        public string NotificationId
-        {
-            get => _notificationId;
-            set => SetProperty(ref _notificationId, value);
-        }
+        public string NotificationId { get; set; }
 
-        public string PackageId
-        {
-            get => _packageId;
-            set => SetProperty(ref _packageId, value);
-        }
+        public string PackageId { get; set; }
 
-        public DateTimeOffset CreatedTime
+        public DateTimeOffset CreatedTime 
         {
-            get => _createdTime;
-            set => SetProperty(ref _createdTime, value);
+            get => CreatedTime;
+            set => SetIfDifferent(ref _createdTime, value);
         }
-
         public string NotificationTitle
         {
             get => _notificationTitle;
-            set => SetProperty(ref _notificationTitle, value);
+            set => SetIfDifferent(ref _notificationTitle, value);
         }
 
         public string NotificationMessage
         {
             get => _notificationMessage;
-            set => SetProperty(ref _notificationMessage, value);
+            set => SetIfDifferent(ref _notificationMessage, value);
         }
 
-
-        private string _DisplayTime;
 
         [Ignore]
-        public string DisplayTime
-        {
-            get => CreatedTime.LocalDateTime.ToString("hh.mm.ss tt d/M"); 
-            set => SetProperty(ref _DisplayTime, value);
-        }
+        public string DisplayTime=> CreatedTime.LocalDateTime.ToString(DateTimeFormatConstant.Format_hh_mm_ss_tt_d_Slash_M);
 
         public KToastNotification() { }
 

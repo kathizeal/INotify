@@ -9,7 +9,7 @@ namespace INotifyLibrary.Model.Contract
 {
     internal interface IKPriorityPackage
     {
-        Priority Priority { get; set; }
-        string PackageId { get; set; }
+        Priority Priority { get; }
+        string PackageId { get; }
     }
 }

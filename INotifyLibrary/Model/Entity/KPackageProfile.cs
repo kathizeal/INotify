@@ -12,54 +12,39 @@ namespace INotifyLibrary.Model.Entity
 {
     public class KPackageProfile : ObservableObject, IKPackageProfile
     {
-        private string _packageId;
-        private string _packageFamilyName;
         private string _appDisplayName;
         private string _appDescription;
-        private string? _logoFilePath;
+        private string _logoFilePath;
 
         [PrimaryKey]
-        public string PackageId
-        {
-            get => _packageId;
-            set => SetProperty(ref _packageId, value);
-        }
+        public string PackageId { get; set; }
 
-        public string PackageFamilyName
-        {
-            get => _packageFamilyName;
-            set => SetProperty(ref _packageFamilyName, value);
-        }
+        public string PackageFamilyName { get;  set; }
 
         public string AppDisplayName
         {
             get => _appDisplayName;
-            set => SetProperty(ref _appDisplayName, value);
+            set => SetIfDifferent(ref _appDisplayName, value);
         }
 
         public string AppDescription
         {
             get => _appDescription;
-            set => SetProperty(ref _appDescription, value);
+            set => SetIfDifferent(ref _appDescription, value);
         }
 
-        public string? LogoFilePath
+        public string LogoFilePath
         {
             get => _logoFilePath;
             set
             {
-                SetProperty(ref _logoFilePath, value);
-                if (!string.IsNullOrWhiteSpace(_logoFilePath))
-                {
-                    IsIconAvailable = true;
-                }
+                SetIfDifferent(ref _logoFilePath, value);
+                IsIconAvailable = !string.IsNullOrWhiteSpace(_logoFilePath);
             }
         }
 
-
-        [DefaultValue(false)]
-        public bool IsIconAvailable { get; set; }
-        [DefaultValue(false)]
+        [Ignore]
+        public bool IsIconAvailable { get; private set; }
         public bool IsIconOverride { get; set; }
 
 

@@ -13,7 +13,7 @@ namespace INotifyLibrary.DataManger
     {
 
         protected static ConcurrentDictionary<string, KPackageProfile> PackageProfileCache;
-        protected static INotifyDBHandler DBHandler { get; set; }
+        protected INotifyDBHandler DBHandler { get; set; }
 
         public INotifyBaseDataManager(INotifyDBHandler dBHandler)
         {

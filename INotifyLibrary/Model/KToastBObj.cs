@@ -15,14 +15,14 @@ namespace INotifyLibrary.Model
         public KToastNotification NotificationData
         {
             get { return _NotificationData; }
-            private set { SetProperty(ref _NotificationData, value); }
+            private set { SetIfDifferent(ref _NotificationData, value); }
         }
 
         private KPackageProfile _toastPackageProfile;
         public KPackageProfile ToastPackageProfile
         {
             get { return _toastPackageProfile; }
-            private set { SetProperty(ref _toastPackageProfile, value); }
+            private set { SetIfDifferent(ref _toastPackageProfile, value); }
         }
 
         public KToastBObj(KToastNotification notificationData, KPackageProfile packageProfile)
