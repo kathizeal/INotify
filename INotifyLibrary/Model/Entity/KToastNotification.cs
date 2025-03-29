@@ -24,7 +24,7 @@ namespace INotifyLibrary.Model.Entity
 
         public DateTimeOffset CreatedTime 
         {
-            get => CreatedTime;
+            get => _createdTime;
             set => SetIfDifferent(ref _createdTime, value);
         }
         public string NotificationTitle
