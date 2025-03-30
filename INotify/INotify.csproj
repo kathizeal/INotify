@@ -55,6 +55,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\WinCommon\WinCommon.csproj" />
     <ProjectReference Include="..\..\WinLogger\WinLogger.csproj" />
+    <ProjectReference Include="..\..\WinToast\WinToast\WinToast.csproj" />
     <ProjectReference Include="..\INotifyLibrary\INotifyLibrary.csproj" />
     <ProjectReference Include="..\WinUI3Component\WinUI3Component.csproj" />
   </ItemGroup>

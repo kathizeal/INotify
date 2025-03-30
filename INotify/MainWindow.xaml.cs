@@ -26,6 +26,8 @@ using Windows.Storage.Streams;
 using Windows.UI.Notifications;
 using Windows.UI.Notifications.Management;
 using WinRT;
+using WinToast;
+using static WinToast.NotificationForm;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -239,6 +241,54 @@ namespace INotify
                 if (notification != null) CreateKToastModel(notification);
             });
         }
-       
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            // Show test notifications
+            //NotificationForm.ShowNotification("Test message. This is a test notification.");
+            //NotificationForm.ShowNotification("Another test message.");
+        }
+
+        private void TopRight_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopRight);
+            NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopRight);
+
+        }
+
+        private void TopLeft_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopLeft);
+            NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopLeft);
+
+        }
+
+        private void TopMiddle_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopMiddle);
+            NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopMiddle);
+
+        }
+
+        private void BottomRight_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomRight);
+            NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomRight);
+
+        }
+
+        private void BottomLeft_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomLeft);
+            NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomLeft);
+
+        }
+
+        private void BottomMiddle_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomMiddle);
+            NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomMiddle);
+
+        }
     }
 }

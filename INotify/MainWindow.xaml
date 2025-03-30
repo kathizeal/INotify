@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="INotify.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,6 +9,18 @@
     Title="INotify">
 
     <Grid>
-        <view:KToastListControl x:Name="KToastListViewControl" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Content="Top Right" Click="TopRight_Click"/>
+            <Button Content="Top Left" Click="TopLeft_Click"/>
+            <Button Content="Top Middle" Click="TopMiddle_Click"/>
+            <Button Content="Bottom Right" Click="BottomRight_Click"/>
+            <Button Content="Bottom Left" Click="BottomLeft_Click"/>
+            <Button Content="Bottom Middle" Click="BottomMiddle_Click"/>
+        </StackPanel>
+        <view:KToastListControl Grid.Row="1" x:Name="KToastListViewControl" />
     </Grid>
 </Window>
