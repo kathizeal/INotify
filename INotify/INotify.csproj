@@ -53,9 +53,9 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\INotifyWinForm\WinToast\WinToast.csproj" />
     <ProjectReference Include="..\..\WinCommon\WinCommon.csproj" />
     <ProjectReference Include="..\..\WinLogger\WinLogger.csproj" />
-    <ProjectReference Include="..\..\WinToast\WinToast\WinToast.csproj" />
     <ProjectReference Include="..\INotifyLibrary\INotifyLibrary.csproj" />
     <ProjectReference Include="..\WinUI3Component\WinUI3Component.csproj" />
   </ItemGroup>
