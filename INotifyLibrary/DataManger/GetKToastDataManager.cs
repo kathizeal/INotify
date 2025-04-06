@@ -19,12 +19,10 @@ namespace INotifyLibrary.DataManger
 
                 List<KToastNotification>? list = new();
                 List<KToastBObj>? toastDatas = new();
-                if (string.IsNullOrEmpty(request.PackageId))
+                if (string.IsNullOrEmpty(request.PackageId) || request.PackageId is IKPackageProfileConstant.DefaultAllInPackageId)
                 {
                     list = DBHandler.GetToastNotificationByUserId(request.UserId).ToList();
                     toastDatas = PopulatePackageProfile(list, request.UserId);
-
-
                 }
                 else
                 {

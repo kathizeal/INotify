@@ -12,7 +12,6 @@ namespace INotify.KToastView.View.ViewContract
     public interface IKToastListView
     {
         CollectionViewSource KToastCollectionViewSource { get; }
-        ListView KToastListView { get; }
         DataTemplate ToastTemplate { get; }
         DataTemplate NotificationByPackageTemplate { get; }
         DataTemplate NotificationBySpaceTemplate { get; }

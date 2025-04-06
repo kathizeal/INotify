@@ -23,6 +23,8 @@
     <Content Remove="Assets\DefaultIcon\DefaultWorkSpaceIcon.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="KToastView\Resources\MainResource.xaml" />
+    <None Remove="KToastView\View\KSpaceControl.xaml" />
     <None Remove="KToastView\View\KToastListControl.xaml" />
   </ItemGroup>
 
@@ -86,5 +88,15 @@
   </PropertyGroup>
   <ItemGroup>
     <PRIResource Remove="KToastView\ViewContract\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="KToastView\View\KSpaceControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="KToastView\Resources\MainResource.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

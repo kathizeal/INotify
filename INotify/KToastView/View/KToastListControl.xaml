@@ -12,159 +12,146 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <Style x:Key="NormalTextStyle" TargetType="TextBlock">
-            <Setter Property="Margin" Value="4" />
-        </Style>
-        <CollectionViewSource x:Name="CVS" IsSourceGrouped="True" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/KToastView/Resources/MainResource.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <selectors:ToastHeaderTemplateSelector
+                x:Key="ToastHeaderTemplateSelector"
+                KNotificationByPackageTemplate="{StaticResource KNotificationByPackageTemplate}"
+                KNotificationBySpaceTemplate="{StaticResource KNotificationBySpaceTemplate}" />
 
-        <DataTemplate
-            x:Key="KToastTemplate"
-            x:Name="KToastTemplate"
-            x:DataType="model:KToastVObj">
-            <StackPanel
-                HorizontalAlignment="Left"
-                BorderBrush="Salmon"
-                BorderThickness="0"
-                Orientation="Vertical">
-                <Image
-                    Width="64"
-                    Height="64"
+            <selectors:ToastItemTemplateSelector
+                x:Key="ToastItemTemplateSelector"
+                KPackageTemplate="{StaticResource KPackageTemplate}"
+                KToastTemplate="{StaticResource KToastTemplate}" />
+            <CollectionViewSource x:Name="CVS" IsSourceGrouped="True" />
+            <DataTemplate
+                x:Key="KToastTemplate"
+                x:Name="KToastTemplate"
+                x:DataType="model:KToastVObj">
+                <StackPanel
                     HorizontalAlignment="Left"
-                    Source="{x:Bind AppIcon, Mode=OneWay}" />
-                <StackPanel HorizontalAlignment="Left">
-                    <TextBlock
+                    BorderBrush="Salmon"
+                    BorderThickness="0"
+                    Orientation="Vertical">
+                    <Image
+                        Width="64"
+                        Height="64"
                         HorizontalAlignment="Left"
-                        FontWeight="Bold"
-                        Text="{x:Bind ToastPackageProfile.AppDisplayName, Mode=OneWay}" />
-                    <TextBlock Text="{x:Bind NotificationData.NotificationMessage, Mode=OneWay}" TextWrapping="Wrap" />
-                    <TextBlock Text="{x:Bind NotificationData.DisplayTime, Mode=OneWay}" />
+                        Source="{x:Bind AppIcon, Mode=OneWay}" />
+                    <StackPanel HorizontalAlignment="Left">
+                        <TextBlock
+                            HorizontalAlignment="Left"
+                            FontWeight="Bold"
+                            Text="{x:Bind ToastPackageProfile.AppDisplayName, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind NotificationData.NotificationMessage, Mode=OneWay}" TextWrapping="Wrap" />
+                        <TextBlock Text="{x:Bind NotificationData.DisplayTime, Mode=OneWay}" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </DataTemplate>
+            </DataTemplate>
 
 
 
-        <DataTemplate
-            x:Key="KNotificationByPackageTemplate"
-            x:Name="KNotificationByPackageTemplate"
-            x:DataType="model:KNotificationByPackageCVS">
-            <StackPanel
-                Orientation="Horizontal"
-                Tag="{x:Bind Profile, Mode=OneWay}"
-                Tapped="StackPanel_Tapped">
-                <Image
-                    Width="64"
-                    Height="64"
-                    Source="{x:Bind Profile.AppIcon, Mode=OneWay}" />
-                <TextBlock
-                    FontWeight="Bold"
-                    Style="{StaticResource NormalTextStyle}"
-                    Text="{x:Bind DisplayName, Mode=OneWay}" />
-            </StackPanel>
-        </DataTemplate>
+            <DataTemplate
+                x:Key="KNotificationByPackageTemplate"
+                x:Name="KNotificationByPackageTemplate"
+                x:DataType="model:KNotificationByPackageCVS">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Tag="{x:Bind Profile, Mode=OneWay}"
+                    Tapped="StackPanel_Tapped">
+                    <Image
+                        Width="64"
+                        Height="64"
+                        Source="{x:Bind Profile.AppIcon, Mode=OneWay}" />
+                    <TextBlock
+                        FontWeight="Bold"
+                        Style="{StaticResource NormalTextStyle}"
+                        Text="{x:Bind DisplayName, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
 
-        <DataTemplate
-            x:Key="KNotificationBySpaceTemplate"
-            x:Name="KNotificationBySpaceTemplate"
-            x:DataType="model:KNotificationBySpaceCVS">
-            <StackPanel Orientation="Horizontal">
-                <Image
-                    Width="64"
-                    Height="64"
-                    Source="{x:Bind Space.AppIcon, Mode=OneWay}" />
-                <TextBlock
-                    FontWeight="Bold"
-                    Style="{StaticResource NormalTextStyle}"
-                    Text="{x:Bind DisplayName, Mode=OneWay}" />
-            </StackPanel>
-        </DataTemplate>
+            <DataTemplate
+                x:Key="KNotificationBySpaceTemplate"
+                x:Name="KNotificationBySpaceTemplate"
+                x:DataType="model:KNotificationBySpaceCVS">
+                <StackPanel Orientation="Horizontal">
+                    <Image
+                        Width="64"
+                        Height="64"
+                        Source="{x:Bind Space.AppIcon, Mode=OneWay}" />
+                    <TextBlock
+                        FontWeight="Bold"
+                        Style="{StaticResource NormalTextStyle}"
+                        Text="{x:Bind DisplayName, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
 
 
-        <DataTemplate
-            x:Key="KPackageTemplate"
-            x:Name="KPackageTemplate"
-            x:DataType="model:KPackageProfileVObj">
-            <StackPanel Orientation="Horizontal">
-                <Image
-                    Width="64"
-                    Height="64"
-                    Source="{x:Bind AppIcon}" />
-                <TextBlock
-                    FontWeight="Bold"
-                    Style="{StaticResource NormalTextStyle}"
-                    Text="{x:Bind AppDisplayName}" />
-            </StackPanel>
-        </DataTemplate>
+            <DataTemplate
+                x:Key="KPackageTemplate"
+                x:Name="KPackageTemplate"
+                x:DataType="model:KPackageProfileVObj">
+                <StackPanel Orientation="Horizontal">
+                    <Image
+                        Width="64"
+                        Height="64"
+                        Source="{x:Bind AppIcon}" />
+                    <TextBlock
+                        FontWeight="Bold"
+                        Style="{StaticResource NormalTextStyle}"
+                        Text="{x:Bind AppDisplayName}" />
+                </StackPanel>
+            </DataTemplate>
 
-        <DataTemplate
-            x:Key="KSpaceTemplate"
-            x:Name="KSpaceTemplate"
-            x:DataType="model:KSpaceVObj">
-            <StackPanel Orientation="Horizontal">
-                <Image
-                    Width="64"
-                    Height="64"
-                    Source="{x:Bind AppIcon}" />
-                <TextBlock
-                    FontWeight="Bold"
-                    Style="{StaticResource NormalTextStyle}"
-                    Text="{x:Bind SpaceName}" />
-            </StackPanel>
-        </DataTemplate>
-        <selectors:ToastHeaderTemplateSelector
-            x:Key="ToastHeaderTemplateSelector"
-            KNotificationByPackageTemplate="{StaticResource KNotificationByPackageTemplate}"
-            KNotificationBySpaceTemplate="{StaticResource KNotificationBySpaceTemplate}" />
+            <DataTemplate
+                x:Key="KSpaceTemplate"
+                x:Name="KSpaceTemplate"
+                x:DataType="model:KSpaceVObj">
+                <StackPanel Orientation="Horizontal">
+                    <Image
+                        Width="64"
+                        Height="64"
+                        Source="{x:Bind AppIcon}" />
+                    <TextBlock
+                        FontWeight="Bold"
+                        Style="{StaticResource NormalTextStyle}"
+                        Text="{x:Bind SpaceName}" />
+                </StackPanel>
+            </DataTemplate>
+        </ResourceDictionary>
 
-        <selectors:ToastItemTemplateSelector
-            x:Key="ToastItemTemplateSelector"
-            KPackageTemplate="{StaticResource KPackageTemplate}"
-            KToastTemplate="{StaticResource KToastTemplate}" />
     </UserControl.Resources>
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <Button x:Name="ViewTypeBt" Content="View Type">
-            <Button.Flyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem
-                        x:Name="All"
-                        Click="All_Click"
-                        Text="All" />
-                    <MenuFlyoutItem
-                        x:Name="Space"
-                        Click="Space_Click"
-                        Text="Space" />
-                    <MenuFlyoutItem
-                        x:Name="Priority"
-                        Click="Priority_Click"
-                        IsEnabled="False"
-                        Text="Priority" />
-                    <MenuFlyoutItem
-                        x:Name="AppBy"
-                        Click="AppBy_Click"
-                        Text="AppBy" />
-                </MenuFlyout>
-            </Button.Flyout>
-        </Button>
         <ListView
-            x:Name="ToastListView"
+            x:Name="VerticalContentLV"
+            ItemsSource="{x:Bind _VM.KToastNotifications, Mode=OneWay}"
+            ItemTemplateSelector="{StaticResource ToastItemTemplateSelector}"
+            Grid.Row="0"
+            IsItemClickEnabled="True" />
+        <ListView
+            x:Name="HorizontalContentLV"
+            ScrollViewer.VerticalScrollMode="Disabled"
+            ScrollViewer.HorizontalScrollMode="Enabled"
+            IsRightTapEnabled="True"
+            RightTapped="HorizontalContentLV_RightTapped"
+            ScrollViewer.HorizontalScrollBarVisibility="Visible"
+            SelectionChanged="HorizontalContentLV_SelectionChanged"
             Grid.Row="1"
-            IsItemClickEnabled="True"
-            ItemClick="ToastListView_ItemClick"
-            ItemsSource="{x:Bind CVS.View, Mode=OneWay}">
-            <ListView.GroupStyle>
-                <GroupStyle HeaderTemplateSelector="{StaticResource ToastHeaderTemplateSelector}" />
-            </ListView.GroupStyle>
-            <ListView.ItemTemplateSelector>
-                <StaticResource ResourceKey="ToastItemTemplateSelector" />
-            </ListView.ItemTemplateSelector>
+            ItemTemplateSelector="{StaticResource ToastItemTemplateSelector}"
+            IsItemClickEnabled="True">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Vertical" />
+                    <ItemsStackPanel Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
         </ListView>

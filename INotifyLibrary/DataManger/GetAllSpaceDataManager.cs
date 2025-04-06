@@ -20,7 +20,7 @@ namespace INotifyLibrary.DataManger
             try
             {
                 List<KSpace> spaces = DBHandler.GetAllSpaces(request.UserId).ToList();
-                if(CommonUtil.IsNonEmpty(spaces))
+                if(CommonUtil.IsNullOrEmpty(spaces))
                 {
                     spaces = CreateDefaultWorkSpace();
                     DBHandler.UpdateSpaces(spaces, request.UserId);

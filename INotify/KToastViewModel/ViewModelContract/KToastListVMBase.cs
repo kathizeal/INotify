@@ -21,7 +21,6 @@ namespace INotify.KToastViewModel.ViewModelContract
         public ViewType CurrentViewType { get; set; }
 
 
-        public Dictionary<string, BitmapImage> IconCache = new Dictionary<string, BitmapImage>();
 
         private ObservableCollection<KToastVObj> _kToastNotifications;
         public ObservableCollection<KToastVObj> KToastNotifications
@@ -41,42 +40,61 @@ namespace INotify.KToastViewModel.ViewModelContract
             }
         }
 
-
-        private ObservableCollection<KNotificationByPackageCVS> _KToastNotificationPackageCVS;
-        public ObservableCollection<KNotificationByPackageCVS> KToastNotificationPackageCVS
+        private ObservableCollection<KPackageProfileVObj> _kPackageProfilesList;
+        public ObservableCollection<KPackageProfileVObj> KPackageProfilesList
         {
             get
             {
-                if (_KToastNotificationPackageCVS == null)
+                if (_kPackageProfilesList == null)
                 {
-                    _KToastNotificationPackageCVS = new ObservableCollection<KNotificationByPackageCVS>();
+                    _kPackageProfilesList = new ObservableCollection<KPackageProfileVObj>();
                 }
-                return _KToastNotificationPackageCVS;
+                return _kPackageProfilesList;
             }
             set
             {
-                _KToastNotificationPackageCVS = value;
+                _kPackageProfilesList = value;
                 OnPropertyChanged();
             }
+
         }
 
-        private ObservableCollection<KNotificationBySpaceCVS> _KToastNotificationSpaceCVS;
-        public ObservableCollection<KNotificationBySpaceCVS> KToastNotificationSpaceCVS
-        {
-            get
-            {
-                if (_KToastNotificationSpaceCVS == null)
-                {
-                    _KToastNotificationSpaceCVS = new ObservableCollection<KNotificationBySpaceCVS>();
-                }
-                return _KToastNotificationSpaceCVS;
-            }
-            set
-            {
-                _KToastNotificationSpaceCVS = value;
-                OnPropertyChanged();
-            }
-        }
+
+        //private ObservableCollection<KNotificationByPackageCVS> _KToastNotificationPackageCVS;
+        //public ObservableCollection<KNotificationByPackageCVS> KToastNotificationPackageCVS
+        //{
+        //    get
+        //    {
+        //        if (_KToastNotificationPackageCVS == null)
+        //        {
+        //            _KToastNotificationPackageCVS = new ObservableCollection<KNotificationByPackageCVS>();
+        //        }
+        //        return _KToastNotificationPackageCVS;
+        //    }
+        //    set
+        //    {
+        //        _KToastNotificationPackageCVS = value;
+        //        OnPropertyChanged();
+        //    }
+        //}
+
+        //private ObservableCollection<KNotificationBySpaceCVS> _KToastNotificationSpaceCVS;
+        //public ObservableCollection<KNotificationBySpaceCVS> KToastNotificationSpaceCVS
+        //{
+        //    get
+        //    {
+        //        if (_KToastNotificationSpaceCVS == null)
+        //        {
+        //            _KToastNotificationSpaceCVS = new ObservableCollection<KNotificationBySpaceCVS>();
+        //        }
+        //        return _KToastNotificationSpaceCVS;
+        //    }
+        //    set
+        //    {
+        //        _KToastNotificationSpaceCVS = value;
+        //        OnPropertyChanged();
+        //    }
+        //}
 
         #region Methods
         public abstract void UpdateViewType(ViewType viewType);

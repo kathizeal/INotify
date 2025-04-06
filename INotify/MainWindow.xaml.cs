@@ -62,39 +62,23 @@ namespace INotify
             }
         }
 
-
-        // Todo Need to check with release mode how the access works
         public async void GetAccessFromUser()
         {
             _listener = UserNotificationListener.Current;
             UserNotificationListenerAccessStatus accessStatus = await _listener.RequestAccessAsync();
             switch (accessStatus)
             {
-                // This means the user has granted access.
                 case UserNotificationListenerAccessStatus.Allowed:
 
                     // Yay! Proceed as normal
                     break;
-
-                // This means the user has denied access.
-                // Any further calls to RequestAccessAsync will instantly
-                // return Denied. The user must go to the Windows settings
-                // and manually allow access.
                 case UserNotificationListenerAccessStatus.Denied:
-
-                    // Show UI explaining that listener features will not
-                    // work until user allows access.
+                    // Show UI explaining that listener features will not work until user allows access.
                     break;
-
-                // This means the user closed the prompt without
-                // selecting either allow or deny. Further calls to
-                // RequestAccessAsync will show the dialog again.
                 case UserNotificationListenerAccessStatus.Unspecified:
-
                     // Show UI that allows the user to bring up the prompt again
                     break;
             }
-
         }
 
         private async void FetchToastNotifications()
@@ -111,8 +95,8 @@ namespace INotify
             try
             {
                 string appDisplayName = notif.AppInfo.DisplayInfo.DisplayName;
-                string appId = notif.AppInfo.AppUserModelId;  // Get the App ID
-                uint notificationId = notif.Id;  // Get the Notification ID
+                string appId = notif.AppInfo.AppUserModelId;
+                uint notificationId = notif.Id;
 
                 string? s2 = notif.AppInfo.PackageFamilyName;
                 NotificationBinding toastBinding = notif.Notification.Visual.GetBinding(KnownNotificationBindings.ToastGeneric);
@@ -121,13 +105,13 @@ namespace INotify
                 {
                     // Get the app's logo
                     BitmapImage appLogo = new BitmapImage();
-                    RandomAccessStreamReference appLogoStream = notif.AppInfo?.DisplayInfo?.GetLogo(new Size(64,64));
+                    RandomAccessStreamReference appLogoStream = notif.AppInfo?.DisplayInfo?.GetLogo(new Windows.Foundation.Size(64, 64));
                     if (appLogoStream != null)
                     {
                         iconLocation = await SaveAppIconToLocalFolder(appLogo, appLogoStream, appDisplayName);
                     }
                 }
-                catch(COMException exe)
+                catch (COMException exe)
                 {
 
                 }
@@ -144,8 +128,6 @@ namespace INotify
                     {
                         bodyText += "\n" + text.Text;
                     }
-
-
 
                     KToastNotification data = new KToastNotification
                     {
@@ -245,50 +227,52 @@ namespace INotify
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             // Show test notifications
-            //NotificationForm.ShowNotification("Test message. This is a test notification.");
-            //NotificationForm.ShowNotification("Another test message.");
         }
 
         private void TopRight_Click(object sender, RoutedEventArgs e)
         {
             NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopRight);
             NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopRight);
-
         }
 
         private void TopLeft_Click(object sender, RoutedEventArgs e)
         {
             NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopLeft);
             NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopLeft);
-
         }
 
         private void TopMiddle_Click(object sender, RoutedEventArgs e)
         {
             NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopMiddle);
             NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopMiddle);
-
         }
 
         private void BottomRight_Click(object sender, RoutedEventArgs e)
         {
             NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomRight);
             NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomRight);
-
         }
 
         private void BottomLeft_Click(object sender, RoutedEventArgs e)
         {
             NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomLeft);
             NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomLeft);
-
         }
 
         private void BottomMiddle_Click(object sender, RoutedEventArgs e)
         {
             NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomMiddle);
             NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomMiddle);
+        }
+       
+        private void SpaceControl_SpaceSelected(string spaceId)
+        {
+            KToastListViewControl.GetPackageBySpace(spaceId);
+        }
 
+        private void GetAllPackage_Click(object sender, RoutedEventArgs e)
+        {
+            KToastListViewControl.UpdateToastView(ViewType.Package);
         }
     }
 }

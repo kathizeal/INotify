@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="INotify.KToastView.View.KSpaceControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:INotify.KToastView.View"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:INotify.KToastView.Model" xmlns:model1="using:INotifyLibrary.Model.Entity"
+    Loaded="UserControl_Loaded"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+
+        <DataTemplate
+            x:Key="KSpaceDataTemplate"
+            x:Name="KSpaceDataTemplate"
+            x:DataType="model:KSpaceVObj">
+            <StackPanel
+                HorizontalAlignment="Left"
+                BorderBrush="Salmon"
+                BorderThickness="0"
+                Orientation="Vertical">
+                <Image
+                    Width="64"
+                    Height="64"
+                    HorizontalAlignment="Left"
+                    Source="{x:Bind AppIcon, Mode=OneWay}" />
+                <StackPanel HorizontalAlignment="Left">
+                    <TextBlock
+                        HorizontalAlignment="Left"
+                        FontWeight="Bold"
+                        Text="{x:Bind SpaceName, Mode=OneWay}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="PackageDataTemplate"
+            x:Name="PackageDataTemplate"
+            x:DataType="model1:KPackageProfile">
+            <StackPanel
+                HorizontalAlignment="Left"
+                BorderBrush="Salmon"
+                BorderThickness="0"
+                Orientation="Vertical">
+                <TextBlock
+                    HorizontalAlignment="Left"
+                    FontWeight="Bold"
+                    Text="{x:Bind AppDisplayName, Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <ListView
+            x:Name="SpaceList"
+            IsItemClickEnabled="True"
+            ItemClick="SpaceList_ItemClick"
+            ItemTemplate="{StaticResource KSpaceDataTemplate}"
+            ItemsSource="{x:Bind _VM.KSpaceList, Mode=OneWay}">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
+
+    </Grid>
+</UserControl>

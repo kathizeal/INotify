@@ -30,7 +30,9 @@ namespace INotifyLibrary.DBHandler.Contract
         IList<KSpace> GetAllSpaces(string userId);
         void UpdateSpaces(IEnumerable<KSpace> kSpaces, string userId);
 
-        bool AddPackageToSpace(KSpaceMapper mapper);
+        bool AddPackageToSpace(KSpaceMapper mapper, string userId);
+
+        bool RemovePackageFromSpace(string spaceId, string packageId, string userId);
     }
 
 }

@@ -31,7 +31,7 @@ namespace INotifyLibrary.Domain
         public GetKToastsRequest(NotificatioRequestType notificationRequestType, ViewType viewType, string packageId, string userId) : base(RequestType.LocalStorage, userId, default)
         {
             NotificationRequestType = notificationRequestType;
-          ViewType = viewType;
+            ViewType = viewType;
             PackageId = packageId;
         }
     }

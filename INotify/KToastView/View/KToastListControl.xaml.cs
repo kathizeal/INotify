@@ -7,7 +7,6 @@ using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using System;
 using System.Collections.ObjectModel;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -20,8 +19,6 @@ namespace INotify.KToastView.View
         private KToastListVMBase _VM;
 
         public CollectionViewSource KToastCollectionViewSource => CVS;
-
-        public ListView KToastListView => ToastListView;
 
         public DataTemplate ToastTemplate => Resources["KToastTemplate"] as DataTemplate;
 
@@ -37,12 +34,21 @@ namespace INotify.KToastView.View
         {
             _VM = KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
             _VM.View = this;
+            _VM.CurrentViewType = ViewType.Package;
             this.InitializeComponent();
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            _VM.LoadControl();
+            _VM.UpdateViewType(ViewType.Package); // Temporary
+            UpdateTemplatePanelAndSource(ViewType.Package);
+            //TODO : Based on the user setting preference this should be done.
+        }
+
+        public void UpdateToastView(ViewType viewType)  // Temporary
+        {
+            _VM.UpdateViewType(viewType); 
+            UpdateTemplatePanelAndSource(viewType);
         }
 
         public void UpdateNotificationsList(ObservableCollection<KToastNotification> currentSystemNotifications)
@@ -68,6 +74,7 @@ namespace INotify.KToastView.View
         private void AppBy_Click(object sender, RoutedEventArgs e)
         {
             _VM.UpdateViewType(ViewType.Package);
+            UpdateTemplatePanelAndSource(ViewType.Package);
         }
 
         private void Priority_Click(object sender, RoutedEventArgs e)
@@ -77,16 +84,16 @@ namespace INotify.KToastView.View
 
         private void ToastListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            switch(_VM.CurrentViewType)
+            switch (_VM.CurrentViewType)
             {
                 case ViewType.All:
-                   if(e.ClickedItem is KToastVObj toast)
+                    if (e.ClickedItem is KToastVObj toast)
                     {
 
                     }
                     break;
                 case ViewType.Package:
-                    if(e.ClickedItem is KPackageProfileVObj package)
+                    if (e.ClickedItem is KPackageProfileVObj package)
                     {
                         _VM.GetKToastNotificationByPackageId(package.PackageId);
                     }
@@ -96,13 +103,88 @@ namespace INotify.KToastView.View
 
         private void StackPanel_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            if(sender is StackPanel sp)
+            if (sender is StackPanel sp)
             {
-                if(sp.Tag is KPackageProfileVObj pp)
+                if (sp.Tag is KPackageProfileVObj pp)
                 {
                     _VM.GetKToastNotificationByPackageId(pp.PackageId);
                 }
             }
+        }
+
+        private void HorizontalContentLV_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0)
+            {
+                var selectedItem = e.AddedItems[0];
+                switch (_VM.CurrentViewType)
+                {
+                    case ViewType.Package:
+                        if (selectedItem is KPackageProfileVObj package)
+                        {
+                            _VM.GetKToastNotificationByPackageId(package.PackageId);
+                        }
+                        break;
+                    case ViewType.Space:
+                        if (selectedItem is KSpaceVObj space)
+                        {
+                            _VM.GetPackagesBySpaceById(space.SpaceId);
+                        }
+                        break;
+                        // Add other cases as needed
+                }
+            }
+        }
+
+        private void UpdateTemplatePanelAndSource(ViewType viewType)
+        {
+
+            switch (viewType)
+            {
+                case ViewType.Package:
+                    {
+                        TemplatesForPackageView();
+                    }
+                    break;
+
+                case ViewType.Priority:
+                    {
+
+                    }
+                    break;
+                case ViewType.Filters:
+                    {
+
+                    }
+                    break;
+                case ViewType.Space:
+                    {
+                    }
+                    break;
+            }
+
+            void TemplatesForPackageView()
+            {
+                HorizontalContentLV.ItemsSource = _VM.KPackageProfilesList;
+            }
+        }
+
+        private void HorizontalContentLV_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+        {
+            var clickedItem = (e.OriginalSource as FrameworkElement)?.DataContext as KPackageProfileVObj;
+            if (clickedItem != null)
+            {
+                Flyout flyout = new Flyout();
+                KSpaceControl kSpaceControl = new KSpaceControl();
+                kSpaceControl.PackageId = clickedItem.PackageId;
+                flyout.Content = kSpaceControl;
+                flyout.ShowAt(HorizontalContentLV);
+            }
+        }
+
+        public void GetPackageBySpace(string spaceId)
+        {
+            _VM.GetPackagesBySpaceById(spaceId);
         }
     }
 }

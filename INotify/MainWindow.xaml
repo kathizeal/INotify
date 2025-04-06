@@ -8,19 +8,22 @@
     mc:Ignorable="d"
     Title="INotify">
 
-    <Grid>
+    <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="100"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
             <Button Content="Top Right" Click="TopRight_Click"/>
             <Button Content="Top Left" Click="TopLeft_Click"/>
             <Button Content="Top Middle" Click="TopMiddle_Click"/>
             <Button Content="Bottom Right" Click="BottomRight_Click"/>
             <Button Content="Bottom Left" Click="BottomLeft_Click"/>
             <Button Content="Bottom Middle" Click="BottomMiddle_Click"/>
+            <Button x:Name="GetAllPackage" Content="List All Package" Click="GetAllPackage_Click"/>
         </StackPanel>
-        <view:KToastListControl Grid.Row="1" x:Name="KToastListViewControl" />
+        <view:KSpaceControl x:Name="SpaceControl" SpaceSelected="SpaceControl_SpaceSelected" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="1"/>
+        <view:KToastListControl Grid.Row="2"  HorizontalAlignment="Stretch" VerticalAlignment="Bottom" x:Name="KToastListViewControl" />
     </Grid>
 </Window>

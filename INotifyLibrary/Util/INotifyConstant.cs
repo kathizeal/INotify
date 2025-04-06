@@ -20,6 +20,12 @@ namespace INotifyLibrary.Util
         public const string DefaultAppDisplayName = "DefaultAppDisplayName";
         public const string DefaultAppDescription = "DefaultAppDescription";
         public const string DefaultLogoFilePath = @"Z:\SideKick\INotify\INotify\Assets\DefaultIcon\DefaultNotificationIcon.png";
+
+        public const string DefaultAllInPackageId = "AllInPackageId";
+        public const string DefaultAllInPackageIdFamilyName = "AllInPackageId";
+        public const string DefaultAllInPackageIdDisplayName = "All in Notifcation";
+        public const string DefaultAllInPackageIdDescription = "Display all notification in one place";
+        public const string DefaultAllInPackageIdLogoFilePath = @"Z:\SideKick\INotify\INotify\Assets\DefaultIcon\DefaultNotificationIcon.png";
     }
 
     public static class IKSpaceConstant

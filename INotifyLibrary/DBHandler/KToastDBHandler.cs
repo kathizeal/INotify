@@ -67,7 +67,7 @@ namespace INotifyLibrary.DBHandler
         public IList<KPackageProfile> GetPackagesBySpaceId(string spaceId, string userId)
         {
             IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
-            var packageIds = dBConnection.Table<KSpaceMapper>()
+            List<string>? packageIds = dBConnection.Table<KSpaceMapper>()
                                           .Where(x => x.SpaceId == spaceId)
                                           .Select(x => x.PackageId)
                                           .ToList();
@@ -83,9 +83,9 @@ namespace INotifyLibrary.DBHandler
             return dBConnection.Table<KSpace>().ToList();
         }
 
-        public bool AddPackageToSpace(KSpaceMapper mapper)
+        public bool AddPackageToSpace(KSpaceMapper mapper, string userId)
         {
-            IDBConnection dBConnection = DBAdapter.GetDBConnection();
+            IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
             dBConnection.InsertOrReplace(mapper);
             return true;
         }
@@ -95,6 +95,20 @@ namespace INotifyLibrary.DBHandler
         {
             IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
             dBConnection.InsertOrReplaceAll(spaces);
+        }
+
+        public bool RemovePackageFromSpace(string spaceId, string packageId, string userId)
+        {
+            IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
+            var spaceMapper = dBConnection.Table<KSpaceMapper>()
+                                          .FirstOrDefault(x => x.SpaceId == spaceId && x.PackageId == packageId);
+
+            if (spaceMapper != null)
+            {
+                dBConnection.Delete(spaceMapper);
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -21,6 +21,18 @@ namespace INotifyLibrary.Util
             };
         }
 
+        public static KPackageProfile CreatePackageProfileForAllNotification()
+        {
+            return new KPackageProfile()
+            {
+                PackageId = IKPackageProfileConstant.DefaultAllInPackageId,
+                PackageFamilyName = IKPackageProfileConstant.DefaultAllInPackageIdFamilyName,
+                AppDisplayName = IKPackageProfileConstant.DefaultAllInPackageIdDisplayName,
+                AppDescription = IKPackageProfileConstant.DefaultAllInPackageIdDescription,
+                LogoFilePath = IKPackageProfileConstant.DefaultAllInPackageIdLogoFilePath,
+            };
+        }
+
         public static KSpace GetDefaultSpace(string id, string name)
         {
             return new KSpace()

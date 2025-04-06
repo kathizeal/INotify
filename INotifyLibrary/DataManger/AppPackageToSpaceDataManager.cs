@@ -21,7 +21,7 @@ namespace INotifyLibrary.DataManger
                     PackageId = request.PackageId
                 };
 
-                bool isSuccess = DBHandler.AddPackageToSpace(mapper);
+                bool isSuccess = DBHandler.AddPackageToSpace(mapper, request.UserId);
                 AddPackageToSpaceResponse response = new AddPackageToSpaceResponse(isSuccess);
                 ZResponse<AddPackageToSpaceResponse> zResponse = new ZResponse<AddPackageToSpaceResponse>(ResponseType.LocalStorage)
                 { Data = response, Status = ResponseStatus.Success };

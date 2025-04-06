@@ -1,4 +1,5 @@
-﻿using INotify.KToastViewModel.ViewModelContract;
+﻿using INotify.KToastViewModel.ViewModel;
+using INotify.KToastViewModel.ViewModelContract;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace INotify.KToastDI
             IServiceCollection servicesCollection = new ServiceCollection();
 
             servicesCollection.AddTransient<KToastListVMBase, KToastListViewModel>();
+            servicesCollection.AddTransient<KSpaceViewModelBase, KSpaceViewModel>();
             BuildServiceProvider(servicesCollection, false); // addDefaultServices is sent as false since UIDI doesn't require PasswordProvider, DBAdapter & NetworkAdapter instances
         }
 
