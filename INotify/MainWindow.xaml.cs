@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using INotify.KToastView.Model;
 using INotifyLibrary.Model.Entity;
+using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
