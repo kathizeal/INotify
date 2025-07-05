@@ -232,38 +232,38 @@ namespace INotify
 
         private void TopRight_Click(object sender, RoutedEventArgs e)
         {
-            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopRight);
-            NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopRight);
+            //NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopRight);
+            //NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopRight);
         }
 
         private void TopLeft_Click(object sender, RoutedEventArgs e)
         {
-            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopLeft);
-            NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopLeft);
+            //NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopLeft);
+            //NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopLeft);
         }
 
         private void TopMiddle_Click(object sender, RoutedEventArgs e)
         {
-            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopMiddle);
-            NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopMiddle);
+            //NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.TopMiddle);
+            //NotificationForm.ShowNotification("Another test message.", NotificationPosition.TopMiddle);
         }
 
         private void BottomRight_Click(object sender, RoutedEventArgs e)
         {
-            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomRight);
-            NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomRight);
+            //NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomRight);
+            //NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomRight);
         }
 
         private void BottomLeft_Click(object sender, RoutedEventArgs e)
         {
-            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomLeft);
-            NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomLeft);
+            //NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomLeft);
+            //NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomLeft);
         }
 
         private void BottomMiddle_Click(object sender, RoutedEventArgs e)
         {
-            NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomMiddle);
-            NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomMiddle);
+            //NotificationForm.ShowNotification("Test message. This is a test notification.", NotificationPosition.BottomMiddle);
+            //NotificationForm.ShowNotification("Another test message.", NotificationPosition.BottomMiddle);
         }
        
         private void SpaceControl_SpaceSelected(string spaceId)
