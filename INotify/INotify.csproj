@@ -90,6 +90,18 @@
     <PRIResource Remove="KToastView\ViewContract\**" />
   </ItemGroup>
   <ItemGroup>
+    <Page Remove="Dialogs\AddAppDialog.xaml" />
+    <Page Remove="Dialogs\AppManagementDialog.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Dialogs\AddAppDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Dialogs\AppManagementDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="KToastView\View\KSpaceControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
