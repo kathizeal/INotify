@@ -848,10 +848,15 @@ namespace INotify
         {
             try
             {
-                // TODO: Implement based on your dependency injection setup
-                // For now, return a basic implementation
-                // You'll need to inject this properly in a real implementation
-                return null; // Replace with actual implementation
+                // Create the database handler with SQLite adapter
+                var dbAdapter = new WinSQLiteDBAdapter.SQLiteDBAdapter();
+                var dbHandler = new INotifyLibrary.DBHandler.NotifyDBHandler(dbAdapter);
+                
+                // Initialize the database
+                var appDataPath = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+                await dbHandler.InitializeDBAsync(appDataPath, "default_user");
+                
+                return dbHandler;
             }
             catch (Exception ex)
             {
@@ -865,96 +870,180 @@ namespace INotify
         #region Event Handlers
 
         /// <summary>
-        /// Handles adding apps to priority from board view buttons
+        /// Handles adding apps to priority from board view buttons - Now opens flyout with reusable component
         /// </summary>
-        private void AddToPriority_Click(object sender, RoutedEventArgs e)
+        private async void AddToPriority_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (sender is Button button && button.Tag is string priorityLevel)
                 {
-                    // For now, just show a message
-                    ShowStatusMessage($"Add apps to {priorityLevel} priority feature coming soon", true);
-                    
-                    // TODO: Open app selection dialog
-                    // var dialog = new AddAppToPriorityDialog(priorityLevel);
-                    // await dialog.ShowAsync();
+                    var customPriorityService = await GetCustomPriorityServiceAsync();
+                    if (customPriorityService == null) return;
+
+                    // Get the appropriate app selector control
+                    var appSelector = priorityLevel switch
+                    {
+                        "High" => HighPriorityAppSelector,
+                        "Medium" => MediumPriorityAppSelector,
+                        "Low" => LowPriorityAppSelector,
+                        _ => null
+                    };
+
+                    if (appSelector != null)
+                    {
+                        // Set up event handlers
+                        appSelector.AppsSelected -= OnPriorityAppsSelected;
+                        appSelector.Cancelled -= OnFlyoutCancelled;
+                        appSelector.AppsSelected += OnPriorityAppsSelected;
+                        appSelector.Cancelled += OnFlyoutCancelled;
+
+                        // Store the priority level for later use
+                        appSelector.Tag = priorityLevel;
+
+                        // Load apps data
+                        await appSelector.LoadAppsAsync(customPriorityService, 
+                            Controls.SelectionTargetType.Priority, priorityLevel);
+                    }
+
+                    Debug.WriteLine($"Opened {priorityLevel} priority flyout");
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error in AddToPriority_Click: {ex.Message}");
-                ShowStatusMessage($"Error adding to priority: {ex.Message}", false);
+                ShowStatusMessage($"Error opening priority flyout: {ex.Message}", false);
             }
         }
 
         /// <summary>
-        /// Handles adding apps to space from board view buttons
+        /// Handles adding apps to space from board view buttons - Now opens flyout with reusable component
         /// </summary>
-        private void AddToSpace_Click(object sender, RoutedEventArgs e)
+        private async void AddToSpace_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (sender is Button button && button.Tag is string spaceId)
                 {
-                    // For now, just show a message
-                    ShowStatusMessage($"Add apps to {spaceId} feature coming soon", true);
-                    
-                    // TODO: Open app selection dialog
-                    // var dialog = new AddAppToSpaceDialog(spaceId);
-                    // await dialog.ShowAsync();
+                    var customPriorityService = await GetCustomPriorityServiceAsync();
+                    if (customPriorityService == null) return;
+
+                    // Get the appropriate app selector control
+                    var appSelector = spaceId switch
+                    {
+                        "Space1" => Space1AppSelector,
+                        "Space2" => Space2AppSelector,
+                        "Space3" => Space3AppSelector,
+                        _ => null
+                    };
+
+                    if (appSelector != null)
+                    {
+                        // Set up event handlers
+                        appSelector.AppsSelected -= OnSpaceAppsSelected;
+                        appSelector.Cancelled -= OnFlyoutCancelled;
+                        appSelector.AppsSelected += OnSpaceAppsSelected;
+                        appSelector.Cancelled += OnFlyoutCancelled;
+
+                        // Store the space ID for later use
+                        appSelector.Tag = spaceId;
+
+                        // Load apps data
+                        await appSelector.LoadAppsAsync(customPriorityService, 
+                            Controls.SelectionTargetType.Space, spaceId);
+                    }
+
+                    Debug.WriteLine($"Opened {spaceId} space flyout");
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error in AddToSpace_Click: {ex.Message}");
-                ShowStatusMessage($"Error adding to space: {ex.Message}", false);
+                ShowStatusMessage($"Error opening space flyout: {ex.Message}", false);
             }
         }
 
         /// <summary>
-        /// Handles adding apps to priority - shows app selection dialog
+        /// Handles when apps are selected in priority flyouts
         /// </summary>
-        private async void AddAppToPriority_Click(object sender, RoutedEventArgs e)
+        private async void OnPriorityAppsSelected(object? sender, Controls.AppSelectionEventArgs e)
         {
             try
             {
-                if (sender is Button button && button.Tag is string priorityLevel)
+                if (sender is Controls.AppSelectionFlyoutControl appSelector && 
+                    appSelector.Tag is string priorityLevel)
                 {
-                    var priority = Enum.Parse<Priority>(priorityLevel);
-                    await ShowAddAppToPriorityDialogAsync(priority);
+                    await ProcessSelectedAppsForPriority(priorityLevel, e.SelectedApps);
+                    
+                    // Close the flyout
+                    var flyout = priorityLevel switch
+                    {
+                        "High" => HighPriorityFlyout,
+                        "Medium" => MediumPriorityFlyout,
+                        "Low" => LowPriorityFlyout,
+                        _ => null
+                    };
+                    flyout?.Hide();
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error adding app to priority: {ex.Message}");
-                ShowStatusMessage($"Error adding app to priority: {ex.Message}", false);
+                Debug.WriteLine($"Error in OnPriorityAppsSelected: {ex.Message}");
+                ShowStatusMessage($"Error adding apps to priority: {ex.Message}", false);
             }
         }
 
         /// <summary>
-        /// Handles adding apps to space - shows app selection dialog
+        /// Handles when apps are selected in space flyouts
         /// </summary>
-        private async void AddAppToSpace_Click(object sender, RoutedEventArgs e)
+        private async void OnSpaceAppsSelected(object? sender, Controls.AppSelectionEventArgs e)
         {
             try
             {
-                if (sender is Button button && button.Tag is string spaceId)
+                if (sender is Controls.AppSelectionFlyoutControl appSelector && 
+                    appSelector.Tag is string spaceId)
                 {
-                    await ShowAddAppToSpaceDialogAsync(spaceId);
+                    await ProcessSelectedAppsForSpace(spaceId, e.SelectedApps);
+                    
+                    // Close the flyout
+                    var flyout = spaceId switch
+                    {
+                        "Space1" => Space1Flyout,
+                        "Space2" => Space2Flyout,
+                        "Space3" => Space3Flyout,
+                        _ => null
+                    };
+                    flyout?.Hide();
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error adding app to space: {ex.Message}");
-                ShowStatusMessage($"Error adding app to space: {ex.Message}", false);
+                Debug.WriteLine($"Error in OnSpaceAppsSelected: {ex.Message}");
+                ShowStatusMessage($"Error adding apps to space: {ex.Message}", false);
             }
         }
 
         /// <summary>
-        /// Shows dialog for adding apps to priority
+        /// Handles flyout cancellation
         /// </summary>
-        private async Task ShowAddAppToPriorityDialogAsync(Priority priority)
+        private void OnFlyoutCancelled(object? sender, EventArgs e)
+        {
+            if (sender is Controls.AppSelectionFlyoutControl appSelector)
+            {
+                // Find and close the appropriate flyout
+                if (appSelector == HighPriorityAppSelector) HighPriorityFlyout?.Hide();
+                else if (appSelector == MediumPriorityAppSelector) MediumPriorityFlyout?.Hide();
+                else if (appSelector == LowPriorityAppSelector) LowPriorityFlyout?.Hide();
+                else if (appSelector == Space1AppSelector) Space1Flyout?.Hide();
+                else if (appSelector == Space2AppSelector) Space2Flyout?.Hide();
+                else if (appSelector == Space3AppSelector) Space3Flyout?.Hide();
+            }
+        }
+
+        /// <summary>
+        /// Processes selected apps for priority assignment
+        /// </summary>
+        private async Task ProcessSelectedAppsForPriority(string priorityLevel, IReadOnlyList<KToastView.Model.KPackageProfileVObj> selectedApps)
         {
             try
             {
@@ -965,29 +1054,51 @@ namespace INotify
                     return;
                 }
 
-                var dialog = new AddAppToPriorityDialog(customPriorityService, priority);
-                dialog.XamlRoot = this.Content.XamlRoot;
-
-                var result = await dialog.ShowAsync();
-                if (result == ContentDialogResult.Primary)
+                if (selectedApps.Count == 0)
                 {
-                    // Refresh priority data
-                    LoadPriorityData();
-                    UpdateStatistics();
-                    ShowStatusMessage($"Apps added to {priority} priority", true);
+                    ShowStatusMessage("No apps selected", false);
+                    return;
                 }
+
+                var priority = Enum.Parse<Priority>(priorityLevel);
+                int successCount = 0;
+
+                foreach (var app in selectedApps)
+                {
+                    var success = await customPriorityService.SetAppPriorityAsync(
+                        app.PackageId, app.DisplayName, app.Publisher, priority);
+                    
+                    if (success)
+                    {
+                        successCount++;
+                    }
+                }
+
+                if (successCount == selectedApps.Count)
+                {
+                    ShowStatusMessage($"Successfully added {successCount} apps to {priorityLevel} priority", true);
+                }
+                else
+                {
+                    ShowStatusMessage($"Added {successCount} of {selectedApps.Count} apps to {priorityLevel} priority", false);
+                }
+
+                // Refresh the board data
+                LoadPriorityData();
+                LoadPriorityBoardData();
+                UpdateStatistics();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error showing add app to priority dialog: {ex.Message}");
-                ShowStatusMessage($"Error showing dialog: {ex.Message}", false);
+                Debug.WriteLine($"Error processing selected apps for priority: {ex.Message}");
+                ShowStatusMessage($"Error adding apps to priority: {ex.Message}", false);
             }
         }
 
         /// <summary>
-        /// Shows dialog for adding apps to space
+        /// Processes selected apps for space assignment
         /// </summary>
-        private async Task ShowAddAppToSpaceDialogAsync(string spaceId)
+        private async Task ProcessSelectedAppsForSpace(string spaceId, IReadOnlyList<KToastView.Model.KPackageProfileVObj> selectedApps)
         {
             try
             {
@@ -998,25 +1109,54 @@ namespace INotify
                     return;
                 }
 
-                var dialog = new AddAppToSpaceDialog(customPriorityService, spaceId);
-                dialog.XamlRoot = this.Content.XamlRoot;
-
-                var result = await dialog.ShowAsync();
-                if (result == ContentDialogResult.Primary)
+                if (selectedApps.Count == 0)
                 {
-                    // Refresh space data
-                    LoadSpaceData();
-                    UpdateStatistics();
-                    ShowStatusMessage("Apps added to space", true);
+                    ShowStatusMessage("No apps selected", false);
+                    return;
                 }
+
+                // Map UI space ID to database space ID
+                string dbSpaceId = spaceId switch
+                {
+                    "Space1" => "work",
+                    "Space2" => "personal", 
+                    "Space3" => "entertainment",
+                    _ => spaceId
+                };
+
+                int successCount = 0;
+
+                foreach (var app in selectedApps)
+                {
+                    var success = await customPriorityService.AddAppToSpaceAsync(
+                        app.PackageId, dbSpaceId, app.DisplayName, app.Publisher);
+                    
+                    if (success)
+                    {
+                        successCount++;
+                    }
+                }
+
+                if (successCount == selectedApps.Count)
+                {
+                    ShowStatusMessage($"Successfully added {successCount} apps to {spaceId}", true);
+                }
+                else
+                {
+                    ShowStatusMessage($"Added {successCount} of {selectedApps.Count} apps to {spaceId}", false);
+                }
+
+                // Refresh the board data
+                LoadSpaceData();
+                LoadSpaceBoardData();
+                UpdateStatistics();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error showing add app to space dialog: {ex.Message}");
-                ShowStatusMessage($"Error showing dialog: {ex.Message}", false);
+                Debug.WriteLine($"Error processing selected apps for space: {ex.Message}");
+                ShowStatusMessage($"Error adding apps to space: {ex.Message}", false);
             }
         }
-
         #endregion
 
         #region DND Management
@@ -1598,6 +1738,23 @@ namespace INotify
             }
         }
 
+        /// <summary>
+        /// Handles adding apps to priority - shows app selection dialog (Legacy method)
+        /// </summary>
+        private async void AddAppToPriority_Click_Legacy(object sender, RoutedEventArgs e)
+        {
+            // This method is retained for compatibility but not used in the flyout implementation
+            Debug.WriteLine("Legacy AddAppToPriority_Click called - not implemented");
+        }
+
+        /// <summary>
+        /// Handles adding apps to space - shows app selection dialog (Legacy method)  
+        /// </summary>
+        private async void AddAppToSpace_Click_Legacy(object sender, RoutedEventArgs e)
+        {
+            // This method is retained for compatibility but not used in the flyout implementation
+            Debug.WriteLine("Legacy AddAppToSpace_Click called - not implemented");
+        }
         #endregion
 
         /// <summary>

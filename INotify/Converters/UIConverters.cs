@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+using INotifyLibrary.Util.Enums;
 
 namespace INotify.Converters
 {
@@ -11,18 +12,33 @@ namespace INotify.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is bool boolValue)
+            bool boolValue = false;
+            
+            if (value is bool directBool)
             {
-                return boolValue ? Visibility.Visible : Visibility.Collapsed;
+                boolValue = directBool;
             }
-            return Visibility.Collapsed;
+            else if (value != null)
+            {
+                boolValue = true; // Non-null values are considered true
+            }
+
+            // Check for invert parameter
+            bool invert = parameter?.ToString()?.ToLower() == "invert";
+            
+            if (invert)
+                boolValue = !boolValue;
+                
+            return boolValue ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is Visibility visibility)
             {
-                return visibility == Visibility.Visible;
+                bool result = visibility == Visibility.Visible;
+                bool invert = parameter?.ToString()?.ToLower() == "invert";
+                return invert ? !result : result;
             }
             return false;
         }
@@ -85,6 +101,46 @@ namespace INotify.Converters
                 };
             }
             return "No notifications";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converter for notification count visibility (show only if > 0)
+    /// </summary>
+    public class NotificationCountVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is int count)
+            {
+                return count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converter that shows warning for apps with existing priority (for Priority flyouts)
+    /// </summary>
+    public class PriorityWarningVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is Priority priority)
+            {
+                return priority != Priority.None ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

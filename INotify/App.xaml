@@ -12,12 +12,14 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
-            
+
             <!-- Add converters -->
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
             <converters:CountToReverseVisibilityConverter x:Key="CountToReverseVisibilityConverter"/>
             <converters:NotificationCountConverter x:Key="NotificationCountConverter"/>
+            <converters:NotificationCountVisibilityConverter x:Key="NotificationCountVisibilityConverter"/>
+            <converters:PriorityWarningVisibilityConverter x:Key="PriorityWarningVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

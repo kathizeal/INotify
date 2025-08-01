@@ -1,21 +1,41 @@
-﻿<Window
+<Window
     x:Class="INotify.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:INotify"
+    xmlns:controls="using:INotify.Controls"
     xmlns:viewmodels="using:INotify.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:view="using:INotify.KToastView.View" xmlns:applist="using:AppList"
     mc:Ignorable="d"
     Title="INotify - Smart Notification Manager">
-
+    
+    
     <Grid>
+        <Grid.Resources>
+            <ResourceDictionary>
+                <Style x:Key="CustomFlyoutPresenter" TargetType="FlyoutPresenter">
+                    <!-- Remove width constraints -->
+                    <Setter Property="MaxWidth" Value="Infinity"/>
+
+                    <!-- Disable horizontal scrolling -->
+                    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled"/>
+                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+
+                    <!-- Optional: Also disable vertical scrolling if needed -->
+                    <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled"/>
+                    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
+                </Style>
+
+                <!-- You can add more resources here -->
+                <SolidColorBrush x:Key="MyBrush" Color="Blue"/>
+            </ResourceDictionary>
+        </Grid.Resources>
         <NavigationView x:Name="MainNavigationView" 
                        PaneDisplayMode="Left"
                        IsBackButtonVisible="Collapsed"
                        IsSettingsVisible="True"
-                       ExpandedModeThresholdWidth="640"
                        CompactModeThresholdWidth="320"
                        OpenPaneLength="280"
                        SelectionChanged="MainNavigationView_SelectionChanged"
@@ -150,7 +170,14 @@
                                            HorizontalAlignment="Stretch"
                                            Margin="0,12,0,0"
                                            Click="AddToPriority_Click"
-                                           Tag="High"/>
+                                           Tag="High">
+                                        <Button.Flyout>
+                                            <Flyout x:Name="HighPriorityFlyout" FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}" Placement="Bottom">
+                                                <controls:AppSelectionFlyoutControl x:Name="HighPriorityAppSelector"/>
+                                            </Flyout>
+                                            
+                                        </Button.Flyout>
+                                    </Button>
                                 </StackPanel>
                             </Border>
 
@@ -174,7 +201,13 @@
                                            HorizontalAlignment="Stretch"
                                            Margin="0,12,0,0"
                                            Click="AddToPriority_Click"
-                                           Tag="Medium"/>
+                                           Tag="Medium">
+                                        <Button.Flyout>
+                                            <Flyout x:Name="MediumPriorityFlyout" Placement="Bottom">
+                                                <controls:AppSelectionFlyoutControl x:Name="MediumPriorityAppSelector"/>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
                                 </StackPanel>
                             </Border>
 
@@ -198,7 +231,13 @@
                                            HorizontalAlignment="Stretch"
                                            Margin="0,12,0,0"
                                            Click="AddToPriority_Click"
-                                           Tag="Low"/>
+                                           Tag="Low">
+                                        <Button.Flyout>
+                                            <Flyout x:Name="LowPriorityFlyout" Placement="Bottom">
+                                                <controls:AppSelectionFlyoutControl x:Name="LowPriorityAppSelector"/>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -231,7 +270,13 @@
                                            HorizontalAlignment="Stretch"
                                            Margin="0,12,0,0"
                                            Click="AddToSpace_Click"
-                                           Tag="Space1"/>
+                                           Tag="Space1">
+                                        <Button.Flyout>
+                                            <Flyout x:Name="Space1Flyout" Placement="Bottom">
+                                                <controls:AppSelectionFlyoutControl x:Name="Space1AppSelector"/>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
                                 </StackPanel>
                             </Border>
 
@@ -255,7 +300,13 @@
                                            HorizontalAlignment="Stretch"
                                            Margin="0,12,0,0"
                                            Click="AddToSpace_Click"
-                                           Tag="Space2"/>
+                                           Tag="Space2">
+                                        <Button.Flyout>
+                                            <Flyout x:Name="Space2Flyout" Placement="Bottom">
+                                                <controls:AppSelectionFlyoutControl x:Name="Space2AppSelector"/>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
                                 </StackPanel>
                             </Border>
 
@@ -279,7 +330,13 @@
                                            HorizontalAlignment="Stretch"
                                            Margin="0,12,0,0"
                                            Click="AddToSpace_Click"
-                                           Tag="Space3"/>
+                                           Tag="Space3">
+                                        <Button.Flyout>
+                                            <Flyout x:Name="Space3Flyout" Placement="Bottom">
+                                                <controls:AppSelectionFlyoutControl x:Name="Space3AppSelector"/>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
                                 </StackPanel>
                             </Border>
                         </Grid>

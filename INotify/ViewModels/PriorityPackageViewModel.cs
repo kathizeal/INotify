@@ -17,6 +17,7 @@ namespace INotify.ViewModels
         private BitmapImage? _icon;
         private Priority _priority = Priority.None;
         private int _notificationCount;
+        private bool _isSelected;
 
         public string PackageId
         {
@@ -58,6 +59,15 @@ namespace INotify.ViewModels
         {
             get => _notificationCount;
             set { _notificationCount = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Indicates whether this app is selected in the flyout multi-select interface
+        /// </summary>
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set { _isSelected = value; OnPropertyChanged(); }
         }
 
         public string PriorityText => Priority switch
