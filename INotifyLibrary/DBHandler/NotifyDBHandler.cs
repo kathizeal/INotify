@@ -1,14 +1,15 @@
 ﻿using INotifyLibrary.DBHandler.Contract;
 using INotifyLibrary.Model.Entity;
+using INotifyLibrary.Util;
+using INotifyLibrary.Util.Enums;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WinLogger;
 using WinSQLiteDBAdapter.Contract;
-using System.Collections.ObjectModel;
-using INotifyLibrary.Util.Enums;
 
 namespace INotifyLibrary.DBHandler
 {
@@ -65,7 +66,7 @@ namespace INotifyLibrary.DBHandler
         {
             try
             {
-                IDBConnection dbConnection = GetDBConnection(userId);
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 return dbConnection.Table<KCustomPriorityApp>()
                     .Where(x => x.UserId == userId)
                     .ToList();
@@ -84,9 +85,9 @@ namespace INotifyLibrary.DBHandler
         {
             try
             {
-                IDBConnection dbConnection = GetDBConnection(userId);
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 return dbConnection.Table<KCustomPriorityApp>()
-                    .Where(x => x.UserId == userId && x.Priority == priority)
+                    .Where(x => x.UserId == INotifyConstant.CurrentUser && x.Priority == priority)
                     .ToList();
             }
             catch (Exception ex)
@@ -103,11 +104,11 @@ namespace INotifyLibrary.DBHandler
         {
             try
             {
-                IDBConnection dbConnection = GetDBConnection(userId);
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 
                 // Check if app already exists
                 var existingApp = dbConnection.Table<KCustomPriorityApp>()
-                    .FirstOrDefault(x => x.PackageId == packageId && x.UserId == userId);
+                    .FirstOrDefault(x => x.PackageId == packageId && x.UserId == INotifyConstant.CurrentUser);
 
                 if (existingApp != null)
                 {
@@ -154,7 +155,7 @@ namespace INotifyLibrary.DBHandler
         {
             try
             {
-                IDBConnection dbConnection = GetDBConnection(userId);
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 
                 var result = dbConnection.Execute(
                     "DELETE FROM KCustomPriorityApp WHERE PackageId = ? AND UserId = ?",
@@ -176,7 +177,7 @@ namespace INotifyLibrary.DBHandler
         {
             try
             {
-                IDBConnection dbConnection = GetDBConnection(userId);
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 
                 var app = dbConnection.Table<KCustomPriorityApp>()
                     .FirstOrDefault(x => x.PackageId == packageId && x.UserId == userId);
@@ -201,7 +202,7 @@ namespace INotifyLibrary.DBHandler
         {
             try
             {
-                IDBConnection dbConnection = GetDBConnection(userId);
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 
                 // Get package IDs from space mapper
                 var packageIds = dbConnection.Table<KSpaceMapper>()
@@ -240,7 +241,7 @@ namespace INotifyLibrary.DBHandler
         {
             try
             {
-                IDBConnection dbConnection = GetDBConnection(userId);
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
 
                 dbConnection.RunInTransaction(() =>
                 {
@@ -292,7 +293,7 @@ namespace INotifyLibrary.DBHandler
         {
             try
             {
-                IDBConnection dbConnection = GetDBConnection(userId);
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 var stats = new Dictionary<string, (int AppCount, int NotificationCount)>();
 
                 var spaces = dbConnection.Table<KSpace>().ToList();

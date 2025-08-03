@@ -7,7 +7,7 @@
     xmlns:viewmodels="using:INotify.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:view="using:INotify.KToastView.View" xmlns:applist="using:AppList"
+    xmlns:view="using:INotify.KToastView.View" xmlns:applist="using:AppList" xmlns:view1="using:INotify.View"
     mc:Ignorable="d"
     Title="INotify - Smart Notification Manager">
     
@@ -351,11 +351,7 @@
 
                         <!-- All Apps View (Initially Hidden) -->
                         <Grid x:Name="AllAppsView" Visibility="Collapsed">
-                            <ListView x:Name="AllAppsListView"
-                                     SelectionMode="Single">
-                                
-                                <!-- Items will be populated from code-behind -->
-                            </ListView>
+                            <view1:AllPackageControl/>
                         </Grid>
 
                         <!-- All Notifications View (Initially Hidden) -->

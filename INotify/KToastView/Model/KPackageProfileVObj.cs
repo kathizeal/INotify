@@ -1,11 +1,8 @@
-﻿using INotifyLibrary.Model.Entity;
+﻿using AppList;
+using INotify.Util;
+using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml.Media.Imaging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace INotify.KToastView.Model
 {
@@ -62,59 +59,53 @@ namespace INotify.KToastView.Model
             set { SetIfDifferent(ref _publisher, value); }
         }
 
+
+        private string _DisplayName;
         /// <summary>
         /// User-friendly display name (uses AppDisplayName as fallback)
         /// </summary>
-        public string DisplayName => !string.IsNullOrEmpty(AppDisplayName) ? AppDisplayName : PackageId;
+        public string DisplayName
+        {
+            get => _DisplayName;
+            set => SetIfDifferent(ref _DisplayName, value);
+        }
 
+        private void SetDisplayName()
+        {
+            if (string.IsNullOrEmpty(_DisplayName))
+            {
+                _DisplayName = AppDisplayName ?? PackageId;
+            }
+        }
         /// <summary>
         /// Text representation of priority level
         /// </summary>
         public string PriorityText => Priority switch
         {
-            Priority.High => "🔴 High",
-            Priority.Medium => "🟡 Medium", 
-            Priority.Low => "🟢 Low",
-            _ => "⚫ None"
+            Priority.High => "High",
+            Priority.Medium => "Medium",
+            Priority.Low => "Low",
+            _ => "None"
         };
 
         /// <summary>
         /// Creates a KPackageProfileVObj from InstalledAppInfo
         /// </summary>
-        public static KPackageProfileVObj FromInstalledAppInfo(AppList.InstalledAppInfo appInfo, Priority priority = Priority.None, int notificationCount = 0)
+        public void PopulateInstalledAppInfo(InstalledAppInfo appInfo, Priority priority = Priority.None, int notificationCount = 0)
         {
-            return new KPackageProfileVObj
-            {
-                PackageId = GeneratePackageId(appInfo),
-                PackageFamilyName = appInfo.PackageFamilyName ?? string.Empty,
-                AppDisplayName = appInfo.DisplayName,
-                AppDescription = $"Application: {appInfo.DisplayName}",
-                Publisher = appInfo.Publisher ?? "Unknown",
-                Priority = priority,
-                NotificationCount = notificationCount,
-                IsSelected = false,
-                AppIcon = appInfo.Icon,
-                LogoFilePath = string.Empty // Will be set when icon is saved
-            };
+            PackageId = KToastUtil.GeneratePackageId(appInfo);
+            PackageFamilyName = appInfo.PackageFamilyName ?? string.Empty;
+            AppDisplayName = appInfo.DisplayName;
+            AppDescription = $"Application: {appInfo.DisplayName}";
+            Publisher = appInfo.Publisher ?? "Unknown";
+            Priority = priority;
+            NotificationCount = notificationCount;
+            IsSelected = false;
+            AppIcon = appInfo.Icon;
+            LogoFilePath = string.Empty; // Will be set when icon is saved
+            SetDisplayName();
         }
 
-        private static string GeneratePackageId(AppList.InstalledAppInfo app)
-        {
-            switch (app.Type)
-            {
-                case AppList.AppType.UWPApplication:
-                    return !string.IsNullOrEmpty(app.PackageFamilyName) ? app.PackageFamilyName : app.Name;
 
-                case AppList.AppType.Win32Application:
-                    if (!string.IsNullOrEmpty(app.ExecutablePath))
-                    {
-                        return System.IO.Path.GetFileNameWithoutExtension(app.ExecutablePath);
-                    }
-                    return app.DisplayName.Replace(" ", "").Replace(".", "").Replace("-", "");
-
-                default:
-                    return app.Name;
-            }
-        }
     }
 }

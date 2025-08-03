@@ -1,10 +1,8 @@
 using AppList; // For DndService and InstalledAppsService
-using INotify.Dialogs; // For dialog classes
 using INotify.KToastView.Model;
-using INotify.Services; // For custom services
-using INotify.ViewModels; // For new ViewModels
 using INotifyLibrary.DBHandler.Contract;
 using INotifyLibrary.Model.Entity;
+using INotifyLibrary.Util;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -25,6 +23,7 @@ using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Notifications;
 using Windows.UI.Notifications.Management;
+using static SampleNotify.StandaloneNotificationPositioner;
 
 namespace INotify
 {
@@ -33,35 +32,10 @@ namespace INotify
         UserNotificationListener _listener = default;
         private DndService _dndService;
         private StandaloneNotificationPositioner _notificationPositioner;
+        private NotificationPosition _currentNotificationPosition = NotificationPosition.TopLeft;
         private readonly SemaphoreSlim _fileAccessSemaphore = new SemaphoreSlim(1, 1);
-
         // Application ViewModel for UI state management
-        public ApplicationViewModel ApplicationVM { get; set; } = new();
-
-        // Priority-based collections implementing IKPriorityPackage
-        public ObservableCollection<PriorityPackageViewModel> HighPriorityNotifications { get; set; } = new();
-        public ObservableCollection<PriorityPackageViewModel> MediumPriorityNotifications { get; set; } = new();
-        public ObservableCollection<PriorityPackageViewModel> LowPriorityNotifications { get; set; } = new();
-
-        // Space-based collections using KSpaceMapper
-        public ObservableCollection<SpaceViewModel> Space1Apps { get; set; } = new();
-        public ObservableCollection<SpaceViewModel> Space2Apps { get; set; } = new();
-        public ObservableCollection<SpaceViewModel> Space3Apps { get; set; } = new();
-
-        // All applications collection
-        public ObservableCollection<PriorityPackageViewModel> AllApplications { get; set; } = new();
-        public ObservableCollection<InstalledAppInfo> AllApplicationsInfo { get; set; } = new();
-
-        // Legacy collections for backward compatibility
-        public ObservableCollection<PriorityAppViewModel> HighPriorityApps { get; set; } = new();
-        public ObservableCollection<PriorityAppViewModel> MediumPriorityApps { get; set; } = new();
-        public ObservableCollection<PriorityAppViewModel> LowPriorityApps { get; set; } = new();
-
-        // Current view state
-        private ViewType _currentViewType = ViewType.Priority;
-        private StandaloneNotificationPositioner.NotificationPosition _currentNotificationPosition =
-            StandaloneNotificationPositioner.NotificationPosition.TopRight;
-
+      
         public MainWindow()
         {
             this.InitializeComponent();
@@ -103,7 +77,7 @@ namespace INotify
                 _dndService = new DndService();
 
                 // Initialize the DND service instance for InstalledAppInfo
-                InstalledAppInfo.SetDndService(_dndService);
+                //InstalledAppInfo.SetDndService(_dndService);
 
                 // Update DND status in UI
                 UpdateDndStatusUI();
@@ -148,10 +122,7 @@ namespace INotify
                 ShowWelcomeView();
 
                 // Load all data in background
-                LoadPriorityData();
-                LoadSpaceData();
                 LoadAllApplicationsData();
-                UpdateStatistics();
 
                 Debug.WriteLine("InitializeUI: UI initialization completed");
             }
@@ -169,7 +140,6 @@ namespace INotify
         /// </summary>
         private void SwitchToNormalMode_Click(object sender, RoutedEventArgs e)
         {
-            ApplicationVM.SwitchToNormalMode();
             ShowStatusMessage("Switched to Normal Mode", true);
         }
 
@@ -178,7 +148,6 @@ namespace INotify
         /// </summary>
         private void SwitchToMiniWidget_Click(object sender, RoutedEventArgs e)
         {
-            ApplicationVM.SwitchToMiniWidget();
             ShowStatusMessage("Switched to Mini Widget Mode", true);
         }
 
@@ -298,7 +267,6 @@ namespace INotify
             if (PriorityBoardView != null)
             {
                 PriorityBoardView.Visibility = Visibility.Visible;
-                LoadPriorityBoardData();
             }
         }
 
@@ -313,7 +281,6 @@ namespace INotify
             if (SpaceBoardView != null)
             {
                 SpaceBoardView.Visibility = Visibility.Visible;
-                LoadSpaceBoardData();
             }
         }
 
@@ -328,7 +295,6 @@ namespace INotify
             if (DetailListView != null)
             {
                 DetailListView.Visibility = Visibility.Visible;
-                LoadDetailListData(category);
             }
         }
 
@@ -343,7 +309,6 @@ namespace INotify
             if (AllAppsView != null)
             {
                 AllAppsView.Visibility = Visibility.Visible;
-                LoadAllAppsData();
             }
         }
 
@@ -388,7 +353,6 @@ namespace INotify
             if (StatusView != null)
             {
                 StatusView.Visibility = Visibility.Visible;
-                UpdateStatistics();
             }
         }
 
@@ -407,127 +371,15 @@ namespace INotify
 
         #region Data Loading Methods
 
-        /// <summary>
-        /// Loads priority-based data for tabs using custom priority system
-        /// </summary>
-        private async void LoadPriorityData()
-        {
-            try
-            {
-                // Initialize custom priority service
-                var customPriorityService = await GetCustomPriorityServiceAsync();
-                if (customPriorityService == null) return;
 
-                // Clear existing collections
-                HighPriorityNotifications.Clear();
-                MediumPriorityNotifications.Clear();
-                LowPriorityNotifications.Clear();
-
-                // Load custom priority apps
-                var highApps = await customPriorityService.GetAppsByPriorityAsync(Priority.High);
-                var mediumApps = await customPriorityService.GetAppsByPriorityAsync(Priority.Medium);
-                var lowApps = await customPriorityService.GetAppsByPriorityAsync(Priority.Low);
-
-                foreach (var app in highApps)
-                {
-                    HighPriorityNotifications.Add(app);
-                }
-
-                foreach (var app in mediumApps)
-                {
-                    MediumPriorityNotifications.Add(app);
-                }
-
-                foreach (var app in lowApps)
-                {
-                    LowPriorityNotifications.Add(app);
-                }
-
-                Debug.WriteLine($"Loaded Custom Priority Data: High={HighPriorityNotifications.Count}, Medium={MediumPriorityNotifications.Count}, Low={LowPriorityNotifications.Count}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading priority data: {ex.Message}");
-                ShowStatusMessage($"Error loading priority data: {ex.Message}", false);
-            }
-        }
-
-        /// <summary>
-        /// Loads space-based data from database using custom space service
-        /// </summary>
-        private async void LoadSpaceData()
-        {
-            try
-            {
-                var spaceService = await GetSpaceManagementServiceAsync();
-                var customPriorityService = await GetCustomPriorityServiceAsync();
-
-                if (spaceService == null || customPriorityService == null) return;
-
-                // Clear existing collections
-                Space1Apps.Clear();
-                Space2Apps.Clear();
-                Space3Apps.Clear();
-
-                // Initialize default spaces if needed
-                await customPriorityService.InitializeDefaultSpacesAsync();
-
-                // Get space statistics
-                var stats = await customPriorityService.GetSpaceStatisticsAsync();
-
-                // Create space view models
-                var spaces = new[]
-                {
-                    new { Id = "work", Name = "Work & Productivity", Description = "Work-related applications", Collection = Space1Apps },
-                    new { Id = "personal", Name = "Personal", Description = "Personal applications", Collection = Space2Apps },
-                    new { Id = "entertainment", Name = "Entertainment", Description = "Games and media apps", Collection = Space3Apps }
-                };
-
-                foreach (var space in spaces)
-                {
-                    var spaceStats = stats.GetValueOrDefault(space.Id, (0, 0));
-                    var spaceViewModel = new SpaceViewModel
-                    {
-                        SpaceId = space.Id,
-                        DisplayName = space.Name,
-                        Description = space.Description,
-                        PackageCount = spaceStats.Item1,
-                        NotificationCount = spaceStats.Item2,
-                        IsActive = true
-                    };
-
-                    space.Collection.Add(spaceViewModel);
-                }
-
-                Debug.WriteLine($"Loaded Space Data: Space1={Space1Apps.Count}, Space2={Space2Apps.Count}, Space3={Space3Apps.Count}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading space data: {ex.Message}");
-                ShowStatusMessage($"Error loading space data: {ex.Message}", false);
-            }
-        }
-
-        /// <summary>
-        /// Loads all applications data with custom priority status
-        /// </summary>
         private async Task LoadAllApplicationsData()
         {
             try
             {
-                AllApplicationsInfo.Clear();
 
-                //var customPriorityService = await GetCustomPriorityServiceAsync();
-                //if (customPriorityService == null) return;
+                //ObservableCollection<InstalledAppInfo>? allApps = await InstalledAppsService.GetAllInstalledAppsAsync();
+                //ObservableCollection<InstalledAppInfo>? allApps = await InstalledAppsService.GetAllInstalledAppsAsync();
 
-                ObservableCollection<InstalledAppInfo>? allApps = await InstalledAppsService.GetAllInstalledAppsAsync();
-
-                foreach (var app in allApps) 
-                {
-                    AllApplicationsInfo.Add(app);
-                }
-
-                Debug.WriteLine($"Loaded All Applications Data: {AllApplicationsInfo.Count} apps");
             }
             catch (Exception ex)
             {
@@ -536,264 +388,27 @@ namespace INotify
             }
         }
 
-        /// <summary>
-        /// Loads data for the priority board view
-        /// </summary>
-        private void LoadPriorityBoardData()
-        {
-            try
-            {
-                // Clear existing data
-                if (HighPriorityListView != null) HighPriorityListView.Items.Clear();
-                if (MediumPriorityListView != null) MediumPriorityListView.Items.Clear();
-                if (LowPriorityListView != null) LowPriorityListView.Items.Clear();
-
-                // For now, just show placeholder text if no data
-                if (HighPriorityNotifications.Count == 0)
-                {
-                    if (HighPriorityListView != null)
-                    {
-                        var placeholder = new TextBlock { Text = "No high priority apps", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                        HighPriorityListView.Items.Add(placeholder);
-                    }
-                }
-                else
-                {
-                    foreach (var app in HighPriorityNotifications)
-                    {
-                        if (HighPriorityListView != null)
-                        {
-                            var item = new TextBlock { Text = app.DisplayName };
-                            HighPriorityListView.Items.Add(item);
-                        }
-                    }
-                }
-
-                // Similar for Medium and Low priority
-                if (MediumPriorityNotifications.Count == 0)
-                {
-                    if (MediumPriorityListView != null)
-                    {
-                        var placeholder = new TextBlock { Text = "No medium priority apps", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                        MediumPriorityListView.Items.Add(placeholder);
-                    }
-                }
-                else
-                {
-                    foreach (var app in MediumPriorityNotifications)
-                    {
-                        if (MediumPriorityListView != null)
-                        {
-                            var item = new TextBlock { Text = app.DisplayName };
-                            MediumPriorityListView.Items.Add(item);
-                        }
-                    }
-                }
-
-                if (LowPriorityNotifications.Count == 0)
-                {
-                    if (LowPriorityListView != null)
-                    {
-                        var placeholder = new TextBlock { Text = "No low priority apps", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                        LowPriorityListView.Items.Add(placeholder);
-                    }
-                }
-                else
-                {
-                    foreach (var app in LowPriorityNotifications)
-                    {
-                        if (LowPriorityListView != null)
-                        {
-                            var item = new TextBlock { Text = app.DisplayName };
-                            LowPriorityListView.Items.Add(item);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading priority board data: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Loads data for the space board view
-        /// </summary>
-        private void LoadSpaceBoardData()
-        {
-            try
-            {
-                // Clear existing data
-                if (Space1ListView != null) Space1ListView.Items.Clear();
-                if (Space2ListView != null) Space2ListView.Items.Clear();
-                if (Space3ListView != null) Space3ListView.Items.Clear();
-
-                // For now, just show placeholder text if no data
-                if (Space1Apps.Count == 0)
-                {
-                    if (Space1ListView != null)
-                    {
-                        var placeholder = new TextBlock { Text = "No apps in Space 1", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                        Space1ListView.Items.Add(placeholder);
-                    }
-                }
-                else
-                {
-                    foreach (var space in Space1Apps)
-                    {
-                        if (Space1ListView != null)
-                        {
-                            var item = new TextBlock { Text = space.DisplayName };
-                            Space1ListView.Items.Add(item);
-                        }
-                    }
-                }
-
-                // Similar for Space 2 and Space 3
-                if (Space2Apps.Count == 0)
-                {
-                    if (Space2ListView != null)
-                    {
-                        var placeholder = new TextBlock { Text = "No apps in Space 2", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                        Space2ListView.Items.Add(placeholder);
-                    }
-                }
-                else
-                {
-                    foreach (var space in Space2Apps)
-                    {
-                        if (Space2ListView != null)
-                        {
-                            var item = new TextBlock { Text = space.DisplayName };
-                            Space2ListView.Items.Add(item);
-                        }
-                    }
-                }
-
-                if (Space3Apps.Count == 0)
-                {
-                    if (Space3ListView != null)
-                    {
-                        var placeholder = new TextBlock { Text = "No apps in Space 3", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                        Space3ListView.Items.Add(placeholder);
-                    }
-                }
-                else
-                {
-                    foreach (var space in Space3Apps)
-                    {
-                        if (Space3ListView != null)
-                        {
-                            var item = new TextBlock { Text = space.DisplayName };
-                            Space3ListView.Items.Add(item);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading space board data: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Loads data for detail list view based on category
-        /// </summary>
-        private void LoadDetailListData(string category)
-        {
-            try
-            {
-                if (DetailListViewContent == null) return;
-
-                DetailListViewContent.Items.Clear();
-
-                switch (category)
-                {
-                    case "High":
-                        foreach (var app in HighPriorityNotifications)
-                        {
-                            var item = new TextBlock { Text = $"{app.DisplayName} - {app.NotificationCount} notifications" };
-                            DetailListViewContent.Items.Add(item);
-                        }
-                        break;
-
-                    case "Medium":
-                        foreach (var app in MediumPriorityNotifications)
-                        {
-                            var item = new TextBlock { Text = $"{app.DisplayName} - {app.NotificationCount} notifications" };
-                            DetailListViewContent.Items.Add(item);
-                        }
-                        break;
-
-                    case "Low":
-                        foreach (var app in LowPriorityNotifications)
-                        {
-                            var item = new TextBlock { Text = $"{app.DisplayName} - {app.NotificationCount} notifications" };
-                            DetailListViewContent.Items.Add(item);
-                        }
-                        break;
-
-                    case "Space1":
-                        foreach (var space in Space1Apps)
-                        {
-                            var item = new TextBlock { Text = $"{space.DisplayName} - {space.NotificationCount} notifications" };
-                            DetailListViewContent.Items.Add(item);
-                        }
-                        break;
-
-                    case "Space2":
-                        foreach (var space in Space2Apps)
-                        {
-                            var item = new TextBlock { Text = $"{space.DisplayName} - {space.NotificationCount} notifications" };
-                            DetailListViewContent.Items.Add(item);
-                        }
-                        break;
-
-                    case "Space3":
-                        foreach (var space in Space3Apps)
-                        {
-                            var item = new TextBlock { Text = $"{space.DisplayName} - {space.NotificationCount} notifications" };
-                            DetailListViewContent.Items.Add(item);
-                        }
-                        break;
-                }
-
-                if (DetailListViewContent.Items.Count == 0)
-                {
-                    var placeholder = new TextBlock { Text = $"No items in {category}", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                    DetailListViewContent.Items.Add(placeholder);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading detail list data for {category}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Loads data for all apps view
-        /// </summary>
         private async Task LoadAllAppsData()
         {
             try
             {
-                if (AllAppsListView == null) return;
+                //if (AllAppsListView == null) return;
 
-                AllAppsListView.Items.Clear();
+                //AllAppsListView.Items.Clear();
 
-                await LoadAllApplicationsData();
+                //await LoadAllApplicationsData();
 
-                foreach (var app in AllApplicationsInfo)
-                {
-                    var item = new TextBlock { Text = $"{app.DisplayName} - {app.Name}" };
-                    AllAppsListView.Items.Add(item);
-                }
+                ////foreach (var app in AllApplicationsInfo)
+                ////{
+                ////    var item = new TextBlock { Text = $"{app.DisplayName} - {app.Name}" };
+                ////    AllAppsListView.Items.Add(item);
+                ////}
 
-                if (AllAppsListView.Items.Count == 0)
-                {
-                    var placeholder = new TextBlock { Text = "No applications found", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                    AllAppsListView.Items.Add(placeholder);
-                }
+                //if (AllAppsListView.Items.Count == 0)
+                //{
+                //    var placeholder = new TextBlock { Text = "No applications found", FontStyle = Windows.UI.Text.FontStyle.Italic };
+                //    AllAppsListView.Items.Add(placeholder);
+                //}
             }
             catch (Exception ex)
             {
@@ -805,65 +420,7 @@ namespace INotify
 
         #region Service Factory Methods
 
-        /// <summary>
-        /// Gets or creates custom priority service instance
         /// </summary>
-        private async Task<CustomPriorityService?> GetCustomPriorityServiceAsync()
-        {
-            try
-            {
-                // Get database handler (implement based on your DI setup)
-                var dbHandler = await GetDatabaseHandlerAsync();
-                if (dbHandler == null) return null;
-
-                return new CustomPriorityService(dbHandler, "default_user");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error creating custom priority service: {ex.Message}");
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets or creates space management service instance
-        /// </summary>
-        private async Task<SpaceManagementService?> GetSpaceManagementServiceAsync()
-        {
-            try
-            {
-                return new SpaceManagementService();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error creating space management service: {ex.Message}");
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets database handler instance (implement based on your DI setup)
-        /// </summary>
-        private async Task<INotifyDBHandler?> GetDatabaseHandlerAsync()
-        {
-            try
-            {
-                // Create the database handler with SQLite adapter
-                var dbAdapter = new WinSQLiteDBAdapter.SQLiteDBAdapter();
-                var dbHandler = new INotifyLibrary.DBHandler.NotifyDBHandler(dbAdapter);
-                
-                // Initialize the database
-                var appDataPath = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-                await dbHandler.InitializeDBAsync(appDataPath, "default_user");
-                
-                return dbHandler;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error getting database handler: {ex.Message}");
-                return null;
-            }
-        }
 
         #endregion
 
@@ -878,8 +435,6 @@ namespace INotify
             {
                 if (sender is Button button && button.Tag is string priorityLevel)
                 {
-                    var customPriorityService = await GetCustomPriorityServiceAsync();
-                    if (customPriorityService == null) return;
 
                     // Get the appropriate app selector control
                     var appSelector = priorityLevel switch
@@ -901,9 +456,7 @@ namespace INotify
                         // Store the priority level for later use
                         appSelector.Tag = priorityLevel;
 
-                        // Load apps data
-                        await appSelector.LoadAppsAsync(customPriorityService, 
-                            Controls.SelectionTargetType.Priority, priorityLevel);
+                      
                     }
 
                     Debug.WriteLine($"Opened {priorityLevel} priority flyout");
@@ -925,9 +478,6 @@ namespace INotify
             {
                 if (sender is Button button && button.Tag is string spaceId)
                 {
-                    var customPriorityService = await GetCustomPriorityServiceAsync();
-                    if (customPriorityService == null) return;
-
                     // Get the appropriate app selector control
                     var appSelector = spaceId switch
                     {
@@ -948,9 +498,7 @@ namespace INotify
                         // Store the space ID for later use
                         appSelector.Tag = spaceId;
 
-                        // Load apps data
-                        await appSelector.LoadAppsAsync(customPriorityService, 
-                            Controls.SelectionTargetType.Space, spaceId);
+               
                     }
 
                     Debug.WriteLine($"Opened {spaceId} space flyout");
@@ -973,7 +521,7 @@ namespace INotify
                 if (sender is Controls.AppSelectionFlyoutControl appSelector && 
                     appSelector.Tag is string priorityLevel)
                 {
-                    await ProcessSelectedAppsForPriority(priorityLevel, e.SelectedApps);
+                    //await ProcessSelectedAppsForPriority(priorityLevel, e.SelectedApps);
                     
                     // Close the flyout
                     var flyout = priorityLevel switch
@@ -1003,7 +551,7 @@ namespace INotify
                 if (sender is Controls.AppSelectionFlyoutControl appSelector && 
                     appSelector.Tag is string spaceId)
                 {
-                    await ProcessSelectedAppsForSpace(spaceId, e.SelectedApps);
+                    //await ProcessSelectedAppsForSpace(spaceId, e.SelectedApps);
                     
                     // Close the flyout
                     var flyout = spaceId switch
@@ -1040,125 +588,7 @@ namespace INotify
             }
         }
 
-        /// <summary>
-        /// Processes selected apps for priority assignment
-        /// </summary>
-        private async Task ProcessSelectedAppsForPriority(string priorityLevel, IReadOnlyList<KToastView.Model.KPackageProfileVObj> selectedApps)
-        {
-            try
-            {
-                var customPriorityService = await GetCustomPriorityServiceAsync();
-                if (customPriorityService == null)
-                {
-                    ShowStatusMessage("Custom priority service not available", false);
-                    return;
-                }
-
-                if (selectedApps.Count == 0)
-                {
-                    ShowStatusMessage("No apps selected", false);
-                    return;
-                }
-
-                var priority = Enum.Parse<Priority>(priorityLevel);
-                int successCount = 0;
-
-                foreach (var app in selectedApps)
-                {
-                    var success = await customPriorityService.SetAppPriorityAsync(
-                        app.PackageId, app.DisplayName, app.Publisher, priority);
-                    
-                    if (success)
-                    {
-                        successCount++;
-                    }
-                }
-
-                if (successCount == selectedApps.Count)
-                {
-                    ShowStatusMessage($"Successfully added {successCount} apps to {priorityLevel} priority", true);
-                }
-                else
-                {
-                    ShowStatusMessage($"Added {successCount} of {selectedApps.Count} apps to {priorityLevel} priority", false);
-                }
-
-                // Refresh the board data
-                LoadPriorityData();
-                LoadPriorityBoardData();
-                UpdateStatistics();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error processing selected apps for priority: {ex.Message}");
-                ShowStatusMessage($"Error adding apps to priority: {ex.Message}", false);
-            }
-        }
-
-        /// <summary>
-        /// Processes selected apps for space assignment
-        /// </summary>
-        private async Task ProcessSelectedAppsForSpace(string spaceId, IReadOnlyList<KToastView.Model.KPackageProfileVObj> selectedApps)
-        {
-            try
-            {
-                var customPriorityService = await GetCustomPriorityServiceAsync();
-                if (customPriorityService == null)
-                {
-                    ShowStatusMessage("Custom priority service not available", false);
-                    return;
-                }
-
-                if (selectedApps.Count == 0)
-                {
-                    ShowStatusMessage("No apps selected", false);
-                    return;
-                }
-
-                // Map UI space ID to database space ID
-                string dbSpaceId = spaceId switch
-                {
-                    "Space1" => "work",
-                    "Space2" => "personal", 
-                    "Space3" => "entertainment",
-                    _ => spaceId
-                };
-
-                int successCount = 0;
-
-                foreach (var app in selectedApps)
-                {
-                    var success = await customPriorityService.AddAppToSpaceAsync(
-                        app.PackageId, dbSpaceId, app.DisplayName, app.Publisher);
-                    
-                    if (success)
-                    {
-                        successCount++;
-                    }
-                }
-
-                if (successCount == selectedApps.Count)
-                {
-                    ShowStatusMessage($"Successfully added {successCount} apps to {spaceId}", true);
-                }
-                else
-                {
-                    ShowStatusMessage($"Added {successCount} of {selectedApps.Count} apps to {spaceId}", false);
-                }
-
-                // Refresh the board data
-                LoadSpaceData();
-                LoadSpaceBoardData();
-                UpdateStatistics();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error processing selected apps for space: {ex.Message}");
-                ShowStatusMessage($"Error adding apps to space: {ex.Message}", false);
-            }
-        }
-        #endregion
-
+    
         #region DND Management
 
         /// <summary>
@@ -1397,9 +827,9 @@ namespace INotify
         {
             try
             {
-                var settingsPanel = new SettingsStatusPanel(_dndService, _notificationPositioner);
-                settingsPanel.XamlRoot = this.Content.XamlRoot;
-                await settingsPanel.ShowAsync();
+                //var settingsPanel = new SettingsStatusPanel(_dndService, _notificationPositioner);
+                //settingsPanel.XamlRoot = this.Content.XamlRoot;
+                //await settingsPanel.ShowAsync();
             }
             catch (Exception ex)
             {
@@ -1413,66 +843,25 @@ namespace INotify
         /// </summary>
         private async void Diagnostics_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var settingsPanel = new SettingsStatusPanel(_dndService, _notificationPositioner);
-                settingsPanel.XamlRoot = this.Content.XamlRoot;
-                await settingsPanel.ShowAsync();
+            //try
+            //{
+            //    var settingsPanel = new SettingsStatusPanel(_dndService, _notificationPositioner);
+            //    settingsPanel.XamlRoot = this.Content.XamlRoot;
+            //    await settingsPanel.ShowAsync();
 
-                string diagnostics = GetDndDiagnosticInfo();
-                Debug.WriteLine($"Diagnostics:\n{diagnostics}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error getting diagnostics: {ex.Message}");
-                ShowStatusMessage($"Error getting diagnostics: {ex.Message}", false);
-            }
+            //    string diagnostics = GetDndDiagnosticInfo();
+            //    Debug.WriteLine($"Diagnostics:\n{diagnostics}");
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine($"Error getting diagnostics: {ex.Message}");
+            //    ShowStatusMessage($"Error getting diagnostics: {ex.Message}", false);
+            //}
         }
 
         #endregion
 
-        #region Statistics
-
-        /// <summary>
-        /// Updates the statistics display
-        /// </summary>
-        private void UpdateStatistics()
-        {
-            try
-            {
-                int totalNotifications = HighPriorityNotifications.Sum(a => a.NotificationCount) +
-                                       MediumPriorityNotifications.Sum(a => a.NotificationCount) +
-                                       LowPriorityNotifications.Sum(a => a.NotificationCount);
-
-                int totalApps = AllApplications.Count;
-                int activeSpaces = Space1Apps.Count + Space2Apps.Count + Space3Apps.Count;
-
-                ApplicationVM.TotalNotifications = totalNotifications;
-                ApplicationVM.TotalApps = totalApps;
-                ApplicationVM.TotalSpaces = activeSpaces;
-
-                if (TotalNotificationsText != null)
-                    TotalNotificationsText.Text = $"Total Notifications: {totalNotifications}";
-                else
-                    Debug.WriteLine("Warning: TotalNotificationsText is null");
-
-                if (PriorityAppsCountText != null)
-                    PriorityAppsCountText.Text = $"Priority Apps: {HighPriorityNotifications.Count + MediumPriorityNotifications.Count + LowPriorityNotifications.Count}";
-                else
-                    Debug.WriteLine("Warning: PriorityAppsCountText is null");
-
-                if (ActiveSpacesText != null)
-                    ActiveSpacesText.Text = $"Active Spaces: {activeSpaces}";
-                else
-                    Debug.WriteLine("Warning: ActiveSpacesText is null");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error updating statistics: {ex.Message}");
-            }
-        }
-
-        #endregion
+     
 
         #region Status Messages
 
@@ -1537,7 +926,6 @@ namespace INotify
             {
                 CreateKToastModel(notification);
             }
-            UpdateStatistics();
         }
 
         public async void CreateKToastModel(UserNotification notif)
@@ -1680,81 +1068,10 @@ namespace INotify
                 if (notification != null)
                 {
                     CreateKToastModel(notification);
-                    UpdateStatistics();
                 }
             });
         }
 
-        #endregion
-
-        #region Legacy Methods (for compatibility)
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            ShowStatusMessage("Test button clicked", true);
-        }
-
-        private void SpaceControl_SpaceSelected(string spaceId)
-        {
-            try
-            {
-                if (KToastListViewControl != null)
-                {
-                    KToastListViewControl.GetPackageBySpace(spaceId);
-                    ShowStatusMessage($"Space selected: {spaceId}", true);
-                }
-                else
-                {
-                    Debug.WriteLine("Warning: KToastListViewControl is null in SpaceControl_SpaceSelected");
-                    ShowStatusMessage("Error: Notification control not available", false);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error in SpaceControl_SpaceSelected: {ex.Message}");
-                ShowStatusMessage($"Error selecting space: {ex.Message}", false);
-            }
-        }
-
-        private void GetAllPackage_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (KToastListViewControl != null)
-                {
-                    KToastListViewControl.UpdateToastView(ViewType.Package);
-                    ShowStatusMessage("Showing all packages", true);
-                }
-                else
-                {
-                    Debug.WriteLine("Warning: KToastListViewControl is null in GetAllPackage_Click");
-                    ShowStatusMessage("Error: Notification control not available", false);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error in GetAllPackage_Click: {ex.Message}");
-                ShowStatusMessage($"Error showing packages: {ex.Message}", false);
-            }
-        }
-
-        /// <summary>
-        /// Handles adding apps to priority - shows app selection dialog (Legacy method)
-        /// </summary>
-        private async void AddAppToPriority_Click_Legacy(object sender, RoutedEventArgs e)
-        {
-            // This method is retained for compatibility but not used in the flyout implementation
-            Debug.WriteLine("Legacy AddAppToPriority_Click called - not implemented");
-        }
-
-        /// <summary>
-        /// Handles adding apps to space - shows app selection dialog (Legacy method)  
-        /// </summary>
-        private async void AddAppToSpace_Click_Legacy(object sender, RoutedEventArgs e)
-        {
-            // This method is retained for compatibility but not used in the flyout implementation
-            Debug.WriteLine("Legacy AddAppToSpace_Click called - not implemented");
-        }
         #endregion
 
         /// <summary>
@@ -1772,5 +1089,6 @@ namespace INotify
                 Debug.WriteLine($"Error disposing services: {ex.Message}");
             }
         }
+        #endregion
     }
 }

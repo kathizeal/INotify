@@ -1,31 +1,31 @@
-﻿using Microsoft.UI.Xaml;
+﻿using AppList;
+using INotify.KToastView.Model;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WinCommon.Util;
-using Windows.UI.Core;
-using WinLogger.Contract;
 using WinLogger;
-using Microsoft.UI.Dispatching;
-using INotifyLibrary.Util.Enums;
-using Microsoft.UI.Xaml.Media.Imaging;
-using AppList;
+using WinLogger.Contract;
 
 namespace INotify.KToastViewModel.ViewModelContract
 {
-    public abstract class KToastViewModelBase : ObservableObject, ICleanup
+    public abstract class ToastViewModelBase : ObservableObject,ICleanup
     {
         private bool IsInstalledAppFetched = false;
 
+        public ObservableCollection<KPackageProfileVObj> PackageProfiles = new();
 
         #region Properties
+
+        protected ObservableCollection<InstalledAppInfo> InstalledApps = new();
+
         public Dictionary<string, BitmapImage> IconCache = new Dictionary<string, BitmapImage>();
-
-        protected List<InstalledAppInfo> InstalledApps = new();
-
 
         public readonly ILogger Logger = LogManager.GetLogger();
         public CancellationTokenSource cts { get; private set; }
@@ -45,7 +45,7 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         #region Constructor
 
-        public KToastViewModelBase()
+        public ToastViewModelBase()
         {
             DispatcherQueue = DispatcherQueue.GetForCurrentThread();
             AppService = new InstalledAppsService();
@@ -82,9 +82,24 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         }
 
-        protected void GetInstalledApps()
+        public async void GetInstalledApps()
         {
-            
+            InstalledApps = await AppService.GetAllInstalledAppsAsync();
+            IsInstalledAppFetched = true;
+            ConvertInstalledAppsToPackageProfiles();
+
+
+        }
+
+        private void ConvertInstalledAppsToPackageProfiles()
+        {
+            PackageProfiles.Clear();
+            foreach (var app in InstalledApps)
+            {
+                KPackageProfileVObj package = new KPackageProfileVObj();
+                package.PopulateInstalledAppInfo(app, priority: INotifyLibrary.Util.Enums.Priority.None, 0);
+                PackageProfiles.Add(package);
+            }
         }
 
         #endregion Virtual Methods

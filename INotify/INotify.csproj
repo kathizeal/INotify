@@ -53,9 +53,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.7" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\INotifyWinForm\WinToast\WinToast.csproj" />
     <ProjectReference Include="..\..\WinCommon\WinCommon.csproj" />
     <ProjectReference Include="..\..\WinLogger\WinLogger.csproj" />
     <ProjectReference Include="..\INotifyLibrary\INotifyLibrary.csproj" />
@@ -90,19 +90,9 @@
     <PRIResource Remove="KToastView\ViewContract\**" />
   </ItemGroup>
   <ItemGroup>
-    <Page Remove="Dialogs\AddAppDialog.xaml" />
-    <Page Remove="Dialogs\AppManagementDialog.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Dialogs\AddAppDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="Dialogs\AppManagementDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="Dialogs\AppManagementDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
+    <Compile Remove="ViewModels\PriorityAppViewModel.cs" />
+    <Compile Remove="ViewModels\PriorityPackageViewModel.cs" />
+    <Compile Remove="ViewModels\SpaceViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="KToastView\View\KSpaceControl.xaml">
@@ -111,6 +101,16 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="KToastView\Resources\MainResource.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="View\AllPackageControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Resources\ToastResources.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

@@ -17,12 +17,11 @@ namespace AppList
 {
     public class InstalledAppInfo : System.ComponentModel.INotifyPropertyChanged
     {
-        private static DndService? _dndServiceInstance;
-
         public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public string Version { get; set; } = string.Empty;
         public string Publisher { get; set; } = string.Empty;
+        public string PublisherId { get; set; } = string.Empty;
         public string InstallLocation { get; set; } = string.Empty;
         public string ExecutablePath { get; set; } = string.Empty;
         public BitmapImage? Icon { get; set; }
@@ -35,54 +34,54 @@ namespace AppList
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
         // Initialize the DND service instance
-        public static void SetDndService(DndService dndService)
-        {
-            _dndServiceInstance = dndService;
-        }
+        //public static void SetDndService(DndService dndService)
+        //{
+        //    _dndServiceInstance = dndService;
+        //}
 
-        public string PriorityStatusText
-        {
-            get
-            {
-                if (_dndServiceInstance == null) return "Unknown";
+        //public string PriorityStatusText
+        //{
+        //    get
+        //    {
+        //        if (_dndServiceInstance == null) return "Unknown";
 
-                try
-                {
-                    string appId = GenerateAppId();
-                    if (string.IsNullOrEmpty(appId)) return "Unknown";
+        //        try
+        //        {
+        //            string appId = GenerateAppId();
+        //            if (string.IsNullOrEmpty(appId)) return "Unknown";
 
-                    bool isInPriority = _dndServiceInstance.IsInPriorityList(appId);
-                    return isInPriority ? "Priority" : "Standard";
-                }
-                catch
-                {
-                    return "Unknown";
-                }
-            }
-        }
+        //            bool isInPriority = _dndServiceInstance.IsInPriorityList(appId);
+        //            return isInPriority ? "Priority" : "Standard";
+        //        }
+        //        catch
+        //        {
+        //            return "Unknown";
+        //        }
+        //    }
+        //}
 
-        public SolidColorBrush PriorityStatusColor
-        {
-            get
-            {
-                if (_dndServiceInstance == null)
-                    return new SolidColorBrush(Microsoft.UI.Colors.Gray);
+        //public SolidColorBrush PriorityStatusColor
+        //{
+        //    get
+        //    {
+        //        if (_dndServiceInstance == null)
+        //            return new SolidColorBrush(Microsoft.UI.Colors.Gray);
 
-                try
-                {
-                    string appId = GenerateAppId();
-                    if (string.IsNullOrEmpty(appId))
-                        return new SolidColorBrush(Microsoft.UI.Colors.Gray);
+        //        try
+        //        {
+        //            string appId = GenerateAppId();
+        //            if (string.IsNullOrEmpty(appId))
+        //                return new SolidColorBrush(Microsoft.UI.Colors.Gray);
 
-                    bool isInPriority = _dndServiceInstance.IsInPriorityList(appId);
-                    return new SolidColorBrush(isInPriority ? Microsoft.UI.Colors.Green : Microsoft.UI.Colors.Gray);
-                }
-                catch
-                {
-                    return new SolidColorBrush(Microsoft.UI.Colors.Gray);
-                }
-            }
-        }
+        //            bool isInPriority = _dndServiceInstance.IsInPriorityList(appId);
+        //            return new SolidColorBrush(isInPriority ? Microsoft.UI.Colors.Green : Microsoft.UI.Colors.Gray);
+        //        }
+        //        catch
+        //        {
+        //            return new SolidColorBrush(Microsoft.UI.Colors.Gray);
+        //        }
+        //    }
+        //}
 
         private string GenerateAppId()
         {
@@ -115,11 +114,6 @@ namespace AppList
             }
         }
 
-        public void RefreshPriorityStatus()
-        {
-            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(PriorityStatusText)));
-            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(PriorityStatusColor)));
-        }
     }
 
     public enum AppType
@@ -145,7 +139,7 @@ namespace AppList
         /// <summary>
         /// Gets all installed applications (Win32 + UWP)
         /// </summary>
-        public static async Task<ObservableCollection<InstalledAppInfo>> GetAllInstalledAppsAsync()
+        public async Task<ObservableCollection<InstalledAppInfo>> GetAllInstalledAppsAsync()
         {
             var apps = new ObservableCollection<InstalledAppInfo>();
 
@@ -169,7 +163,7 @@ namespace AppList
         /// <summary>
         /// Gets Win32 applications from registry
         /// </summary>
-        public static async Task<List<InstalledAppInfo>> GetWin32AppsAsync()
+        public async Task<List<InstalledAppInfo>> GetWin32AppsAsync()
         {
             return await Task.Run(() =>
             {
@@ -194,7 +188,7 @@ namespace AppList
                                     {
                                         if (subKey != null)
                                         {
-                                            var app = CreateWin32AppInfo(subKey);
+                                            var app = CreateWin32AppInfo(subKey, subKeyName);
                                             if (app != null && !string.IsNullOrEmpty(app.DisplayName))
                                             {
                                                 apps.Add(app);
@@ -218,7 +212,7 @@ namespace AppList
         /// <summary>
         /// Gets UWP applications using PackageManager
         /// </summary>
-        public static async Task<List<InstalledAppInfo>> GetUWPAppsAsync()
+        public async Task<List<InstalledAppInfo>> GetUWPAppsAsync()
         {
             return await Task.Run(() =>
             {
@@ -244,6 +238,7 @@ namespace AppList
                                 Name = package.Id.Name,
                                 DisplayName = package.DisplayName,
                                 Version = package.Id.Version.ToString(),
+                                PublisherId = package.Id.PublisherId?.ToString(),
                                 Publisher = package.PublisherDisplayName,
                                 InstallLocation = package.InstalledLocation?.Path ?? "",
                                 Type = AppType.UWPApplication,
@@ -277,7 +272,7 @@ namespace AppList
         /// <summary>
         /// Gets applications with icons loaded
         /// </summary>
-        public static async Task<ObservableCollection<InstalledAppInfo>> GetInstalledAppsWithIconsAsync()
+        public async Task<ObservableCollection<InstalledAppInfo>> GetInstalledAppsWithIconsAsync()
         {
             var apps = await GetAllInstalledAppsAsync();
 
@@ -292,7 +287,7 @@ namespace AppList
             return apps;
         }
 
-        private static InstalledAppInfo CreateWin32AppInfo(RegistryKey key)
+        private InstalledAppInfo CreateWin32AppInfo(RegistryKey key, string subKeyName)
         {
             try
             {
@@ -356,7 +351,7 @@ namespace AppList
             }
         }
 
-        private static void LoadAppIcon(InstalledAppInfo app)
+        private void LoadAppIcon(InstalledAppInfo app)
         {
             try
             {
@@ -375,7 +370,7 @@ namespace AppList
             }
         }
 
-        private static void LoadWin32Icon(InstalledAppInfo app)
+        private void LoadWin32Icon(InstalledAppInfo app)
         {
             try
             {
@@ -395,7 +390,7 @@ namespace AppList
             }
         }
 
-        private static void LoadUWPIcon(InstalledAppInfo app)
+        private void LoadUWPIcon(InstalledAppInfo app)
         {
             try
             {
@@ -424,7 +419,7 @@ namespace AppList
             }
         }
 
-        private static BitmapImage ConvertIconToBitmapImage(Icon icon)
+        private BitmapImage ConvertIconToBitmapImage(Icon icon)
         {
             try
             {
@@ -446,7 +441,7 @@ namespace AppList
             }
         }
 
-        private static BitmapImage LoadBitmapImageFromFile(string filePath)
+        private BitmapImage LoadBitmapImageFromFile(string filePath)
         {
             try
             {
@@ -466,7 +461,7 @@ namespace AppList
         /// <summary>
         /// Searches installed apps by name
         /// </summary>
-        public static async Task<ObservableCollection<InstalledAppInfo>> SearchInstalledAppsAsync(string searchTerm)
+        public async Task<ObservableCollection<InstalledAppInfo>> SearchInstalledAppsAsync(string searchTerm)
         {
             var allApps = await GetAllInstalledAppsAsync();
             var filteredApps = allApps.Where(app =>

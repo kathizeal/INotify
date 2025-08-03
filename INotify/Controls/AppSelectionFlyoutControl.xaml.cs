@@ -1,15 +1,12 @@
+using AppList; // For InstalledAppsService
+using INotify.KToastView.Model;
+using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
-using INotify.Services;
-using INotify.KToastView.Model;
-using INotifyLibrary.Util.Enums;
-using AppList; // For InstalledAppsService
 
 namespace INotify.Controls
 {
@@ -71,60 +68,60 @@ namespace INotify.Controls
         /// <param name="customPriorityService">Service to load apps</param>
         /// <param name="targetType">Target type (Priority or Space)</param>
         /// <param name="targetValue">Target value (High/Medium/Low for Priority, Space1/Space2/Space3 for Space)</param>
-        public async Task LoadAppsAsync(CustomPriorityService customPriorityService, SelectionTargetType targetType, string targetValue)
-        {
-            try
-            {
-                _currentTargetType = targetType;
-                _currentTargetValue = targetValue;
+        //public async Task LoadAppsAsync(CustomPriorityService customPriorityService, SelectionTargetType targetType, string targetValue)
+        //{
+        //    try
+        //    {
+        //        _currentTargetType = targetType;
+        //        _currentTargetValue = targetValue;
 
-                // Load all installed applications
-                var installedApps = await InstalledAppsService.GetAllInstalledAppsAsync();
-                var customPriorityApps = await customPriorityService.GetCustomPriorityAppsAsync();
-                
-                // Create lookup for existing priorities
-                var priorityLookup = new Dictionary<string, Priority>();
-                foreach (var app in customPriorityApps)
-                {
-                    priorityLookup[app.PackageId] = app.Priority;
-                }
+        //        // Load all installed applications
+        //        var installedApps = await InstalledAppsService.GetAllInstalledAppsAsync();
+        //        var customPriorityApps = await customPriorityService.GetCustomPriorityAppsAsync();
 
-                _allApps.Clear();
-                _filteredApps.Clear();
+        //        // Create lookup for existing priorities
+        //        var priorityLookup = new Dictionary<string, Priority>();
+        //        foreach (var app in customPriorityApps)
+        //        {
+        //            priorityLookup[app.PackageId] = app.Priority;
+        //        }
 
-                foreach (var app in installedApps)
-                {
-                    if (string.IsNullOrWhiteSpace(app.DisplayName))
-                        continue;
+        //        _allApps.Clear();
+        //        _filteredApps.Clear();
 
-                    var packageId = GeneratePackageId(app);
-                    var currentPriority = priorityLookup.GetValueOrDefault(packageId, Priority.None);
-                    var notificationCount = await GetNotificationCountForApp(customPriorityService, packageId);
+        //        foreach (var app in installedApps)
+        //        {
+        //            if (string.IsNullOrWhiteSpace(app.DisplayName))
+        //                continue;
 
-                    var packageProfileVObj = KPackageProfileVObj.FromInstalledAppInfo(app, currentPriority, notificationCount);
-                    
-                    _allApps.Add(packageProfileVObj);
-                    _filteredApps.Add(packageProfileVObj);
-                }
+        //            var packageId = GeneratePackageId(app);
+        //            var currentPriority = priorityLookup.GetValueOrDefault(packageId, Priority.None);
+        //            var notificationCount = await GetNotificationCountForApp(customPriorityService, packageId);
 
-                AppsList.ItemsSource = _filteredApps;
-                UpdateSelectionStatus();
+        //            var packageProfileVObj = KPackageProfileVObj.FromInstalledAppInfo(app, currentPriority, notificationCount);
 
-                // Set appropriate header text
-                HeaderTextValue = targetType switch
-                {
-                    SelectionTargetType.Priority => $"Add Apps to {targetValue} Priority",
-                    SelectionTargetType.Space => $"Add Apps to {GetSpaceDisplayName(targetValue)}",
-                    _ => "Add Apps"
-                };
+        //            _allApps.Add(packageProfileVObj);
+        //            _filteredApps.Add(packageProfileVObj);
+        //        }
 
-                Debug.WriteLine($"Loaded {_allApps.Count} apps for {targetType} {targetValue} flyout");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading flyout apps data: {ex.Message}");
-            }
-        }
+        //        AppsList.ItemsSource = _filteredApps;
+        //        UpdateSelectionStatus();
+
+        //        // Set appropriate header text
+        //        HeaderTextValue = targetType switch
+        //        {
+        //            SelectionTargetType.Priority => $"Add Apps to {targetValue} Priority",
+        //            SelectionTargetType.Space => $"Add Apps to {GetSpaceDisplayName(targetValue)}",
+        //            _ => "Add Apps"
+        //        };
+
+        //        Debug.WriteLine($"Loaded {_allApps.Count} apps for {targetType} {targetValue} flyout");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine($"Error loading flyout apps data: {ex.Message}");
+        //    }
+        //}
 
         /// <summary>
         /// Clears all selections
@@ -145,7 +142,7 @@ namespace INotify.Controls
         private string GetSpaceDisplayName(string spaceId) => spaceId switch
         {
             "Space1" => "Space 1",
-            "Space2" => "Space 2", 
+            "Space2" => "Space 2",
             "Space3" => "Space 3",
             _ => spaceId
         };
@@ -153,21 +150,21 @@ namespace INotify.Controls
         private void UpdateSelectionStatus()
         {
             int selectedCount = _allApps.Count(app => app.IsSelected);
-            
+
             var statusText = $"{selectedCount} app{(selectedCount != 1 ? "s" : "")} selected";
-            
+
             if (_currentTargetType == SelectionTargetType.Priority && selectedCount > 0)
             {
                 var appsWithExistingPriority = _allApps
                     .Where(app => app.IsSelected && app.Priority != Priority.None)
                     .Count();
-                
+
                 if (appsWithExistingPriority > 0)
                 {
                     statusText += $" ({appsWithExistingPriority} will replace existing priority)";
                 }
             }
-            
+
             SelectionStatus.Text = statusText;
             AddButton.IsEnabled = selectedCount > 0;
         }
@@ -185,7 +182,7 @@ namespace INotify.Controls
             else
             {
                 var filtered = _allApps
-                    .Where(app => 
+                    .Where(app =>
                         app.DisplayName.ToLower().Contains(searchText.ToLower()) ||
                         app.Publisher.ToLower().Contains(searchText.ToLower()))
                     .ToList();
@@ -219,19 +216,19 @@ namespace INotify.Controls
             }
         }
 
-        private async Task<int> GetNotificationCountForApp(CustomPriorityService customPriorityService, string packageId)
-        {
-            try
-            {
-                // This would need to be implemented in CustomPriorityService
-                // For now, return 0
-                return 0;
-            }
-            catch
-            {
-                return 0;
-            }
-        }
+        //private async Task<int> GetNotificationCountForApp(CustomPriorityService customPriorityService, string packageId)
+        //{
+        //    try
+        //    {
+        //        // This would need to be implemented in CustomPriorityService
+        //        // For now, return 0
+        //        return 0;
+        //    }
+        //    catch
+        //    {
+        //        return 0;
+        //    }
+        //}
 
         #endregion
 
