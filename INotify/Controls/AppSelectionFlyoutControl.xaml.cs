@@ -1,11 +1,14 @@
 using AppList; // For InstalledAppsService
+using INotify.KToastDI;
 using INotify.KToastView.Model;
+using INotify.KToastViewModel.ViewModelContract;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing.Printing;
 using System.Linq;
 
 namespace INotify.Controls
@@ -17,16 +20,58 @@ namespace INotify.Controls
     /// </summary>
     public sealed partial class AppSelectionFlyoutControl : UserControl
     {
-        private ObservableCollection<KPackageProfileVObj> _allApps = new();
-        private ObservableCollection<KPackageProfileVObj> _filteredApps = new();
-        private SelectionTargetType _currentTargetType;
-        private string _currentTargetValue = string.Empty;
+
+        private AppSelectionViewModelBase _VM;
+
+        public SelectionTargetType CurrentTargetType
+        {
+            get { return (SelectionTargetType)GetValue(CurrentTargetTypeProperty); }
+            set { SetValue(CurrentTargetTypeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CurrentTargetType.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CurrentTargetTypeProperty =
+            DependencyProperty.Register("CurrentTargetType", typeof(SelectionTargetType), typeof(AppSelectionFlyoutControl), new PropertyMetadata(default));
+
+
+
+        public string SelectionTypeId
+        {
+            get { return (string)GetValue(SelectionTypeIdProperty); }
+            set { SetValue(SelectionTypeIdProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SelectionTypeId.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectionTypeIdProperty =
+            DependencyProperty.Register("SelectionTypeId", typeof(string), typeof(AppSelectionFlyoutControl), new PropertyMetadata(default));
+
+
+
 
         public AppSelectionFlyoutControl()
         {
+            IntilizeDI();
             this.InitializeComponent();
         }
 
+        public void IntilizeDI()
+        {
+            _VM = KToastDIServiceProvider.Instance.GetService<AppSelectionViewModelBase>();
+
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            if(_VM == null)
+            {
+                IntilizeDI();
+            }
+
+            _VM.FilteredApps.Clear();
+
+            _VM.GetInstalledApps();
+            AppsList.ItemsSource = _VM.PackageProfiles;
+        }
         #region Events
 
         /// <summary>
@@ -56,7 +101,7 @@ namespace INotify.Controls
         /// Gets the selected apps
         /// </summary>
         public IEnumerable<KPackageProfileVObj> SelectedApps =>
-            _allApps.Where(app => app.IsSelected);
+            _VM.PackageProfiles.Where(app => app.IsSelected);
 
         #endregion
 
@@ -76,35 +121,11 @@ namespace INotify.Controls
         //        _currentTargetValue = targetValue;
 
         //        // Load all installed applications
-        //        var installedApps = await InstalledAppsService.GetAllInstalledAppsAsync();
-        //        var customPriorityApps = await customPriorityService.GetCustomPriorityAppsAsync();
 
-        //        // Create lookup for existing priorities
-        //        var priorityLookup = new Dictionary<string, Priority>();
-        //        foreach (var app in customPriorityApps)
-        //        {
-        //            priorityLookup[app.PackageId] = app.Priority;
-        //        }
+        //        _VM.PackageProfiles.Clear();
 
-        //        _allApps.Clear();
-        //        _filteredApps.Clear();
+               
 
-        //        foreach (var app in installedApps)
-        //        {
-        //            if (string.IsNullOrWhiteSpace(app.DisplayName))
-        //                continue;
-
-        //            var packageId = GeneratePackageId(app);
-        //            var currentPriority = priorityLookup.GetValueOrDefault(packageId, Priority.None);
-        //            var notificationCount = await GetNotificationCountForApp(customPriorityService, packageId);
-
-        //            var packageProfileVObj = KPackageProfileVObj.FromInstalledAppInfo(app, currentPriority, notificationCount);
-
-        //            _allApps.Add(packageProfileVObj);
-        //            _filteredApps.Add(packageProfileVObj);
-        //        }
-
-        //        AppsList.ItemsSource = _filteredApps;
         //        UpdateSelectionStatus();
 
         //        // Set appropriate header text
@@ -115,7 +136,6 @@ namespace INotify.Controls
         //            _ => "Add Apps"
         //        };
 
-        //        Debug.WriteLine($"Loaded {_allApps.Count} apps for {targetType} {targetValue} flyout");
         //    }
         //    catch (Exception ex)
         //    {
@@ -128,7 +148,7 @@ namespace INotify.Controls
         /// </summary>
         public void ClearSelections()
         {
-            foreach (var app in _allApps)
+            foreach (var app in _VM.PackageProfiles)
             {
                 app.IsSelected = false;
             }
@@ -149,13 +169,13 @@ namespace INotify.Controls
 
         private void UpdateSelectionStatus()
         {
-            int selectedCount = _allApps.Count(app => app.IsSelected);
+            int selectedCount = _VM.PackageProfiles.Count(app => app.IsSelected);
 
             var statusText = $"{selectedCount} app{(selectedCount != 1 ? "s" : "")} selected";
 
-            if (_currentTargetType == SelectionTargetType.Priority && selectedCount > 0)
+            if (CurrentTargetType == SelectionTargetType.Priority && selectedCount > 0)
             {
-                var appsWithExistingPriority = _allApps
+                var appsWithExistingPriority = _VM.PackageProfiles
                     .Where(app => app.IsSelected && app.Priority != Priority.None)
                     .Count();
 
@@ -173,63 +193,27 @@ namespace INotify.Controls
         {
             if (string.IsNullOrEmpty(searchText))
             {
-                _filteredApps.Clear();
-                foreach (var app in _allApps)
-                {
-                    _filteredApps.Add(app);
-                }
+                _VM.FilteredApps.Clear();
+                AppsList.ItemsSource = _VM.PackageProfiles;
+               
             }
             else
             {
-                var filtered = _allApps
+                var filtered = _VM.PackageProfiles
                     .Where(app =>
                         app.DisplayName.ToLower().Contains(searchText.ToLower()) ||
                         app.Publisher.ToLower().Contains(searchText.ToLower()))
                     .ToList();
 
-                _filteredApps.Clear();
+                _VM.FilteredApps.Clear();
                 foreach (var app in filtered)
                 {
-                    _filteredApps.Add(app);
+                    _VM.FilteredApps.Add(app);
                 }
             }
 
-            AppsList.ItemsSource = _filteredApps;
+            AppsList.ItemsSource = _VM.FilteredApps;
         }
-
-        private string GeneratePackageId(InstalledAppInfo app)
-        {
-            switch (app.Type)
-            {
-                case AppType.UWPApplication:
-                    return !string.IsNullOrEmpty(app.PackageFamilyName) ? app.PackageFamilyName : app.Name;
-
-                case AppType.Win32Application:
-                    if (!string.IsNullOrEmpty(app.ExecutablePath))
-                    {
-                        return System.IO.Path.GetFileNameWithoutExtension(app.ExecutablePath);
-                    }
-                    return app.DisplayName.Replace(" ", "").Replace(".", "").Replace("-", "");
-
-                default:
-                    return app.Name;
-            }
-        }
-
-        //private async Task<int> GetNotificationCountForApp(CustomPriorityService customPriorityService, string packageId)
-        //{
-        //    try
-        //    {
-        //        // This would need to be implemented in CustomPriorityService
-        //        // For now, return 0
-        //        return 0;
-        //    }
-        //    catch
-        //    {
-        //        return 0;
-        //    }
-        //}
-
         #endregion
 
         #region Event Handlers
@@ -265,7 +249,10 @@ namespace INotify.Controls
             var selectedApps = SelectedApps.ToList();
             if (selectedApps.Count > 0)
             {
-                AppsSelected?.Invoke(this, new AppSelectionEventArgs(selectedApps));
+                var appSelectionEventArgs = new AppSelectionEventArgs(selectedApps, CurrentTargetType, SelectionTypeId);
+                _VM.AddSelectedAppsToCondition(appSelectionEventArgs);
+
+                AppsSelected?.Invoke(this, appSelectionEventArgs);
             }
         }
 
@@ -275,6 +262,8 @@ namespace INotify.Controls
         }
 
         #endregion
+
+       
     }
 
     #region Supporting Classes
@@ -282,24 +271,11 @@ namespace INotify.Controls
     /// <summary>
     /// Event arguments for app selection
     /// </summary>
-    public class AppSelectionEventArgs : EventArgs
-    {
-        public IReadOnlyList<KPackageProfileVObj> SelectedApps { get; }
-
-        public AppSelectionEventArgs(IEnumerable<KPackageProfileVObj> selectedApps)
-        {
-            SelectedApps = selectedApps.ToList().AsReadOnly();
-        }
-    }
-
+    
     /// <summary>
     /// Target type for selection
     /// </summary>
-    public enum SelectionTargetType
-    {
-        Priority,
-        Space
-    }
+    
 
     #endregion
 }

@@ -6,15 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:INotify.KToastView.Model"
+    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <UserControl.Resources>
 
-        <Style x:Key="StretchingListViewItemStyle"
-           TargetType="ListViewItem"
-           BasedOn="{StaticResource ListViewItemRevealStyle}">
-            <Setter Property="HorizontalContentAlignment"
-                Value="Stretch"/>
+        <Style
+            x:Key="StretchingListViewItemStyle"
+            BasedOn="{StaticResource ListViewItemRevealStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
         <!--  App Selection Item Template  -->
         <DataTemplate x:Key="AppSelectionItemTemplate" x:DataType="model:KPackageProfileVObj">
@@ -36,8 +37,8 @@
                 <!--  Selection CheckBox  -->
                 <CheckBox
                     Grid.Column="0"
-                    VerticalAlignment="Center"
                     HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
                     Checked="AppCheckBox_Checked"
                     IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
                     Tag="{x:Bind}"
@@ -46,20 +47,23 @@
                 <!--  App Icon  -->
                 <Border
                     Grid.Column="1"
-                     HorizontalAlignment="Left"
                     Width="32"
                     Height="32"
                     Margin="8,0"
+                    HorizontalAlignment="Left"
                     Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
                     CornerRadius="4">
                     <FontIcon
                         FontSize="16"
-                            Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                        Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
                         Glyph="&#xE8FA;" />
                 </Border>
 
                 <!--  App Information  -->
-                <StackPanel Grid.Column="2"  HorizontalAlignment="Left" Margin="8,0">
+                <StackPanel
+                    Grid.Column="2"
+                    Margin="8,0"
+                    HorizontalAlignment="Left">
                     <TextBlock
                         FontWeight="SemiBold"
                         MaxLines="1"
@@ -119,8 +123,8 @@
         <ListView
             x:Name="AppsList"
             Grid.Row="2"
-
- ItemContainerStyle="{StaticResource StretchingListViewItemStyle}"            ItemTemplate="{StaticResource AppSelectionItemTemplate}"
+            ItemContainerStyle="{StaticResource StretchingListViewItemStyle}"
+            ItemTemplate="{StaticResource AppSelectionItemTemplate}"
             SelectionMode="None" />
 
         <!--  Selection Status  -->

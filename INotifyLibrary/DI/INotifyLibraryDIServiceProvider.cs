@@ -30,7 +30,7 @@ namespace INotifyLibrary.DI
             services.AddSingleton<IGetAllKPackageProfilesDataManager, GetAllKPackageProfilesDataManager>();
             services.AddSingleton<IAddPackageToSpaceDataManager, AddPackageToSpaceDataManager>();
             services.AddSingleton<IGetPackageBySpaceDataManager, GetPackageBySpaceDataManager>();
-
+            services.AddSingleton<IAddAppsToConditionDataManager, AddAppsToConditionDataManager>();
 
             BuildServiceProvider(services);
         }

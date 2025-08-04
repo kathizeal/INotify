@@ -1,0 +1,113 @@
+﻿using INotify.KToastViewModel.ViewModelContract;
+using INotifyLibrary.Domain;
+using INotifyLibrary.Util;
+using WinLogger;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using WinCommon.Util;
+
+namespace INotify.KToastViewModel.ViewModel
+{
+    public class AppSelectionViewModel : AppSelectionViewModelBase
+    {
+        public override void AddSelectedAppsToCondition(AppSelectionEventArgs appSelectionEventArgs)
+        {
+            try
+            {
+                if (appSelectionEventArgs?.SelectedApps == null || !appSelectionEventArgs.SelectedApps.Any())
+                {
+                    Logger.Info(LogManager.GetCallerInfo(), "No apps selected to add to condition");
+                    return;
+                }
+
+                // Convert from UI selection args to domain request
+                var selectedApps = appSelectionEventArgs.SelectedApps.Select(app => 
+                    new AppConditionData(app.PackageId, app.DisplayName, app.Publisher)).ToList();
+
+                var request = new AddAppsToConditionRequest(
+                    (INotifyLibrary.Domain.SelectionTargetType)appSelectionEventArgs.TargetType,
+                    appSelectionEventArgs.CurrentTargetId,
+                    selectedApps,
+                    INotifyConstant.CurrentUser);
+
+                var presenterCallback = new AddAppsToConditionPresenterCallback(this, appSelectionEventArgs);
+                var useCase = new AddAppsToCondition(request, presenterCallback);
+                useCase.Execute();
+
+                Logger.Info(LogManager.GetCallerInfo(), 
+                    $"Initiated adding {appSelectionEventArgs.SelectedApps.Count} apps to {appSelectionEventArgs.TargetType} condition: {appSelectionEventArgs.CurrentTargetId}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), 
+                    $"Error initiating add selected apps to condition: {ex.Message}");
+            }
+        }
+
+        public override void GetAppPackageProfile()
+        {
+        }
+
+        public override void SyncAppPackageProfileWithInstalled()
+        {
+        }
+
+        private class AddAppsToConditionPresenterCallback : IAddAppsToConditionPresenterCallback
+        {
+            private readonly AppSelectionViewModel _viewModel;
+            private readonly AppSelectionEventArgs _originalArgs;
+
+            public AddAppsToConditionPresenterCallback(AppSelectionViewModel viewModel, AppSelectionEventArgs originalArgs)
+            {
+                _viewModel = viewModel;
+                _originalArgs = originalArgs;
+            }
+
+            public void OnSuccess(ZResponse<AddAppsToConditionResponse> response)
+            {
+                var data = response.Data;
+                _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                    $"Successfully added {data.SuccessCount}/{data.TotalCount} apps to {data.TargetType} condition: {data.TargetId}");
+
+                if (data.FailedApps?.Any() == true)
+                {
+                    _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                        $"Failed to add {data.FailedApps.Count} apps: {string.Join(", ", data.FailedApps)}");
+                }
+            }
+
+            public void OnProgress(ZResponse<AddAppsToConditionResponse> response)
+            {
+                // Progress updates if needed
+            }
+
+            public void OnFailed(ZResponse<AddAppsToConditionResponse> response)
+            {
+                _viewModel.Logger.Error(LogManager.GetCallerInfo(), 
+                    $"Failed to add apps to {_originalArgs.TargetType} condition: {_originalArgs.CurrentTargetId}");
+            }
+
+            public void OnError(WinCommon.Error.ZError error)
+            {
+                var errorMessage = error?.ErrorObject?.ToString() ?? "Unknown error";
+                _viewModel.Logger.Error(LogManager.GetCallerInfo(), 
+                    $"Error adding apps to condition: {errorMessage}");
+            }
+
+            public void OnCanceled(ZResponse<AddAppsToConditionResponse> response)
+            {
+                _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                    "Add apps to condition operation was canceled");
+            }
+
+            public void OnIgnored(ZResponse<AddAppsToConditionResponse> response)
+            {
+                _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                    "Add apps to condition operation was ignored");
+            }
+        }
+    }
+}

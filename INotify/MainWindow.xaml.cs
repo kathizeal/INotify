@@ -1,5 +1,6 @@
 using AppList; // For DndService and InstalledAppsService
 using INotify.KToastView.Model;
+using INotify.KToastViewModel.ViewModelContract;
 using INotifyLibrary.DBHandler.Contract;
 using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util;
@@ -448,9 +449,9 @@ namespace INotify
                     if (appSelector != null)
                     {
                         // Set up event handlers
-                        appSelector.AppsSelected -= OnPriorityAppsSelected;
+                     //   appSelector.AppsSelected -= OnPriorityAppsSelected;
                         appSelector.Cancelled -= OnFlyoutCancelled;
-                        appSelector.AppsSelected += OnPriorityAppsSelected;
+                       // appSelector.AppsSelected += OnPriorityAppsSelected;
                         appSelector.Cancelled += OnFlyoutCancelled;
 
                         // Store the priority level for later use
@@ -490,9 +491,9 @@ namespace INotify
                     if (appSelector != null)
                     {
                         // Set up event handlers
-                        appSelector.AppsSelected -= OnSpaceAppsSelected;
+                       // appSelector.AppsSelected -= OnSpaceAppsSelected;
                         appSelector.Cancelled -= OnFlyoutCancelled;
-                        appSelector.AppsSelected += OnSpaceAppsSelected;
+                       // appSelector.AppsSelected += OnSpaceAppsSelected;
                         appSelector.Cancelled += OnFlyoutCancelled;
 
                         // Store the space ID for later use
@@ -514,7 +515,7 @@ namespace INotify
         /// <summary>
         /// Handles when apps are selected in priority flyouts
         /// </summary>
-        private async void OnPriorityAppsSelected(object? sender, Controls.AppSelectionEventArgs e)
+        private async void OnPriorityAppsSelected(object? sender, AppSelectionEventArgs e)
         {
             try
             {
@@ -544,7 +545,7 @@ namespace INotify
         /// <summary>
         /// Handles when apps are selected in space flyouts
         /// </summary>
-        private async void OnSpaceAppsSelected(object? sender, Controls.AppSelectionEventArgs e)
+        private async void OnSpaceAppsSelected(object? sender, AppSelectionEventArgs e)
         {
             try
             {

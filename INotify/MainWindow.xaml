@@ -173,7 +173,7 @@
                                            Tag="High">
                                         <Button.Flyout>
                                             <Flyout x:Name="HighPriorityFlyout" FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}" Placement="Bottom">
-                                                <controls:AppSelectionFlyoutControl x:Name="HighPriorityAppSelector"/>
+                                                <controls:AppSelectionFlyoutControl x:Name="HighPriorityAppSelector" SelectionTypeId="High" CurrentTargetType="Priority"/>
                                             </Flyout>
                                             
                                         </Button.Flyout>
@@ -204,7 +204,7 @@
                                            Tag="Medium">
                                         <Button.Flyout>
                                             <Flyout x:Name="MediumPriorityFlyout" Placement="Bottom">
-                                                <controls:AppSelectionFlyoutControl x:Name="MediumPriorityAppSelector"/>
+                                                <controls:AppSelectionFlyoutControl x:Name="MediumPriorityAppSelector" SelectionTypeId="Medium" CurrentTargetType="Priority"/>
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
@@ -234,7 +234,7 @@
                                            Tag="Low">
                                         <Button.Flyout>
                                             <Flyout x:Name="LowPriorityFlyout" Placement="Bottom">
-                                                <controls:AppSelectionFlyoutControl x:Name="LowPriorityAppSelector"/>
+                                                <controls:AppSelectionFlyoutControl x:Name="LowPriorityAppSelector" SelectionTypeId="Low" CurrentTargetType="Priority"/>
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
@@ -273,7 +273,7 @@
                                            Tag="Space1">
                                         <Button.Flyout>
                                             <Flyout x:Name="Space1Flyout" Placement="Bottom">
-                                                <controls:AppSelectionFlyoutControl x:Name="Space1AppSelector"/>
+                                                <controls:AppSelectionFlyoutControl x:Name="Space1AppSelector" SelectionTypeId="Space1" CurrentTargetType="Space"/>
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
@@ -303,7 +303,7 @@
                                            Tag="Space2">
                                         <Button.Flyout>
                                             <Flyout x:Name="Space2Flyout" Placement="Bottom">
-                                                <controls:AppSelectionFlyoutControl x:Name="Space2AppSelector"/>
+                                                <controls:AppSelectionFlyoutControl x:Name="Space2AppSelector" CurrentTargetType="Space" SelectionTypeId="Space2" />
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
@@ -333,7 +333,7 @@
                                            Tag="Space3">
                                         <Button.Flyout>
                                             <Flyout x:Name="Space3Flyout" Placement="Bottom">
-                                                <controls:AppSelectionFlyoutControl x:Name="Space3AppSelector"/>
+                                                <controls:AppSelectionFlyoutControl x:Name="Space3AppSelector" CurrentTargetType="Space" SelectionTypeId="Space3" />
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
