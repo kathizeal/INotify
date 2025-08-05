@@ -40,7 +40,7 @@ namespace INotify.KToastView.View
 
         }
 
-        public string PackageId { get; set; }
+        public string PackageFamilyName { get; set; }
 
         private void SpaceList_ItemClick(object sender, ItemClickEventArgs e)
         {
@@ -70,9 +70,9 @@ namespace INotify.KToastView.View
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(PackageId))
+            if (!string.IsNullOrWhiteSpace(PackageFamilyName))
             {
-                _VM.AddToSpace(PackageId, _selectedSpace.SpaceId,INotifyConstant.CurrentUser);
+                _VM.AddToSpace(PackageFamilyName, _selectedSpace.SpaceId,INotifyConstant.CurrentUser);
             }
             // Logic to add a package to the selected space
             // You can open another flyout or dialog to get the package details
@@ -80,9 +80,9 @@ namespace INotify.KToastView.View
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(PackageId))
+            if (!string.IsNullOrWhiteSpace(PackageFamilyName))
             {
-                _VM.RemoveFromSpace(PackageId, _selectedSpace.SpaceId, INotifyConstant.CurrentUser);
+                _VM.RemoveFromSpace(PackageFamilyName, _selectedSpace.SpaceId, INotifyConstant.CurrentUser);
             }
             // Logic to remove a package from the selected space
             // You can open another flyout or dialog to get the package details

@@ -89,9 +89,9 @@ namespace INotify.KToastViewModel.ViewModelContract
             getKToasts.Execute();
         }
 
-        public override void GetKToastNotificationByPackageId(string packageId)
+        public override void GetKToastNotificationByPackageFamilyName(string packageFamilyName)
         {
-            var getKToastsRequest = new GetKToastsRequest(NotificatioRequestType.Individual, CurrentViewType, packageId, INotifyConstant.CurrentUser);
+            var getKToastsRequest = new GetKToastsRequest(NotificatioRequestType.Individual, CurrentViewType, packageFamilyName, INotifyConstant.CurrentUser);
             var getKToasts = new GetKToasts(getKToastsRequest, new GetAllKToastsNotificationPresenterCallback(this));
             getKToasts.Execute();
         }
@@ -122,16 +122,16 @@ namespace INotify.KToastViewModel.ViewModelContract
         public override async Task<KToastVObj> AddKToastNotification(KToastBObj toastData)
         {
             var kToastViewData = new KToastVObj(toastData.NotificationData, toastData.ToastPackageProfile);
-            if (IconCache.ContainsKey(kToastViewData.ToastPackageProfile.PackageId))
+            if (IconCache.ContainsKey(kToastViewData.ToastPackageProfile.PackageFamilyName))
             {
-                kToastViewData.AppIcon = IconCache[kToastViewData.ToastPackageProfile.PackageId];
+                kToastViewData.AppIcon = IconCache[kToastViewData.ToastPackageProfile.PackageFamilyName];
             }
             else
             {
                 var (icon, success) = await kToastViewData.SetAppIcon();
                 if (success)
                 {
-                    IconCache[kToastViewData.ToastPackageProfile.PackageId] = icon;
+                    IconCache[kToastViewData.ToastPackageProfile.PackageFamilyName] = icon;
                 }
             }
             return kToastViewData;
@@ -160,7 +160,7 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         public override void AddPackageToSpace(KPackageProfile package, string spaceId)
         {
-            var addPackageToSpaceRequest = new AddPackageToSpaceRequest(package.PackageId, spaceId, INotifyConstant.CurrentUser);
+            var addPackageToSpaceRequest = new AddPackageToSpaceRequest(package.PackageFamilyName, spaceId, INotifyConstant.CurrentUser);
             var addPackageToSpace = new AddPackageToSpace(addPackageToSpaceRequest, new AddPackageToSpacePresenterCallback(this));
             addPackageToSpace.Execute();
         }
@@ -193,7 +193,7 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         private void PopulateAllInOnePackageSpace()
         {
-            var package = KPackageProfilesList.FirstOrDefault(p => p.PackageId == IKPackageProfileConstant.DefaultAllInPackageId);
+            var package = KPackageProfilesList.FirstOrDefault(p => p.PackageFamilyName == IKPackageProfileConstant.DefaultAllInPackageIdFamilyName);
             if (package is null)
             {
                 var packageProfileVObj = new KPackageProfileVObj();
@@ -290,7 +290,7 @@ namespace INotify.KToastViewModel.ViewModelContract
             {
                 _presenter.DispatcherQueue.TryEnqueue(() =>
                 {
-                    if (response.Data.ViewType is ViewType.Package && response.Data.PackageId is not IKPackageProfileConstant.DefaultAllInPackageId)
+                    if (response.Data.ViewType is ViewType.Package && response.Data.PackageId is not IKPackageProfileConstant.DefaultAllInPackageIdFamilyName)
                     {
                         _ = _presenter.PopulateKToastNotificationsByPackageId(response.Data.PackageId, response.Data.ToastDataNotifications);
                     }

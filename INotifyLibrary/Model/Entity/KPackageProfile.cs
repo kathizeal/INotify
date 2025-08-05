@@ -17,8 +17,6 @@ namespace INotifyLibrary.Model.Entity
         private string _logoFilePath;
 
         [PrimaryKey]
-        public string PackageId { get; set; }
-
         public string PackageFamilyName { get;  set; }
 
         public string AppDisplayName
@@ -54,7 +52,6 @@ namespace INotifyLibrary.Model.Entity
         {
             return new KPackageProfile
             {
-                PackageId = this.PackageId,
                 PackageFamilyName = this.PackageFamilyName,
                 AppDisplayName = this.AppDisplayName,
                 AppDescription = this.AppDescription,
@@ -68,7 +65,6 @@ namespace INotifyLibrary.Model.Entity
         {
             if (newData == null) { return; }
 
-            PackageId = newData.PackageId;
             PackageFamilyName = newData.PackageFamilyName;
             AppDisplayName = newData.AppDisplayName;
             AppDescription = newData.AppDescription;

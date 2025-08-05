@@ -1,4 +1,5 @@
 ﻿using INotify.KToastView.Model;
+using INotifyLibrary.Domain;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,11 +30,6 @@ namespace INotify.KToastViewModel.ViewModelContract
             TargetType = targetType;
             CurrentTargetId = currentTargetId;
         }
-    }
-    public enum SelectionTargetType
-    {
-        Priority,
-        Space
     }
 
 }

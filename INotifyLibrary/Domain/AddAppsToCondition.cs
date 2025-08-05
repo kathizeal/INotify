@@ -34,13 +34,13 @@ namespace INotifyLibrary.Domain
 
     public class AppConditionData
     {
-        public string PackageId { get; set; }
+        public string PackageName { get; set; }
         public string DisplayName { get; set; }
         public string Publisher { get; set; }
 
-        public AppConditionData(string packageId, string displayName, string publisher)
+        public AppConditionData(string packageName, string displayName, string publisher)
         {
-            PackageId = packageId;
+            PackageName = packageName;
             DisplayName = displayName;
             Publisher = publisher;
         }

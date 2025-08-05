@@ -25,7 +25,7 @@ namespace INotify.KToastViewModel.ViewModel
 
                 // Convert from UI selection args to domain request
                 var selectedApps = appSelectionEventArgs.SelectedApps.Select(app => 
-                    new AppConditionData(app.PackageId, app.DisplayName, app.Publisher)).ToList();
+                    new AppConditionData(app.PackageFamilyName, app.DisplayName, app.Publisher)).ToList();
 
                 var request = new AddAppsToConditionRequest(
                     (INotifyLibrary.Domain.SelectionTargetType)appSelectionEventArgs.TargetType,

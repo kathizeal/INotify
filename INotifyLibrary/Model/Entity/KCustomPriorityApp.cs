@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using INotifyLibrary.Util.Enums;
 using SQLite;
+using WinCommon.Util;
 
 namespace INotifyLibrary.Model.Entity
 {
@@ -10,10 +11,10 @@ namespace INotifyLibrary.Model.Entity
     /// Custom priority app entity for storing user-defined app priorities
     /// </summary>
     [Table("KCustomPriorityApp")]
-    public class KCustomPriorityApp : INotifyPropertyChanged
+    public class KCustomPriorityApp : ObservableObject
     {
         private string _id = string.Empty;
-        private string _packageId = string.Empty;
+        private string _PackageName = string.Empty;
         private string _displayName = string.Empty;
         private string _publisher = string.Empty;
         private Priority _priority = Priority.None;
@@ -32,10 +33,10 @@ namespace INotifyLibrary.Model.Entity
         }
 
         [Indexed]
-        public string PackageId
+        public string PackageName
         {
-            get => _packageId;
-            set { _packageId = value; OnPropertyChanged(); }
+            get => _PackageName;
+            set { _PackageName = value; OnPropertyChanged(); }
         }
 
         public string DisplayName
@@ -142,7 +143,7 @@ namespace INotifyLibrary.Model.Entity
             return new KCustomPriorityApp
             {
                 Id = Id,
-                PackageId = PackageId,
+                PackageName = PackageName,
                 DisplayName = DisplayName,
                 Publisher = Publisher,
                 Priority = Priority,
@@ -153,13 +154,6 @@ namespace INotifyLibrary.Model.Entity
                 IconPath = IconPath,
                 Description = Description
             };
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

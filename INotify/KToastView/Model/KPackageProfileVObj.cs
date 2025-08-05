@@ -74,7 +74,7 @@ namespace INotify.KToastView.Model
         {
             if (string.IsNullOrEmpty(_DisplayName))
             {
-                _DisplayName = AppDisplayName ?? PackageId;
+                _DisplayName = AppDisplayName;
             }
         }
         /// <summary>
@@ -93,7 +93,6 @@ namespace INotify.KToastView.Model
         /// </summary>
         public void PopulateInstalledAppInfo(InstalledAppInfo appInfo, Priority priority = Priority.None, int notificationCount = 0)
         {
-            PackageId = KToastUtil.GeneratePackageId(appInfo);
             PackageFamilyName = appInfo.PackageFamilyName ?? string.Empty;
             AppDisplayName = appInfo.DisplayName;
             AppDescription = $"Application: {appInfo.DisplayName}";

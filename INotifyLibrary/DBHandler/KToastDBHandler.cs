@@ -22,7 +22,7 @@ namespace INotifyLibrary.DBHandler
         public IList<KToastNotification> GetKToastNotificationsByPackageId(string packageId, string userId)
         {
             IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
-            return dBConnection.Table<KToastNotification>().Where(x => x.PackageId == packageId).ToList();
+            return dBConnection.Table<KToastNotification>().Where(x => x.PackageFamilyName == packageId).ToList();
         }
 
         public void UpdateOrReplaceKToastNotification(ObservableCollection<KToastNotification> toastNotifications, string userId)
@@ -51,10 +51,10 @@ namespace INotifyLibrary.DBHandler
         }
 
 
-        public KPackageProfile GetPackageProfile(string packageId, string userId)
+        public KPackageProfile GetPackageProfile(string packageFamilyName, string userId)
         {
             IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
-            return dBConnection.Table<KPackageProfile>().FirstOrDefault(x => x.PackageId == packageId);
+            return dBConnection.Table<KPackageProfile>().FirstOrDefault(x => x.PackageFamilyName == packageFamilyName);
         }
 
         public IList<KPackageProfile> GetKPackageProfiles(string userId)
@@ -67,13 +67,13 @@ namespace INotifyLibrary.DBHandler
         public IList<KPackageProfile> GetPackagesBySpaceId(string spaceId, string userId)
         {
             IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
-            List<string>? packageIds = dBConnection.Table<KSpaceMapper>()
+            var packageFamilyNames = dBConnection.Table<KSpaceMapper>()
                                           .Where(x => x.SpaceId == spaceId)
-                                          .Select(x => x.PackageId)
-                                          .ToList();
+                                          .Select(x => x.PackageFamilyName)
+                                          .ToHashSet<string>();
 
             return dBConnection.Table<KPackageProfile>()
-                               .Where(x => packageIds.Contains(x.PackageId))
+                               .Where(x => packageFamilyNames.Contains(x.PackageFamilyName))
                                .ToList();
         }
 
@@ -101,7 +101,7 @@ namespace INotifyLibrary.DBHandler
         {
             IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
             var spaceMapper = dBConnection.Table<KSpaceMapper>()
-                                          .FirstOrDefault(x => x.SpaceId == spaceId && x.PackageId == packageId);
+                                          .FirstOrDefault(x => x.SpaceId == spaceId && x.PackageFamilyName == packageId);
 
             if (spaceMapper != null)
             {

@@ -18,7 +18,7 @@ namespace INotifyLibrary.DataManger
                 KSpaceMapper mapper = new KSpaceMapper
                 {
                     SpaceId = request.SpaceId,
-                    PackageId = request.PackageId
+                    PackageFamilyName = request.PackageId
                 };
 
                 bool isSuccess = DBHandler.AddPackageToSpace(mapper, request.UserId);

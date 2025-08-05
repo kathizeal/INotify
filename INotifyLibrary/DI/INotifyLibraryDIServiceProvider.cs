@@ -31,6 +31,7 @@ namespace INotifyLibrary.DI
             services.AddSingleton<IAddPackageToSpaceDataManager, AddPackageToSpaceDataManager>();
             services.AddSingleton<IGetPackageBySpaceDataManager, GetPackageBySpaceDataManager>();
             services.AddSingleton<IAddAppsToConditionDataManager, AddAppsToConditionDataManager>();
+            services.AddSingleton<IGetNotificationsByConditionDataManager, GetNotificationsByConditionDataManager>();
 
             BuildServiceProvider(services);
         }

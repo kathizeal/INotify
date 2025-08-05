@@ -19,7 +19,7 @@ namespace INotifyLibrary.DataManger
 
                 List<KToastNotification>? list = new();
                 List<KToastBObj>? toastDatas = new();
-                if (string.IsNullOrEmpty(request.PackageId) || request.PackageId is IKPackageProfileConstant.DefaultAllInPackageId)
+                if (string.IsNullOrEmpty(request.PackageId) || request.PackageId is IKPackageProfileConstant.DefaultAllInPackageIdFamilyName)
                 {
                     list = DBHandler.GetToastNotificationByUserId(request.UserId).ToList();
                     toastDatas = PopulatePackageProfile(list, request.UserId);
@@ -51,10 +51,10 @@ namespace INotifyLibrary.DataManger
             {
                 foreach (var notification in toastNotifications)
                 {
-                    if (!PackageProfileCache.TryGetValue(notification.PackageId, out KPackageProfile kPackageProfile))
+                    if (!PackageProfileCache.TryGetValue(notification.PackageFamilyName, out KPackageProfile kPackageProfile))
                     {
-                        kPackageProfile = DBHandler.GetPackageProfile(notification.PackageId, userId) ?? INotifyUtil.GetDefaultPackageProfile();
-                        PackageProfileCache[notification.PackageId] = kPackageProfile;
+                        kPackageProfile = DBHandler.GetPackageProfile(notification.PackageFamilyName, userId) ?? INotifyUtil.GetDefaultPackageProfile();
+                        PackageProfileCache[notification.PackageFamilyName] = kPackageProfile;
                     }
                     toastDatas.Add(new KToastBObj(notification, kPackageProfile));
                 }

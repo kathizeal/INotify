@@ -929,6 +929,7 @@ namespace INotify
             }
         }
 
+        HashSet<string> appsname = new();
         public async void CreateKToastModel(UserNotification notif)
         {
             try
@@ -936,9 +937,9 @@ namespace INotify
                 string appDisplayName = notif.AppInfo.DisplayInfo.DisplayName;
                 string appId = notif.AppInfo.AppUserModelId;
                 uint notificationId = notif.Id;
+                string packageName = string.IsNullOrWhiteSpace(notif.AppInfo.PackageFamilyName) ?  appId : notif.AppInfo.PackageFamilyName;
 
-                string? s2 = notif.AppInfo.PackageFamilyName;
-                NotificationBinding toastBinding = notif.Notification.Visual.GetBinding(KnownNotificationBindings.ToastGeneric);
+                           NotificationBinding toastBinding = notif.Notification.Visual.GetBinding(KnownNotificationBindings.ToastGeneric);
                 string iconLocation = string.Empty;
                 try
                 {
@@ -974,16 +975,15 @@ namespace INotify
                         NotificationMessage = bodyText?.Trim(),
                         NotificationId = notificationId.ToString(),
                         CreatedTime = notif.CreationTime,
-                        PackageId = appId
+                        PackageFamilyName = packageName
                     };
 
                     KPackageProfile packageProfile = new KPackageProfile()
                     {
-                        PackageFamilyName = notif.AppInfo.PackageFamilyName,
-                        PackageId = appId,
+                        PackageFamilyName = packageName,
                         LogoFilePath = iconLocation,
                         AppDescription = string.Empty,
-                        AppDisplayName = notif.AppInfo.DisplayInfo.DisplayName
+                        AppDisplayName = appDisplayName
                     };
                     KToastVObj kToastViewData = new KToastVObj(data, packageProfile);
 

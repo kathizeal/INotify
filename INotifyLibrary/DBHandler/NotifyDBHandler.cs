@@ -100,7 +100,7 @@ namespace INotifyLibrary.DBHandler
         /// <summary>
         /// Adds or updates an app's custom priority
         /// </summary>
-        public bool AddOrUpdateCustomPriorityApp(string packageId, string displayName, string publisher, Priority priority, string userId)
+        public bool AddOrUpdateCustomPriorityApp(string packageName, string displayName, string publisher, Priority priority, string userId)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace INotifyLibrary.DBHandler
                 
                 // Check if app already exists
                 var existingApp = dbConnection.Table<KCustomPriorityApp>()
-                    .FirstOrDefault(x => x.PackageId == packageId && x.UserId == INotifyConstant.CurrentUser);
+                    .FirstOrDefault(x => x.PackageName == packageName && x.UserId == INotifyConstant.CurrentUser);
 
                 if (existingApp != null)
                 {
@@ -126,7 +126,7 @@ namespace INotifyLibrary.DBHandler
                     var newApp = new KCustomPriorityApp
                     {
                         Id = Guid.NewGuid().ToString(),
-                        PackageId = packageId,
+                        PackageName = packageName,
                         DisplayName = displayName,
                         Publisher = publisher,
                         Priority = priority,
@@ -180,7 +180,7 @@ namespace INotifyLibrary.DBHandler
                 IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 
                 var app = dbConnection.Table<KCustomPriorityApp>()
-                    .FirstOrDefault(x => x.PackageId == packageId && x.UserId == userId);
+                    .FirstOrDefault(x => x.PackageName == packageId && x.UserId == userId);
 
                 return app?.Priority;
             }
@@ -205,20 +205,20 @@ namespace INotifyLibrary.DBHandler
                 IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 
                 // Get package IDs from space mapper
-                var packageIds = dbConnection.Table<KSpaceMapper>()
+                var packageFamilyNames = dbConnection.Table<KSpaceMapper>()
                     .Where(x => x.SpaceId == spaceId)
-                    .Select(x => x.PackageId)
+                    .Select(x => x.PackageFamilyName)
                     .ToList();
 
-                if (!packageIds.Any())
+                if (!packageFamilyNames.Any())
                     return new List<KPackageProfile>();
 
                 // Get package profiles
                 var packages = new List<KPackageProfile>();
-                foreach (var packageId in packageIds)
+                foreach (var packageFamilyName in packageFamilyNames)
                 {
                     var package = dbConnection.Table<KPackageProfile>()
-                        .FirstOrDefault(x => x.PackageId == packageId);
+                        .FirstOrDefault(x => x.PackageFamilyName == packageFamilyName);
                     if (package != null)
                     {
                         packages.Add(package);
@@ -237,7 +237,7 @@ namespace INotifyLibrary.DBHandler
         /// <summary>
         /// Adds a package to space with full package profile creation
         /// </summary>
-        public bool AddPackageToSpaceEnhanced(string packageId, string spaceId, string displayName, string publisher, string userId)
+        public bool AddPackageToSpaceEnhanced(string packageFamilyName, string spaceId, string displayName, string publisher, string userId)
         {
             try
             {
@@ -247,30 +247,29 @@ namespace INotifyLibrary.DBHandler
                 {
                     // Ensure package profile exists
                     var existingProfile = dbConnection.Table<KPackageProfile>()
-                        .FirstOrDefault(x => x.PackageId == packageId);
+                        .FirstOrDefault(x => x.PackageFamilyName == packageFamilyName);
 
                     if (existingProfile == null)
                     {
                         var newProfile = new KPackageProfile
                         {
-                            PackageId = packageId,
+                            PackageFamilyName = packageFamilyName,
                             AppDisplayName = displayName,
                             AppDescription = $"Application: {displayName}",
                             LogoFilePath = "",
-                            PackageFamilyName = packageId
                         };
                         dbConnection.InsertAll(new[] { newProfile });
                     }
 
                     // Check if mapping already exists
                     var existingMapper = dbConnection.Table<KSpaceMapper>()
-                        .FirstOrDefault(x => x.PackageId == packageId && x.SpaceId == spaceId);
+                        .FirstOrDefault(x => x.PackageFamilyName == packageFamilyName && x.SpaceId == spaceId);
 
                     if (existingMapper == null)
                     {
                         var mapper = new KSpaceMapper
                         {
-                            PackageId = packageId,
+                            PackageFamilyName = packageFamilyName,
                             SpaceId = spaceId
                         };
                         dbConnection.InsertAll(new[] { mapper });
@@ -306,14 +305,14 @@ namespace INotifyLibrary.DBHandler
                     // Get notification count for packages in this space
                     var packageIds = dbConnection.Table<KSpaceMapper>()
                         .Where(x => x.SpaceId == space.SpaceId)
-                        .Select(x => x.PackageId)
+                        .Select(x => x.PackageFamilyName)
                         .ToList();
 
                     var notificationCount = 0;
                     foreach (var packageId in packageIds)
                     {
                         notificationCount += dbConnection.Table<KToastNotification>()
-                            .Count(x => x.PackageId == packageId);
+                            .Count(x => x.PackageFamilyName == packageId);
                     }
 
                     stats[space.SpaceId] = (appCount, notificationCount);

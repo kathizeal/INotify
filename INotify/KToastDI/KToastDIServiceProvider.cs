@@ -23,6 +23,8 @@ namespace INotify.KToastDI
             servicesCollection.AddTransient<KToastListVMBase, KToastListViewModel>();
             servicesCollection.AddTransient<KSpaceViewModelBase, KSpaceViewModel>();
             servicesCollection.AddTransient<AppSelectionViewModelBase, AppSelectionViewModel>();
+            servicesCollection.AddTransient<NotificationListVMBase, NotificationListVM>();
+            
             BuildServiceProvider(servicesCollection, false); // addDefaultServices is sent as false since UIDI doesn't require PasswordProvider, DBAdapter & NetworkAdapter instances
         }
 

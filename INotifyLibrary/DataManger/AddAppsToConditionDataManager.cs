@@ -81,7 +81,7 @@ namespace INotifyLibrary.DataManger
                 try
                 {
                     bool success = DBHandler.AddOrUpdateCustomPriorityApp(
-                        app.PackageId,
+                        app.PackageName,
                         app.DisplayName,
                         app.Publisher,
                         priority,
@@ -116,7 +116,7 @@ namespace INotifyLibrary.DataManger
                     var spaceMapper = new KSpaceMapper
                     {
                         SpaceId = request.TargetId,
-                        PackageId = app.PackageId
+                        PackageFamilyName = app.PackageName
                     };
 
                     bool success = DBHandler.AddPackageToSpace(spaceMapper, request.UserId);

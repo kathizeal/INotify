@@ -26,6 +26,7 @@
     <None Remove="KToastView\Resources\MainResource.xaml" />
     <None Remove="KToastView\View\KSpaceControl.xaml" />
     <None Remove="KToastView\View\KToastListControl.xaml" />
+    <None Remove="View\NotificationListControl.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -116,5 +117,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".github\copilot-instructions.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="View\NotificationListControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

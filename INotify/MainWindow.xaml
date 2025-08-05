@@ -160,10 +160,8 @@
                                     <TextBlock Text="High Priority" 
                                               FontWeight="SemiBold"
                                               Margin="0,0,0,12"/>
-                                    <ListView x:Name="HighPriorityListView"
-                                             MaxHeight="400">
-                                        <!-- Items will be populated from code-behind -->
-                                    </ListView>
+                                    <view1:NotificationListControl x:Name="HighPriorityListControl" CurrentTargetType="Priority" SelectionTargetId="High"/>
+                                    
                                     <Button x:Name="AddHighPriorityBtn"
                                            Content="+ Add Apps"
                                            Style="{StaticResource AccentButtonStyle}"

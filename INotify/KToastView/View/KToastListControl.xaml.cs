@@ -95,7 +95,7 @@ namespace INotify.KToastView.View
                 case ViewType.Package:
                     if (e.ClickedItem is KPackageProfileVObj package)
                     {
-                        _VM.GetKToastNotificationByPackageId(package.PackageId);
+                        _VM.GetKToastNotificationByPackageFamilyName(package.PackageFamilyName);
                     }
                     break;
             }
@@ -107,7 +107,7 @@ namespace INotify.KToastView.View
             {
                 if (sp.Tag is KPackageProfileVObj pp)
                 {
-                    _VM.GetKToastNotificationByPackageId(pp.PackageId);
+                    _VM.GetKToastNotificationByPackageFamilyName(pp.PackageFamilyName);
                 }
             }
         }
@@ -122,7 +122,7 @@ namespace INotify.KToastView.View
                     case ViewType.Package:
                         if (selectedItem is KPackageProfileVObj package)
                         {
-                            _VM.GetKToastNotificationByPackageId(package.PackageId);
+                            _VM.GetKToastNotificationByPackageFamilyName(package.PackageFamilyName);
                         }
                         break;
                     case ViewType.Space:
@@ -176,7 +176,7 @@ namespace INotify.KToastView.View
             {
                 Flyout flyout = new Flyout();
                 KSpaceControl kSpaceControl = new KSpaceControl();
-                kSpaceControl.PackageId = clickedItem.PackageId;
+                kSpaceControl.PackageFamilyName = clickedItem.PackageFamilyName;
                 flyout.Content = kSpaceControl;
                 flyout.ShowAt(HorizontalContentLV);
             }

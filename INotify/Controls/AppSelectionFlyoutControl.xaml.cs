@@ -2,6 +2,7 @@ using AppList; // For InstalledAppsService
 using INotify.KToastDI;
 using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
+using INotifyLibrary.Domain;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
