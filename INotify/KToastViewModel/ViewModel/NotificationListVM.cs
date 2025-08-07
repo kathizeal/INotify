@@ -67,32 +67,36 @@ namespace INotify.KToastViewModel.ViewModel
             {
                 try
                 {
-                    _viewModel.IsLoading = false;
-                    var data = response.Data;
-
-                    if (data.IsPackageView)
+                    _viewModel.DispatcherQueue.TryEnqueue(() =>
                     {
-                        _viewModel.Packages.Clear();
-                        foreach (var package in data.Packages)
-                        {
-                            _viewModel.Packages.Add(package);
-                        }
-                        _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
-                            $"Loaded {data.Packages.Count} packages for {data.TargetType}: {data.TargetId}");
-                    }
-                    else
-                    {
-                        _viewModel.Notifications.Clear();
-                        foreach (var notification in data.Notifications)
-                        {
-                            _viewModel.Notifications.Add(notification);
-                        }
-                        _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
-                            $"Loaded {data.Notifications.Count} notifications for {data.TargetType}: {data.TargetId}");
-                    }
+                        _viewModel.IsLoading = false;
+                        var data = response.Data;
 
-                    _viewModel.OnPropertyChanged(nameof(_viewModel.TotalCount));
-                    _viewModel.OnPropertyChanged(nameof(_viewModel.ViewDisplayText));
+                        if (data.IsPackageView)
+                        {
+                            _viewModel.Packages.Clear();
+                            foreach (var package in data.Packages)
+                            {
+                                _viewModel.Packages.Add(package);
+                            }
+                            _viewModel.Logger.Info(LogManager.GetCallerInfo(),
+                                $"Loaded {data.Packages.Count} packages for {data.TargetType}: {data.TargetId}");
+                        }
+                        else
+                        {
+                            _viewModel.Notifications.Clear();
+                            foreach (var notification in data.Notifications)
+                            {
+                                _viewModel.Notifications.Add(notification);
+                            }
+                            _viewModel.Logger.Info(LogManager.GetCallerInfo(),
+                                $"Loaded {data.Notifications.Count} notifications for {data.TargetType}: {data.TargetId}");
+                        }
+
+                        _viewModel.OnPropertyChanged(nameof(_viewModel.TotalCount));
+                        _viewModel.OnPropertyChanged(nameof(_viewModel.ViewDisplayText));
+                    });
+                    
                 }
                 catch (Exception ex)
                 {

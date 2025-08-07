@@ -66,6 +66,17 @@ namespace INotify.View
             }
         }
 
+        public Visibility TogglePackageView(bool ispackageView)
+        {
+            
+            return ispackageView ? Visibility.Visible : Visibility.Collapsed;
+        }
+        public Visibility ToggleNotificationView(bool ispackageView)
+        {
+
+            return ispackageView ? Visibility.Collapsed : Visibility.Visible;
+        }
+
         private void ToggleViewButton_Click(object sender, RoutedEventArgs e)
         {
             _viewModel?.ToggleView();

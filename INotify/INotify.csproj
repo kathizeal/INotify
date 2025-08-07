@@ -13,9 +13,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove=".github\**" />
     <Compile Remove="KToastView\ViewContract\**" />
+    <EmbeddedResource Remove=".github\**" />
     <EmbeddedResource Remove="KToastView\ViewContract\**" />
+    <None Remove=".github\**" />
     <None Remove="KToastView\ViewContract\**" />
+    <Page Remove=".github\**" />
     <Page Remove="KToastView\ViewContract\**" />
   </ItemGroup>
   <ItemGroup>
@@ -116,11 +120,11 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include=".github\copilot-instructions.md" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="View\NotificationListControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Remove=".github\**" />
   </ItemGroup>
 </Project>

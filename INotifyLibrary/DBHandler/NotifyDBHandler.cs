@@ -25,7 +25,8 @@ namespace INotifyLibrary.DBHandler
                 typeof(KPackageProfile),
                 typeof(KSpace),
                 typeof(KSpaceMapper),
-                typeof(KCustomPriorityApp) // Add custom priority model
+                typeof(KCustomPriorityApp), // Add custom priority model
+                typeof(KFeedback) // Add feedback model
             };
             return dbModels;
         }
@@ -324,6 +325,110 @@ namespace INotifyLibrary.DBHandler
             {
                 Logger.Error(LogManager.GetCallerInfo(), ex.Message);
                 return new Dictionary<string, (int AppCount, int NotificationCount)>();
+            }
+        }
+
+        #endregion
+
+        #region Feedback Methods
+
+        /// <summary>
+        /// Submits user feedback to the database
+        /// </summary>
+        public bool SubmitFeedback(string title, string message, FeedbackCategory category, string email, string userId, string appVersion, string osVersion)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
+                
+                var feedback = new KFeedback
+                {
+                    Title = title,
+                    Message = message,
+                    Category = category,
+                    Email = email,
+                    UserId = userId,
+                    AppVersion = appVersion,
+                    OSVersion = osVersion,
+                    Status = FeedbackStatus.Submitted
+                };
+                
+                dbConnection.InsertAll(new[] { feedback });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets all feedback for a user
+        /// </summary>
+        public IList<KFeedback> GetUserFeedback(string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
+                return dbConnection.Table<KFeedback>()
+                    .Where(x => x.UserId == userId)
+                    .OrderByDescending(x => x.CreatedTime)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return new List<KFeedback>();
+            }
+        }
+
+        /// <summary>
+        /// Gets feedback by category for a user
+        /// </summary>
+        public IList<KFeedback> GetFeedbackByCategory(FeedbackCategory category, string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
+                return dbConnection.Table<KFeedback>()
+                    .Where(x => x.UserId == userId && x.Category == category)
+                    .OrderByDescending(x => x.CreatedTime)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return new List<KFeedback>();
+            }
+        }
+
+        /// <summary>
+        /// Updates feedback status
+        /// </summary>
+        public bool UpdateFeedbackStatus(string feedbackId, FeedbackStatus status, string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
+                
+                var feedback = dbConnection.Table<KFeedback>()
+                    .FirstOrDefault(x => x.Id == feedbackId && x.UserId == userId);
+
+                if (feedback != null)
+                {
+                    feedback.Status = status;
+                    feedback.UpdatedTime = DateTimeOffset.Now;
+                    dbConnection.UpdateAll(new[] { feedback });
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return false;
             }
         }
 

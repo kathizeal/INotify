@@ -164,8 +164,8 @@
                 Height="50"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                IsActive="{x:Bind _viewModel.IsLoading}"
-                Visibility="{x:Bind _viewModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                IsActive="{x:Bind _viewModel.IsLoading, Mode=OneWay}"
+                Visibility="{x:Bind _viewModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
 
             <!--  Notifications ListView  -->
             <ListView
@@ -173,7 +173,7 @@
                 ItemTemplate="{StaticResource NotificationItemTemplate}"
                 ItemsSource="{x:Bind _viewModel.Notifications, Mode=OneWay}"
                 SelectionMode="None"
-                Visibility="{Binding _viewModel.IsPackageView, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                Visibility="{x:Bind ToggleNotificationView(_viewModel.IsPackageView), Mode=OneWay}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -187,9 +187,9 @@
             <ListView
                 IsItemClickEnabled="True"
                 ItemTemplate="{StaticResource PackageItemTemplate}"
-                ItemsSource="{x:Bind _viewModel.Packages}"
+                ItemsSource="{x:Bind _viewModel.Packages, Mode=OneWay}"
                 SelectionMode="None"
-                Visibility="{x:Bind _viewModel.IsPackageView}">
+                Visibility="{x:Bind TogglePackageView(_viewModel.IsPackageView), Mode=OneWay}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -203,7 +203,7 @@
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Visibility="{x:Bind _viewModel.TotalCount, Converter={StaticResource CountToVisibilityConverter}}">
+                Visibility="{x:Bind _viewModel.TotalCount, Converter={StaticResource CountToVisibilityConverter}, Mode=OneWay}">
                 <TextBlock
                     Margin="0,0,0,8"
                     HorizontalAlignment="Center"

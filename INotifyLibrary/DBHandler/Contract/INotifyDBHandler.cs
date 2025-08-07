@@ -82,6 +82,30 @@ namespace INotifyLibrary.DBHandler.Contract
         Dictionary<string, (int AppCount, int NotificationCount)> GetSpaceStatistics(string userId);
 
         #endregion
+
+        #region Feedback Methods
+
+        /// <summary>
+        /// Submits user feedback to the database
+        /// </summary>
+        bool SubmitFeedback(string title, string message, FeedbackCategory category, string email, string userId, string appVersion, string osVersion);
+
+        /// <summary>
+        /// Gets all feedback for a user
+        /// </summary>
+        IList<KFeedback> GetUserFeedback(string userId);
+
+        /// <summary>
+        /// Gets feedback by category for a user
+        /// </summary>
+        IList<KFeedback> GetFeedbackByCategory(FeedbackCategory category, string userId);
+
+        /// <summary>
+        /// Updates feedback status
+        /// </summary>
+        bool UpdateFeedbackStatus(string feedbackId, FeedbackStatus status, string userId);
+
+        #endregion
     }
 
 }

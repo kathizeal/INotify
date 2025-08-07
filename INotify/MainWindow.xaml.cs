@@ -235,6 +235,10 @@ namespace INotify
                     ShowStatusView();
                     break;
 
+                case "Feedback":
+                    ShowFeedbackView();
+                    break;
+
                 default:
                     ShowWelcomeView();
                     break;
@@ -255,6 +259,7 @@ namespace INotify
             if (AllNotificationsView != null) AllNotificationsView.Visibility = Visibility.Collapsed;
             if (DndControlView != null) DndControlView.Visibility = Visibility.Collapsed;
             if (StatusView != null) StatusView.Visibility = Visibility.Collapsed;
+            if (FeedbackView != null) FeedbackView.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -354,6 +359,20 @@ namespace INotify
             if (StatusView != null)
             {
                 StatusView.Visibility = Visibility.Visible;
+            }
+        }
+
+        /// <summary>
+        /// Shows feedback view
+        /// </summary>
+        private void ShowFeedbackView()
+        {
+            if (ContentTitle != null) ContentTitle.Text = "Submit Feedback";
+            if (ContentSubtitle != null) ContentSubtitle.Text = "Help us improve INotify by sharing your feedback";
+            
+            if (FeedbackView != null)
+            {
+                FeedbackView.Visibility = Visibility.Visible;
             }
         }
 
