@@ -7,7 +7,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:INotify.View"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:model="using:INotifyLibrary.Model" xmlns:entity="using:INotifyLibrary.Model.Entity"
+    xmlns:model="using:INotifyLibrary.Model" 
+    xmlns:entity="using:INotifyLibrary.Model.Entity"
+    xmlns:viewModel="using:INotify.KToastView.Model"
     Loaded="UserControl_Loaded"
     Unloaded="UserControl_Unloaded"
     mc:Ignorable="d">
@@ -16,6 +18,41 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
         <converters:CountToReverseVisibilityConverter x:Key="CountToReverseVisibilityConverter" />
+        <converters:ExpandCollapseIconConverter x:Key="ExpandCollapseIconConverter" />
+
+        <!-- CollectionViewSource for grouped packages -->
+        <CollectionViewSource x:Name="GroupedPackagesSource" x:Key="GroupedPackagesSource" IsSourceGrouped="True" Source="{x:Bind _viewModel.GroupedPackageNotifications, Mode=OneWay}"/>
+        <Style
+                x:Key="ListViewGroupStyleHeaderContainerTemplate"
+                x:Name="GrpStyle"
+                TargetType="ListViewHeaderItem">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="Margin" Value="0,0,0,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate x:Name="HeadTemplate" TargetType="ListViewHeaderItem">
+                        <Grid>
+                            <ContentPresenter
+                                    x:Name="ContentPresenter"
+                                    Padding="0,0,0,0"
+                                    HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <!--  Notification Item Template  -->
         <DataTemplate x:Key="NotificationItemTemplate" x:DataType="model:KToastBObj">
@@ -69,7 +106,76 @@
             </Border>
         </DataTemplate>
 
-        <!--  Package Item Template  -->
+        <!--  Package Header Template for Grouped View  -->
+        <DataTemplate x:Key="PackageGroupHeaderTemplate" x:DataType="viewModel:KPackageNotificationGroup">
+            <Border
+                Margin="0,8,0,4"
+                Padding="16,12"
+                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                CornerRadius="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  App Icon  -->
+                    <Image
+                        Grid.Column="0"
+                        Width="40"
+                        Height="40"
+                        Margin="0,0,16,0"
+                        Source="{x:Bind IconPath, Mode=OneWay}" />
+
+                    <!--  Package Info  -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            FontSize="16"
+                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                            Text="{x:Bind DisplayName, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{ThemeResource TextOnAccentFillColorSecondaryBrush}"
+                            Text="{x:Bind NotificationCountText, Mode=OneWay}" />
+                    </StackPanel>
+
+                    <!--  Notification Count Badge  -->
+                    <Border
+                        Grid.Column="2"
+                        Margin="0,0,8,0"
+                        Padding="8,4"
+                        Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"
+                        CornerRadius="12"
+                        Visibility="{x:Bind NotificationCount, Converter={StaticResource CountToReverseVisibilityConverter}, Mode=OneWay}">
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Text="{x:Bind NotificationCount, Mode=OneWay}"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                    </Border>
+
+                    <!--  Expand/Collapse Button  -->
+                    <Button
+                        Grid.Column="3"
+                        Width="32"
+                        Height="32"
+                        Background="Transparent"
+                        Click="TogglePackageGroup_Click"
+                        Tag="{x:Bind}">
+                        <FontIcon
+                            FontSize="16"
+                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                            Glyph="{x:Bind IsExpanded, Converter={StaticResource ExpandCollapseIconConverter}, Mode=OneWay}" />
+                    </Button>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!--  Package Item Template (Simple)  -->
         <DataTemplate x:Key="PackageItemTemplate" x:DataType="entity:KPackageProfile">
             <Border
                 Margin="0,4"
@@ -116,7 +222,7 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid Margin="16">
+    <Grid Margin="0 8 0 0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -147,7 +253,7 @@
                 Grid.Column="1"
                 Margin="0,0,8,0"
                 Click="ToggleViewButton_Click"
-                Content="{x:Bind _viewModel.ToggleButtonText}"
+                Content="{x:Bind _viewModel.ToggleButtonText, Mode=OneWay}"
                 Style="{ThemeResource AccentButtonStyle}" />
 
             <!--  Refresh Button  -->
@@ -158,6 +264,10 @@
 
         <!--  Content Section  -->
         <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
             <!--  Loading Indicator  -->
             <ProgressRing
                 Width="50"
@@ -169,10 +279,15 @@
 
             <!--  Notifications ListView  -->
             <ListView
+                Grid.Row="1"
                 IsItemClickEnabled="True"
                 ItemTemplate="{StaticResource NotificationItemTemplate}"
                 ItemsSource="{x:Bind _viewModel.Notifications, Mode=OneWay}"
                 SelectionMode="None"
+                ScrollViewer.VerticalScrollMode="Auto"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollMode="Disabled"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                 Visibility="{x:Bind ToggleNotificationView(_viewModel.IsPackageView), Mode=OneWay}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -183,20 +298,34 @@
                 </ListView.ItemContainerStyle>
             </ListView>
 
-            <!--  Packages ListView  -->
+            <!--  Grouped Packages ListView  -->
             <ListView
-                IsItemClickEnabled="True"
-                ItemTemplate="{StaticResource PackageItemTemplate}"
-                ItemsSource="{x:Bind _viewModel.Packages, Mode=OneWay}"
+                x:Name="GroupedPackagesListView"
+                Grid.Row="1"
+                IsItemClickEnabled="False"
+                ScrollViewer.VerticalScrollMode="Auto"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollMode="Disabled"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                ItemTemplate="{StaticResource NotificationItemTemplate}"
+                ItemsSource="{x:Bind GroupedPackagesSource.View, Mode=OneWay}"
                 SelectionMode="None"
                 Visibility="{x:Bind TogglePackageView(_viewModel.IsPackageView), Mode=OneWay}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         <Setter Property="Padding" Value="0" />
-                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="Margin" Value="0,0,0,8" />
                     </Style>
                 </ListView.ItemContainerStyle>
+                <ListView.GroupStyle>
+                    <GroupStyle HidesIfEmpty="False"  HeaderTemplate="{StaticResource PackageGroupHeaderTemplate}" HeaderContainerStyle="{StaticResource ListViewGroupStyleHeaderContainerTemplate}" />
+                </ListView.GroupStyle>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel AreStickyGroupHeadersEnabled="True"/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
             </ListView>
 
             <!--  Empty State  -->

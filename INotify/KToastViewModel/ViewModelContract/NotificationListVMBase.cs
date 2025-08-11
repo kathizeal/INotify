@@ -13,6 +13,7 @@ namespace INotify.KToastViewModel.ViewModelContract
         private bool _isPackageView;
         private ObservableCollection<KToastBObj> _notifications = new();
         private ObservableCollection<KPackageProfile> _packages = new();
+        private ObservableCollection<KPackageNotificationGroup> _groupedPackageNotifications = new();
         private bool _isLoading;
 
         /// <summary>
@@ -21,7 +22,13 @@ namespace INotify.KToastViewModel.ViewModelContract
         public SelectionTargetType CurrentTargetType
         {
             get => _currentTargetType;
-            set { SetIfDifferent(ref _currentTargetType, value); LoadNotifications(); }
+            set 
+            { 
+                if (SetIfDifferent(ref _currentTargetType, value))
+                {
+                    LoadNotifications();
+                }
+            }
         }
 
         /// <summary>
@@ -30,7 +37,13 @@ namespace INotify.KToastViewModel.ViewModelContract
         public string SelectionTypeId
         {
             get => _selectionTypeId;
-            set { SetIfDifferent(ref _selectionTypeId, value); LoadNotifications(); }
+            set 
+            { 
+                if (SetIfDifferent(ref _selectionTypeId, value))
+                {
+                    LoadNotifications();
+                }
+            }
         }
 
         /// <summary>
@@ -39,7 +52,13 @@ namespace INotify.KToastViewModel.ViewModelContract
         public bool IsPackageView
         {
             get => _isPackageView;
-            set { SetIfDifferent(ref _isPackageView, value); LoadNotifications(); }
+            set 
+            { 
+                if (SetIfDifferent(ref _isPackageView, value))
+                {
+                    LoadNotifications();
+                }
+            }
         }
 
         /// <summary>
@@ -52,12 +71,21 @@ namespace INotify.KToastViewModel.ViewModelContract
         }
 
         /// <summary>
-        /// Collection of packages (used when IsPackageView is true)
+        /// Collection of packages (used when IsPackageView is true - simple list)
         /// </summary>
         public ObservableCollection<KPackageProfile> Packages
         {
             get => _packages;
             set { SetIfDifferent(ref _packages, value); }
+        }
+
+        /// <summary>
+        /// Grouped collection of packages with their notifications (used when IsPackageView is true - grouped)
+        /// </summary>
+        public ObservableCollection<KPackageNotificationGroup> GroupedPackageNotifications
+        {
+            get => _groupedPackageNotifications;
+            set { SetIfDifferent(ref _groupedPackageNotifications, value); }
         }
 
         /// <summary>
@@ -77,7 +105,7 @@ namespace INotify.KToastViewModel.ViewModelContract
         /// <summary>
         /// Total count for display
         /// </summary>
-        public int TotalCount => IsPackageView ? Packages?.Count ?? 0 : Notifications?.Count ?? 0;
+        public int TotalCount => IsPackageView ? GroupedPackageNotifications?.Count ?? 0 : Notifications?.Count ?? 0;
 
         /// <summary>
         /// Display text for current view
@@ -101,6 +129,11 @@ namespace INotify.KToastViewModel.ViewModelContract
         /// </summary>
         public abstract void RefreshView();
 
+        /// <summary>
+        /// Abstract method to toggle package group expansion
+        /// </summary>
+        public abstract void TogglePackageGroup(KPackageNotificationGroup group);
+
         protected NotificationListVMBase()
         {
         }
@@ -110,6 +143,7 @@ namespace INotify.KToastViewModel.ViewModelContract
             base.Dispose();
             Notifications?.Clear();
             Packages?.Clear();
+            GroupedPackageNotifications?.Clear();
         }
     }
 }

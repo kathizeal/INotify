@@ -21,17 +21,17 @@ namespace INotifyLibrary.DataManger
         {
             try
             {
-                List<string> packageIds = new List<string>();
+                List<string> packageFamilyNames = new List<string>();
 
-                // Get package IDs based on condition type
+                // Get package family names based on condition type
                 switch (request.TargetType)
                 {
                     case SelectionTargetType.Priority:
-                        packageIds = GetPackageIdsByPriority(request.TargetId, request.UserId);
+                        packageFamilyNames = GetPackageFamilyNamesByPriority(request.TargetId, request.UserId);
                         break;
 
                     case SelectionTargetType.Space:
-                        packageIds = GetPackageIdsBySpace(request.TargetId, request.UserId);
+                        packageFamilyNames = GetPackageFamilyNamesBySpace(request.TargetId, request.UserId);
                         break;
 
                     default:
@@ -44,12 +44,15 @@ namespace INotifyLibrary.DataManger
 
                 if (request.IsPackageView)
                 {
-                    var packages = GetPackagesWithNotificationCounts(packageIds, request.UserId);
+                    // For package view, get both packages and all their notifications for grouping
+                    var packages = GetPackagesWithNotificationCounts(packageFamilyNames, request.UserId);
+                    var allNotifications = GetNotificationsByPackageFamilyNames(packageFamilyNames, request.UserId);
+                    
                     var response = new GetNotificationsByConditionResponse(
                         request.TargetType, 
                         request.TargetId, 
                         request.IsPackageView,
-                        null,
+                        allNotifications,
                         packages);
 
                     var zResponse = new ZResponse<GetNotificationsByConditionResponse>(ResponseType.LocalStorage)
@@ -58,7 +61,7 @@ namespace INotifyLibrary.DataManger
                 }
                 else
                 {
-                    var notifications = GetNotificationsByPackageIds(packageIds, request.UserId);
+                    var notifications = GetNotificationsByPackageFamilyNames(packageFamilyNames, request.UserId);
                     var response = new GetNotificationsByConditionResponse(
                         request.TargetType, 
                         request.TargetId, 
@@ -76,7 +79,7 @@ namespace INotifyLibrary.DataManger
             }
         }
 
-        private List<string> GetPackageIdsByPriority(string priorityString, string userId)
+        private List<string> GetPackageFamilyNamesByPriority(string priorityString, string userId)
         {
             if (!Enum.TryParse<Priority>(priorityString, true, out Priority priority))
             {
@@ -87,20 +90,20 @@ namespace INotifyLibrary.DataManger
             return priorityApps.Select(app => app.PackageName).ToList();
         }
 
-        private List<string> GetPackageIdsBySpace(string spaceId, string userId)
+        private List<string> GetPackageFamilyNamesBySpace(string spaceId, string userId)
         {
             var packages = DBHandler.GetPackagesBySpaceId(spaceId, userId);
             return packages.Select(package => package.PackageFamilyName).ToList();
         }
 
-        private ObservableCollection<KToastBObj> GetNotificationsByPackageIds(List<string> packageIds, string userId)
+        private ObservableCollection<KToastBObj> GetNotificationsByPackageFamilyNames(List<string> packageFamilyNames, string userId)
         {
             List<KToastBObj> allNotifications = new List<KToastBObj>();
 
-            foreach (string packageId in packageIds)
+            foreach (string packageFamilyName in packageFamilyNames)
             {
-                var notifications = DBHandler.GetKToastNotificationsByPackageId(packageId, userId);
-                var packageProfile = DBHandler.GetPackageProfile(packageId, userId) ?? INotifyUtil.GetDefaultPackageProfile();
+                var notifications = DBHandler.GetKToastNotificationsByPackageId(packageFamilyName, userId);
+                var packageProfile = DBHandler.GetPackageProfile(packageFamilyName, userId) ?? INotifyUtil.GetDefaultPackageProfile();
 
                 foreach (var notification in notifications)
                 {
@@ -116,21 +119,23 @@ namespace INotifyLibrary.DataManger
             return new ObservableCollection<KToastBObj>(sortedNotifications);
         }
 
-        private ObservableCollection<KPackageProfile> GetPackagesWithNotificationCounts(List<string> packageIds, string userId)
+        private ObservableCollection<KPackageProfile> GetPackagesWithNotificationCounts(List<string> packageFamilyNames, string userId)
         {
             List<KPackageProfile> packages = new List<KPackageProfile>();
 
-            foreach (string packageId in packageIds)
+            foreach (string packageFamilyName in packageFamilyNames)
             {
-                var package = DBHandler.GetPackageProfile(packageId, userId);
+                var package = DBHandler.GetPackageProfile(packageFamilyName, userId);
                 if (package != null)
                 {
-                    // Get notification count for this package
-                    var notifications = DBHandler.GetKToastNotificationsByPackageId(packageId, userId);
-                    
-                    // You might want to add a NotificationCount property to KPackageProfile
-                    // For now, we'll use the package as is
                     packages.Add(package);
+                }
+                else
+                {
+                    // Create a default package profile if none exists
+                    var defaultPackage = INotifyUtil.GetDefaultPackageProfile();
+                    defaultPackage.PackageFamilyName = packageFamilyName;
+                    packages.Add(defaultPackage);
                 }
             }
 

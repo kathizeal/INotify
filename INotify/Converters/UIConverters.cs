@@ -85,6 +85,26 @@ namespace INotify.Converters
     }
 
     /// <summary>
+    /// Converter for expand/collapse icon based on boolean state
+    /// </summary>
+    public class ExpandCollapseIconConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool isExpanded)
+            {
+                return isExpanded ? "\uE70D" : "\uE70E"; // ChevronDown : ChevronRight
+            }
+            return "\uE70E"; // Default to ChevronRight
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
     /// Converter for notification count display
     /// </summary>
     public class NotificationCountConverter : IValueConverter

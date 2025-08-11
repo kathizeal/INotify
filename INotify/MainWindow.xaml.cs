@@ -2,11 +2,13 @@ using AppList; // For DndService and InstalledAppsService
 using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
 using INotifyLibrary.DBHandler.Contract;
+using INotifyLibrary.Domain;
 using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media.Imaging;
 using SampleNotify; // For StandaloneNotificationPositioner
 using System;
@@ -192,15 +194,15 @@ namespace INotify
                     break;
 
                 case "Priority_High":
-                    ShowDetailListView("High Priority", "High");
+                    ShowDetailListView("High Priority", "High", SelectionTargetType.Priority);
                     break;
 
                 case "Priority_Medium":
-                    ShowDetailListView("Medium Priority", "Medium");
+                    ShowDetailListView("Medium Priority", "Medium", SelectionTargetType.Priority);
                     break;
 
                 case "Priority_Low":
-                    ShowDetailListView("Low Priority", "Low");
+                    ShowDetailListView("Low Priority", "Low", SelectionTargetType.Priority);
                     break;
 
                 case "Space":
@@ -208,15 +210,15 @@ namespace INotify
                     break;
 
                 case "Space_1":
-                    ShowDetailListView("Space 1", "Space1");
+                    ShowDetailListView("Space 1", "Space1", SelectionTargetType.Space);
                     break;
 
                 case "Space_2":
-                    ShowDetailListView("Space 2", "Space2");
+                    ShowDetailListView("Space 2", "Space2", SelectionTargetType.Space);
                     break;
 
                 case "Space_3":
-                    ShowDetailListView("Space 3", "Space3");
+                    ShowDetailListView("Space 3", "Space3", SelectionTargetType.Space);
                     break;
 
                 case "AllApps":
@@ -273,6 +275,7 @@ namespace INotify
             if (PriorityBoardView != null)
             {
                 PriorityBoardView.Visibility = Visibility.Visible;
+                
             }
         }
 
@@ -293,7 +296,7 @@ namespace INotify
         /// <summary>
         /// Shows a detail list view for specific priority or space
         /// </summary>
-        private void ShowDetailListView(string title, string category)
+        private void ShowDetailListView(string title, string category, SelectionTargetType selectionTargetType)
         {
             if (ContentTitle != null) ContentTitle.Text = title;
             if (ContentSubtitle != null) ContentSubtitle.Text = $"Notifications and apps in {title}";
@@ -301,6 +304,8 @@ namespace INotify
             if (DetailListView != null)
             {
                 DetailListView.Visibility = Visibility.Visible;
+                DetailListViewContent.CurrentTargetType = selectionTargetType;
+                DetailListViewContent.SelectionTargetId = category;
             }
         }
 

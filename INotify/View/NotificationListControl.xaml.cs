@@ -1,7 +1,7 @@
 using INotify.Controls;
 using INotify.KToastDI;
+using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
-using INotifyLibrary.Domain;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -26,35 +26,36 @@ namespace INotify.View
     {
         private NotificationListVMBase _viewModel;
 
-        public SelectionTargetType CurrentTargetType
+        public INotifyLibrary.Domain.SelectionTargetType CurrentTargetType
         {
-            get { return (SelectionTargetType)GetValue(CurrentTargetTypeProperty); }
-            set { SetValue(CurrentTargetTypeProperty, value); }
+            get { return (INotifyLibrary.Domain.SelectionTargetType)GetValue(CurrentTargetTypeProperty); }
+            set { SetValue(CurrentTargetTypeProperty, value); UpdateViewModel(); }
         }
 
         // Using a DependencyProperty as the backing store for CurrentTargetType.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CurrentTargetTypeProperty =
-            DependencyProperty.Register("CurrentTargetType", typeof(SelectionTargetType), typeof(NotificationListControl), new PropertyMetadata(default));
+            DependencyProperty.Register("CurrentTargetType", typeof(INotifyLibrary.Domain.SelectionTargetType), typeof(NotificationListControl), new PropertyMetadata(default));
 
         public string SelectionTargetId
         {
-            get { return (string)GetValue(SelectionTypeIdProperty); }
-            set { SetValue(SelectionTypeIdProperty, value); }
+            get { return (string)GetValue(SelectionTargetIdProperty); }
+            set { SetValue(SelectionTargetIdProperty, value); UpdateViewModel(); }
         }
 
-        // Using a DependencyProperty as the backing store for SelectionTypeId.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectionTypeIdProperty =
+        // Using a DependencyProperty as the backing store for SelectionTargetId.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectionTargetIdProperty =
             DependencyProperty.Register("SelectionTargetId", typeof(string), typeof(NotificationListControl), new PropertyMetadata(default));
 
         public NotificationListControl()
         {
+            InitializeComponent();
             InitializeViewModel();
-            this.InitializeComponent();
         }
 
         private void InitializeViewModel()
         {
             _viewModel = KToastDIServiceProvider.Instance.GetService<NotificationListVMBase>();
+            this.DataContext = _viewModel;
         }
 
         private void UpdateViewModel()
@@ -64,17 +65,6 @@ namespace INotify.View
                 _viewModel.CurrentTargetType = CurrentTargetType;
                 _viewModel.SelectionTypeId = SelectionTargetId;
             }
-        }
-
-        public Visibility TogglePackageView(bool ispackageView)
-        {
-            
-            return ispackageView ? Visibility.Visible : Visibility.Collapsed;
-        }
-        public Visibility ToggleNotificationView(bool ispackageView)
-        {
-
-            return ispackageView ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void ToggleViewButton_Click(object sender, RoutedEventArgs e)
@@ -87,6 +77,14 @@ namespace INotify.View
             _viewModel?.RefreshView();
         }
 
+        private void TogglePackageGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is KPackageNotificationGroup group)
+            {
+                _viewModel?.TogglePackageGroup(group);
+            }
+        }
+
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateViewModel();
@@ -95,6 +93,22 @@ namespace INotify.View
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             _viewModel?.Dispose();
+        }
+
+        /// <summary>
+        /// Converter function for toggling notification view visibility
+        /// </summary>
+        public Visibility ToggleNotificationView(bool isPackageView)
+        {
+            return isPackageView ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Converter function for toggling package view visibility
+        /// </summary>
+        public Visibility TogglePackageView(bool isPackageView)
+        {
+            return isPackageView ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }
