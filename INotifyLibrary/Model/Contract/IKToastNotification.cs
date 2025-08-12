@@ -9,7 +9,7 @@ namespace INotifyLibrary.Model.Contract
     public interface IKToastNotification
     {
         string NotificationId { get;  }
-        string PackageId { get; }
+        string PackageFamilyName { get; }
         DateTimeOffset CreatedTime { get; }
         string NotificationTitle { get; }
         string NotificationMessage { get; }

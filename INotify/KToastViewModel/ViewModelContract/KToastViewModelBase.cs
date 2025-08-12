@@ -12,13 +12,20 @@ using WinLogger;
 using Microsoft.UI.Dispatching;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml.Media.Imaging;
+using AppList;
 
 namespace INotify.KToastViewModel.ViewModelContract
 {
     public abstract class KToastViewModelBase : ObservableObject, ICleanup
     {
+        private bool IsInstalledAppFetched = false;
+
+
         #region Properties
         public Dictionary<string, BitmapImage> IconCache = new Dictionary<string, BitmapImage>();
+
+        protected List<InstalledAppInfo> InstalledApps = new();
+
 
         public readonly ILogger Logger = LogManager.GetLogger();
         public CancellationTokenSource cts { get; private set; }
@@ -32,6 +39,8 @@ namespace INotify.KToastViewModel.ViewModelContract
             set { _OwnerZuid = value; OnPropertyChanged(); }
         }
 
+        protected readonly InstalledAppsService AppService;
+
         #endregion Properties
 
         #region Constructor
@@ -39,6 +48,7 @@ namespace INotify.KToastViewModel.ViewModelContract
         public KToastViewModelBase()
         {
             DispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            AppService = new InstalledAppsService();
             ResetCTS();
         }
 
@@ -70,6 +80,11 @@ namespace INotify.KToastViewModel.ViewModelContract
         protected virtual void ClearData()
         {
 
+        }
+
+        protected void GetInstalledApps()
+        {
+            
         }
 
         #endregion Virtual Methods

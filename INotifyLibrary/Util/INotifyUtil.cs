@@ -13,7 +13,6 @@ namespace INotifyLibrary.Util
         {
             return new KPackageProfile()
             {
-                PackageId = IKPackageProfileConstant.DefaultPackageId,
                 PackageFamilyName = IKPackageProfileConstant.DefaultPackageFamilyName,
                 AppDisplayName = IKPackageProfileConstant.DefaultAppDisplayName,
                 AppDescription = IKPackageProfileConstant.DefaultAppDescription,
@@ -25,7 +24,6 @@ namespace INotifyLibrary.Util
         {
             return new KPackageProfile()
             {
-                PackageId = IKPackageProfileConstant.DefaultAllInPackageId,
                 PackageFamilyName = IKPackageProfileConstant.DefaultAllInPackageIdFamilyName,
                 AppDisplayName = IKPackageProfileConstant.DefaultAllInPackageIdDisplayName,
                 AppDescription = IKPackageProfileConstant.DefaultAllInPackageIdDescription,

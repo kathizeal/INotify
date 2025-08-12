@@ -47,7 +47,7 @@ namespace INotify.KToastViewModel.ViewModel
             {
                 var spaceVObj = new KSpaceVObj();
                 spaceVObj.Update(space);
-                spaceVObj.SetViewSpaceIcon();
+                //spaceVObj.SetViewSpaceIcon();
                 KSpaceList.Add(spaceVObj);
             }
         }

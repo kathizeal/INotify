@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace INotifyLibrary.Model.Contract
 {
-    internal interface IKPriorityPackage
+    public interface IKPriorityPackage
     {
         Priority Priority { get; }
         string PackageId { get; }

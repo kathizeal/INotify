@@ -11,11 +11,11 @@ namespace INotifyLibrary.Model.Entity
     {    
         public string Id { get; set; }
         public string SpaceId { get; set; }
-        public string PackageId { get; set; }
+        public string PackageFamilyName { get; set; }
 
         public KSpaceMapper()
         {
-            Id = SpaceId + "_" + PackageId;
+            Id = SpaceId + "_" + PackageFamilyName;
         }
     }
 }

@@ -46,9 +46,9 @@ namespace INotify
         /// <param name="args">Details about the launch request and process.</param>
         protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            await InitializationManager.Instance.InitializeApp(args);
             m_window = new MainWindow();
             m_window.Activate();
-            await InitializationManager.Instance.InitializeApp(args);
 
         }
 

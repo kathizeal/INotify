@@ -13,9 +13,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove=".github\**" />
     <Compile Remove="KToastView\ViewContract\**" />
+    <EmbeddedResource Remove=".github\**" />
     <EmbeddedResource Remove="KToastView\ViewContract\**" />
+    <None Remove=".github\**" />
     <None Remove="KToastView\ViewContract\**" />
+    <Page Remove=".github\**" />
     <Page Remove="KToastView\ViewContract\**" />
   </ItemGroup>
   <ItemGroup>
@@ -26,6 +30,7 @@
     <None Remove="KToastView\Resources\MainResource.xaml" />
     <None Remove="KToastView\View\KSpaceControl.xaml" />
     <None Remove="KToastView\View\KToastListControl.xaml" />
+    <None Remove="View\NotificationListControl.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,9 +58,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.7" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\INotifyWinForm\WinToast\WinToast.csproj" />
     <ProjectReference Include="..\..\WinCommon\WinCommon.csproj" />
     <ProjectReference Include="..\..\WinLogger\WinLogger.csproj" />
     <ProjectReference Include="..\INotifyLibrary\INotifyLibrary.csproj" />
@@ -90,6 +95,11 @@
     <PRIResource Remove="KToastView\ViewContract\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="ViewModels\PriorityAppViewModel.cs" />
+    <Compile Remove="ViewModels\PriorityPackageViewModel.cs" />
+    <Compile Remove="ViewModels\SpaceViewModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="KToastView\View\KSpaceControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -98,5 +108,23 @@
     <Page Update="KToastView\Resources\MainResource.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="View\AllPackageControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Resources\ToastResources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="View\NotificationListControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Remove=".github\**" />
   </ItemGroup>
 </Project>

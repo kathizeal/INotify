@@ -113,7 +113,7 @@ namespace INotify.KToastViewModel.ViewModelContract
         public abstract void AddPackageToSpace(KPackageProfile package, string spaceId);
         public abstract void PopulateAddPackageToSpace(KPackageProfile PackageProfile, string spaceId);
         public abstract void PopulatePackages(ObservableCollection<KPackageProfile> packageProfiles);
-        public abstract void GetKToastNotificationByPackageId(string packageId);
+        public abstract void GetKToastNotificationByPackageFamilyName(string packageId);
         #endregion
 
 
