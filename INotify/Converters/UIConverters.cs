@@ -168,4 +168,26 @@ namespace INotify.Converters
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Converter for empty state text based on filter status
+    /// </summary>
+    public class EmptyStateTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool hasActiveFilters)
+            {
+                return hasActiveFilters 
+                    ? "No notifications match your current filters. Try adjusting your search criteria."
+                    : "Notifications will appear here when they are received";
+            }
+            return "Notifications will appear here when they are received";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

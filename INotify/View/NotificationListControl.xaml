@@ -80,17 +80,19 @@
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock
                             FontWeight="SemiBold"
+                            Visibility="Collapsed"
                             Text="{x:Bind NotificationData.NotificationTitle, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
-                            FontSize="12"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            MaxLines="2"
+                            FontWeight="SemiBold"
+                            Foreground="{ThemeResource TextFillColorPrimary}"
                             Text="{x:Bind NotificationData.NotificationMessage, Mode=OneWay}"
-                            TextTrimming="CharacterEllipsis" />
+                            TextWrapping="WrapWholeWords"/>
                         <TextBlock
                             Margin="0,4,0,0"
-                            FontSize="11"
+                            FontSize="14"
+                            FontStyle="Normal"
+                            FontWeight="Bold"
                             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                             Text="{x:Bind ToastPackageProfile.AppDisplayName, Mode=OneWay}" />
                     </StackPanel>

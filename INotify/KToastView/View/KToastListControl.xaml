@@ -8,152 +8,386 @@
     xmlns:local="using:INotify.KToastView.View"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:INotify.KToastView.Model"
-    xmlns:selectors="using:INotify.KToastView.Control"
+    xmlns:converters="using:INotify.Converters"
     Loaded="UserControl_Loaded"
+    Unloaded="UserControl_Unloaded"
     mc:Ignorable="d">
+
     <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/KToastView/Resources/MainResource.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <selectors:ToastHeaderTemplateSelector
-                x:Key="ToastHeaderTemplateSelector"
-                KNotificationByPackageTemplate="{StaticResource KNotificationByPackageTemplate}"
-                KNotificationBySpaceTemplate="{StaticResource KNotificationBySpaceTemplate}" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        
+        <!--  Notification Item Template  -->
+        <DataTemplate x:Key="NotificationItemTemplate" x:DataType="model:KToastVObj">
+            <Border
+                Margin="0,4"
+                Padding="16"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <selectors:ToastItemTemplateSelector
-                x:Key="ToastItemTemplateSelector"
-                KPackageTemplate="{StaticResource KPackageTemplate}"
-                KToastTemplate="{StaticResource KToastTemplate}" />
-            <CollectionViewSource x:Name="CVS" IsSourceGrouped="True" />
-            <DataTemplate
-                x:Key="KToastTemplate"
-                x:Name="KToastTemplate"
-                x:DataType="model:KToastVObj">
-                <StackPanel
-                    HorizontalAlignment="Left"
-                    BorderBrush="Salmon"
-                    BorderThickness="0"
-                    Orientation="Vertical">
+                    <!--  App Icon  -->
                     <Image
-                        Width="64"
-                        Height="64"
-                        HorizontalAlignment="Left"
+                        Grid.Column="0"
+                        Width="32"
+                        Height="32"
+                        Margin="0,0,12,0"
                         Source="{x:Bind AppIcon, Mode=OneWay}" />
-                    <StackPanel HorizontalAlignment="Left">
+
+                    <!--  Notification Content  -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock
-                            HorizontalAlignment="Left"
-                            FontWeight="Bold"
+                            FontWeight="SemiBold"
+                            Text="{x:Bind NotificationData.NotificationTitle, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            MaxLines="2"
+                            Text="{x:Bind NotificationData.NotificationMessage, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                             Text="{x:Bind ToastPackageProfile.AppDisplayName, Mode=OneWay}" />
-                        <TextBlock Text="{x:Bind NotificationData.NotificationMessage, Mode=OneWay}" TextWrapping="Wrap" />
-                        <TextBlock Text="{x:Bind NotificationData.DisplayTime, Mode=OneWay}" />
                     </StackPanel>
-                </StackPanel>
-            </DataTemplate>
 
-
-
-            <DataTemplate
-                x:Key="KNotificationByPackageTemplate"
-                x:Name="KNotificationByPackageTemplate"
-                x:DataType="model:KNotificationByPackageCVS">
-                <StackPanel
-                    Orientation="Horizontal"
-                    Tag="{x:Bind Profile, Mode=OneWay}"
-                    Tapped="StackPanel_Tapped">
-                    <Image
-                        Width="64"
-                        Height="64"
-                        Source="{x:Bind Profile.AppIcon, Mode=OneWay}" />
+                    <!--  Time  -->
                     <TextBlock
-                        FontWeight="Bold"
-                        Style="{StaticResource NormalTextStyle}"
-                        Text="{x:Bind DisplayName, Mode=OneWay}" />
-                </StackPanel>
-            </DataTemplate>
+                        Grid.Column="2"
+                        VerticalAlignment="Top"
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind NotificationData.DisplayTime, Mode=OneWay}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
 
-            <DataTemplate
-                x:Key="KNotificationBySpaceTemplate"
-                x:Name="KNotificationBySpaceTemplate"
-                x:DataType="model:KNotificationBySpaceCVS">
-                <StackPanel Orientation="Horizontal">
-                    <Image
-                        Width="64"
-                        Height="64"
-                        Source="{x:Bind Space.AppIcon, Mode=OneWay}" />
-                    <TextBlock
-                        FontWeight="Bold"
-                        Style="{StaticResource NormalTextStyle}"
-                        Text="{x:Bind DisplayName, Mode=OneWay}" />
-                </StackPanel>
-            </DataTemplate>
-
-
-            <DataTemplate
-                x:Key="KPackageTemplate"
-                x:Name="KPackageTemplate"
-                x:DataType="model:KPackageProfileVObj">
-                <StackPanel Orientation="Horizontal">
-                    <Image
-                        Width="64"
-                        Height="64"
-                        Source="{x:Bind AppIcon}" />
-                    <TextBlock
-                        FontWeight="Bold"
-                        Style="{StaticResource NormalTextStyle}"
-                        Text="{x:Bind AppDisplayName}" />
-                </StackPanel>
-            </DataTemplate>
-
-            <DataTemplate
-                x:Key="KSpaceTemplate"
-                x:Name="KSpaceTemplate"
-                x:DataType="model:KSpaceVObj">
-                <StackPanel Orientation="Horizontal">
-                    <Image
-                        Width="64"
-                        Height="64"
-                        Source="{x:Bind AppIcon}" />
-                    <TextBlock
-                        FontWeight="Bold"
-                        Style="{StaticResource NormalTextStyle}"
-                        Text="{x:Bind SpaceName}" />
-                </StackPanel>
-            </DataTemplate>
-        </ResourceDictionary>
-
+        <!--  App Item Template for ComboBox  -->
+        <DataTemplate x:Key="AppItemTemplate" x:DataType="entity:KPackageProfile">
+            <StackPanel Orientation="Horizontal">
+                <!--<Image
+                    Width="20"
+                    Height="20"
+                    Margin="0,0,8,0"
+                    Source="{x:Bind LogoFilePath, Mode=OneWay}" />-->
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Text="{x:Bind AppDisplayName, Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
     </UserControl.Resources>
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Grid Margin="0,8,0,0">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <ListView
-            x:Name="VerticalContentLV"
-            ItemsSource="{x:Bind _VM.KToastNotifications, Mode=OneWay}"
-            ItemTemplateSelector="{StaticResource ToastItemTemplateSelector}"
-            Grid.Row="0"
-            IsItemClickEnabled="True" />
-        <ListView
-            x:Name="HorizontalContentLV"
-            ScrollViewer.VerticalScrollMode="Disabled"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            IsRightTapEnabled="True"
-            RightTapped="HorizontalContentLV_RightTapped"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            SelectionChanged="HorizontalContentLV_SelectionChanged"
+
+        <!--  Header Section  -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Title and Count  -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock
+                    FontSize="20"
+                    FontWeight="SemiBold"
+                    Text="All Notifications" />
+                <TextBlock
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind _VM.TotalCountText, Mode=OneWay}" />
+            </StackPanel>
+
+            <!--  Search Box  -->
+            <TextBox
+                Grid.Column="1"
+                Width="250"
+                Margin="0,0,8,0"
+                PlaceholderText="Search notifications..."
+                Text="{x:Bind _VM.SearchKeyword, Mode=TwoWay}"
+                KeyDown="SearchBox_KeyDown">
+                <TextBox.Resources>
+                    <Style TargetType="TextBox">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TextBox">
+                                    <Grid>
+                                        <Border
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <FontIcon
+                                                    Grid.Column="0"
+                                                    Margin="8,0,4,0"
+                                                    FontSize="14"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Glyph="&#xE721;" />
+                                                <ScrollViewer
+                                                    x:Name="ContentElement"
+                                                    Grid.Column="1"
+                                                    Margin="4,0,8,0"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    HorizontalScrollMode="Auto"
+                                                    HorizontalScrollBarVisibility="Hidden"
+                                                    IsTabStop="False"
+                                                    VerticalScrollMode="Auto"
+                                                    VerticalScrollBarVisibility="Hidden"
+                                                    ZoomMode="Disabled" />
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TextBox.Resources>
+            </TextBox>
+
+            <!--  Filter Button  -->
+            <Button
+                Grid.Column="2"
+                Margin="0,0,8,0"
+                Click="FilterButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon 
+                        FontSize="16" 
+                        Glyph="&#xE71C;" />
+                    <TextBlock 
+                        Margin="4,0,0,0" 
+                        Text="Filter" />
+                </StackPanel>
+            </Button>
+
+            <!--  Refresh Button  -->
+            <Button 
+                Grid.Column="3" 
+                Click="RefreshButton_Click"
+                Command="{x:Bind _VM.RefreshCommand}">
+                <FontIcon FontSize="16" Glyph="&#xE72C;" />
+            </Button>
+        </Grid>
+
+        <!--  Filter Panel  -->
+        <Border
             Grid.Row="1"
-            ItemTemplateSelector="{StaticResource ToastItemTemplateSelector}"
-            IsItemClickEnabled="True">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-        </ListView>
+            Margin="0,0,0,8"
+            Padding="16"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Visibility="{x:Bind FilterPanelVisibility(_VM.IsFilterPanelVisible), Mode=OneWay}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!--  Filter Row 1: App Filter  -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock
+                        Grid.Column="0"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Filter by App:" />
+
+                    <ComboBox
+                        Grid.Column="1"
+                        MinWidth="200"
+                        HorizontalAlignment="Left"
+                        ItemTemplate="{StaticResource AppItemTemplate}"
+                        ItemsSource="{x:Bind _VM.AvailableApps, Mode=OneWay}"
+                        PlaceholderText="Select an app..."
+                        SelectedValuePath="PackageFamilyName"
+                        SelectedValue="{x:Bind _VM.SelectedAppFilter, Mode=TwoWay}" />
+                </Grid>
+
+                <!--  Filter Row 2: Date Filters  -->
+                <Grid Grid.Row="1" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock
+                        Grid.Column="0"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Date:" />
+
+                    <CalendarDatePicker
+                        Grid.Column="1"
+                        x:Name="SpecificDatePicker"
+                        MinWidth="150"
+                        Margin="0,0,16,0"
+                        Header="Specific Date"
+                        PlaceholderText="Select date"
+                        DateChanged="SpecificDatePicker_DateChanged" />
+
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Range:" />
+
+                    <CalendarDatePicker
+                        Grid.Column="3"
+                        x:Name="FromDatePicker"
+                        MinWidth="150"
+                        Margin="0,0,8,0"
+                        Header="From"
+                        PlaceholderText="From date"
+                        DateChanged="FromDatePicker_DateChanged" />
+
+                    <CalendarDatePicker
+                        Grid.Column="5"
+                        x:Name="ToDatePicker"
+                        MinWidth="150"
+                        Header="To"
+                        PlaceholderText="To date"
+                        DateChanged="ToDatePicker_DateChanged" />
+                </Grid>
+
+                <!--  Filter Row 3: Action Buttons  -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Button
+                        Margin="0,0,8,0"
+                        Click="ApplyFiltersButton_Click"
+                        Command="{x:Bind _VM.ApplyFiltersCommand}"
+                        Style="{ThemeResource AccentButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                FontSize="14" 
+                                Glyph="&#xE73E;" 
+                                Margin="0,0,4,0" />
+                            <TextBlock Text="Apply Filters" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Click="ClearFiltersButton_Click"
+                        Command="{x:Bind _VM.ClearFiltersCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                FontSize="14" 
+                                Glyph="&#xE894;" 
+                                Margin="0,0,4,0" />
+                            <TextBlock Text="Clear Filters" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  Content Section  -->
+        <Grid Grid.Row="2">
+            <!--  Loading Indicator  -->
+            <ProgressRing
+                Width="50"
+                Height="50"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsActive="{x:Bind _VM.ShowLoadingIndicator, Mode=OneWay}"
+                Visibility="{x:Bind _VM.ShowLoadingIndicator, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+
+            <!--  Notifications ListView with Infinite Scrolling  -->
+            <ListView
+                x:Name="NotificationsListView"
+                IsItemClickEnabled="False"
+                ItemTemplate="{StaticResource NotificationItemTemplate}"
+                ItemsSource="{x:Bind _VM.KToastNotifications, Mode=OneWay}"
+                SelectionMode="None"
+                ScrollViewer.VerticalScrollMode="Auto"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollMode="Disabled"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                ScrollViewer.ZoomMode="Disabled"
+                IncrementalLoadingThreshold="5">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                
+                <!--  Footer for Load More Indicator  -->
+                <ListView.Footer>
+                    <Grid Height="60" Visibility="{x:Bind _VM.ShowLoadingMoreIndicator, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                        <StackPanel 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Orientation="Horizontal">
+                            <ProgressRing 
+                                Width="20" 
+                                Height="20" 
+                                Margin="0,0,8,0"
+                                IsActive="True" />
+                            <TextBlock 
+                                VerticalAlignment="Center"
+                                Text="Loading more notifications..." 
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                    </Grid>
+                </ListView.Footer>
+            </ListView>
+
+            <!--  Empty State  -->
+            <StackPanel
+                HorizontalAlignment="Center"
+                Visibility="{x:Bind EmptyState(_VM.TotalCount), Mode=OneWay}"
+                VerticalAlignment="Center">
+                <TextBlock
+                    Margin="0,0,0,8"
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="No notifications found" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorTertiaryBrush}">
+                    <TextBlock.Text>
+                        <Binding Path="_VM.HasActiveFilters" Mode="OneWay">
+                            <Binding.Converter>
+                                <converters:EmptyStateTextConverter />
+                            </Binding.Converter>
+                        </Binding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>
