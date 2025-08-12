@@ -95,6 +95,9 @@ namespace INotifyLibrary.DataManger
                     {
                         failedApps.Add(app.DisplayName);
                     }
+
+                    DBHandler.UpdateKPackageProfileFromAddition(new KPackageProfile() {PackageFamilyName = app.PackageName, AppDisplayName = app.DisplayName, Publisher = app.Publisher, LogoFilePath = string.Empty }, request.UserId);
+
                 }
                 catch (Exception)
                 {
@@ -129,6 +132,8 @@ namespace INotifyLibrary.DataManger
                     {
                         failedApps.Add(app.DisplayName);
                     }
+                    DBHandler.UpdateKPackageProfileFromAddition(new KPackageProfile() { PackageFamilyName = app.PackageName, AppDisplayName = app.DisplayName, Publisher = app.Publisher, LogoFilePath = string.Empty }, request.UserId);
+
                 }
                 catch (Exception)
                 {

@@ -91,16 +91,30 @@ namespace INotify.KToastView.Model
         /// <summary>
         /// Creates a KPackageProfileVObj from InstalledAppInfo
         /// </summary>
-        public void PopulateInstalledAppInfo(InstalledAppInfo appInfo, Priority priority = Priority.None, int notificationCount = 0)
+        public void PopulateInstalledAppInfo(InstalledAppInfo appInfo, int notificationCount = 0)
         {
             PackageFamilyName = appInfo.PackageFamilyName ?? string.Empty;
             AppDisplayName = appInfo.DisplayName;
             AppDescription = $"Application: {appInfo.DisplayName}";
             Publisher = appInfo.Publisher ?? "Unknown";
-            Priority = priority;
+            Priority = Priority.None;
             NotificationCount = notificationCount;
             IsSelected = false;
             AppIcon = appInfo.Icon;
+            LogoFilePath = string.Empty; // Will be set when icon is saved
+            SetDisplayName();
+        }
+
+        public void PopulateInstalledAppInfo(KPackageProfile packageProfile, int notificationCount = 0)
+        {
+            PackageFamilyName = packageProfile.PackageFamilyName ?? string.Empty;
+            AppDisplayName = packageProfile.AppDisplayName;
+            AppDescription = $"Application: {packageProfile.AppDescription}";
+            Publisher = packageProfile.Publisher ?? "Unknown";
+            Priority = Priority.None;
+            NotificationCount = notificationCount;
+            IsSelected = false;
+            AppIcon = default; ;
             LogoFilePath = string.Empty; // Will be set when icon is saved
             SetDisplayName();
         }

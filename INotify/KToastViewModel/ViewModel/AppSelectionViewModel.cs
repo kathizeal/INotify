@@ -1,13 +1,17 @@
-﻿using INotify.KToastViewModel.ViewModelContract;
+﻿using INotify.KToastView.Model;
+using INotify.KToastViewModel.ViewModelContract;
 using INotifyLibrary.Domain;
+using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util;
-using WinLogger;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WinCommon.Error;
 using WinCommon.Util;
+using WinLogger;
 
 namespace INotify.KToastViewModel.ViewModel
 {
@@ -47,13 +51,7 @@ namespace INotify.KToastViewModel.ViewModel
             }
         }
 
-        public override void GetAppPackageProfile()
-        {
-        }
-
-        public override void SyncAppPackageProfileWithInstalled()
-        {
-        }
+       
 
         private class AddAppsToConditionPresenterCallback : IAddAppsToConditionPresenterCallback
         {
@@ -109,5 +107,44 @@ namespace INotify.KToastViewModel.ViewModel
                     "Add apps to condition operation was ignored");
             }
         }
+        public class GetAllKPackageProfilesPresenterCallback : IGetAllKPackageProfilesPresenterCallback
+        {
+            private AppSelectionViewModelBase _presenter;
+
+            public GetAllKPackageProfilesPresenterCallback(AppSelectionViewModelBase presenter)
+            {
+                _presenter = presenter;
+            }
+
+            public void OnCanceled(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+            }
+
+            public void OnError(ZError error)
+            {
+            }
+
+            public void OnFailed(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+            }
+
+            public void OnIgnored(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+            }
+
+            public void OnProgress(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+            }
+
+            public async void OnSuccess(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+                _presenter.DispatcherQueue.TryEnqueue(() =>
+                {
+                    _presenter.SyncAppPackageProfileWithInstalled(response.Data.KPackageProfiles);
+                });
+            }
+        }
+
+
     }
 }

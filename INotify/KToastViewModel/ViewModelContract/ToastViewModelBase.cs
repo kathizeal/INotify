@@ -1,5 +1,8 @@
 ﻿using AppList;
 using INotify.KToastView.Model;
+using INotifyLibrary.Domain;
+using INotifyLibrary.Model.Entity;
+using INotifyLibrary.Util;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
@@ -9,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WinCommon.Error;
 using WinCommon.Util;
 using WinLogger;
 using WinLogger.Contract;
@@ -19,7 +23,7 @@ namespace INotify.KToastViewModel.ViewModelContract
     {
         private bool IsInstalledAppFetched = false;
 
-        public ObservableCollection<KPackageProfileVObj> PackageProfiles = new();
+        public readonly ObservableCollection<KPackageProfileVObj> PackageProfiles = new();
 
         #region Properties
 
@@ -79,7 +83,7 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         protected virtual void ClearData()
         {
-
+            PackageProfiles.Clear();
         }
 
         public async void GetInstalledApps()
@@ -91,17 +95,88 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         }
 
-        private void ConvertInstalledAppsToPackageProfiles()
+        public void ConvertInstalledAppsToPackageProfiles()
         {
-            PackageProfiles.Clear();
+            var hashSet = PackageProfiles.Select(p => p.PackageFamilyName).ToHashSet();
             foreach (var app in InstalledApps)
             {
-                KPackageProfileVObj package = new KPackageProfileVObj();
-                package.PopulateInstalledAppInfo(app, priority: INotifyLibrary.Util.Enums.Priority.None, 0);
-                PackageProfiles.Add(package);
+
+                if (!hashSet.Contains(app.PackageFamilyName))
+                {
+                    KPackageProfileVObj package = new KPackageProfileVObj();
+                    package.PopulateInstalledAppInfo(app, 0);
+                    PackageProfiles.Add(package);
+                }
+                hashSet.Add(app.PackageFamilyName);
+              
             }
         }
 
+        public void GetAppPackageProfile()
+        {
+            var getAllPackageRequest = new GetAllKPackageProfilesRequest(INotifyConstant.CurrentUser);
+            var getAllPackage = new GetAllKPackageProfiles(getAllPackageRequest, new GetAllKPackageProfilesPresenterCallback(this));
+            getAllPackage.Execute();
+        }
+
+        public void SyncAppPackageProfileWithInstalled(ObservableCollection<KPackageProfile> packageProfiles)
+        {
+            var hashSet = PackageProfiles.Select(p => p.PackageFamilyName).ToHashSet();
+            if (CommonUtil.IsNonEmpty(packageProfiles))
+            {
+                foreach (var package in packageProfiles)
+                {
+                    if (!hashSet.Contains(package.PackageFamilyName))
+                    {
+                        KPackageProfileVObj VObjpackage = new KPackageProfileVObj();
+                        VObjpackage.PopulateInstalledAppInfo(package, 0);
+                        PackageProfiles.Add(VObjpackage);
+                    }
+                    hashSet.Add(package.PackageFamilyName);
+                }
+            }
+        }
+
+
         #endregion Virtual Methods
+
+        public class GetAllKPackageProfilesPresenterCallback : IGetAllKPackageProfilesPresenterCallback
+        {
+            private ToastViewModelBase _presenter;
+
+            public GetAllKPackageProfilesPresenterCallback(ToastViewModelBase presenter)
+            {
+                _presenter = presenter;
+            }
+
+            public void OnCanceled(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+            }
+
+            public void OnError(ZError error)
+            {
+            }
+
+            public void OnFailed(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+            }
+
+            public void OnIgnored(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+            }
+
+            public void OnProgress(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+            }
+
+            public async void OnSuccess(ZResponse<GetAllKPackageProfilesResponse> response)
+            {
+                _presenter.DispatcherQueue.TryEnqueue(() =>
+                {
+                    _presenter.SyncAppPackageProfileWithInstalled(response.Data.KPackageProfiles);
+                });
+            }
+        }
+
     }
 }

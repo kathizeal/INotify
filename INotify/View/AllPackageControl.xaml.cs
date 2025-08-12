@@ -33,6 +33,7 @@ namespace INotify.View
         private async void GetAllApps()
         {
             _VM.GetInstalledApps();
+            _VM.GetAppPackageProfile();
         }
 
         private void AppCheckBox_Checked(object sender, RoutedEventArgs e)

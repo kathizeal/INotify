@@ -306,6 +306,7 @@ namespace INotify
                 DetailListView.Visibility = Visibility.Visible;
                 DetailListViewContent.CurrentTargetType = selectionTargetType;
                 DetailListViewContent.SelectionTargetId = category;
+                DetailListViewContent.UpdateViewModel();
             }
         }
 

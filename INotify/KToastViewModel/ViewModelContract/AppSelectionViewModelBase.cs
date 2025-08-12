@@ -1,5 +1,6 @@
 ﻿using INotify.KToastView.Model;
 using INotifyLibrary.Domain;
+using INotifyLibrary.Model.Entity;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,9 +13,6 @@ namespace INotify.KToastViewModel.ViewModelContract
     public abstract class AppSelectionViewModelBase : ToastViewModelBase
     {
         public ObservableCollection<KPackageProfileVObj> FilteredApps = new();
-        public abstract void GetAppPackageProfile();
-        public abstract void SyncAppPackageProfileWithInstalled();
-
         public abstract void AddSelectedAppsToCondition(AppSelectionEventArgs appSelectionEventArgs);
     }
 

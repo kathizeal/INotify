@@ -41,6 +41,8 @@ namespace INotifyLibrary.Model.Entity
             }
         }
 
+        public string Publisher { get; set; }
+
         [Ignore]
         public bool IsIconAvailable { get; private set; }
         public bool IsIconOverride { get; set; }
@@ -57,7 +59,9 @@ namespace INotifyLibrary.Model.Entity
                 AppDescription = this.AppDescription,
                 LogoFilePath = this.LogoFilePath,
                 IsIconAvailable = this.IsIconAvailable,
-                IsIconOverride = this.IsIconOverride
+                IsIconOverride = this.IsIconOverride,
+                Publisher = this.Publisher
+
             };
         }
 
@@ -71,6 +75,7 @@ namespace INotifyLibrary.Model.Entity
             LogoFilePath = newData.LogoFilePath;
             IsIconAvailable = newData.IsIconAvailable;
             IsIconOverride = newData.IsIconOverride;
+            Publisher = newData.Publisher;
         }
     }
 }

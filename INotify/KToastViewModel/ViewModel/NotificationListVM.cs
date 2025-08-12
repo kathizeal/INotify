@@ -2,12 +2,13 @@ using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
 using INotifyLibrary.Domain;
 using INotifyLibrary.Model;
+using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util;
-using WinLogger;
-using WinCommon.Util;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using WinCommon.Util;
+using WinLogger;
 
 namespace INotify.KToastViewModel.ViewModel
 {
@@ -85,7 +86,7 @@ namespace INotify.KToastViewModel.ViewModel
                 foreach (var packageGroup in notificationsByPackage)
                 {
                     var packageProfile = packageGroup.First().ToastPackageProfile;
-                    var group = new KPackageNotificationGroup(packageProfile);
+                    var group = new KPackageNotificationGroup(packageProfile.AppDisplayName, packageProfile.PackageFamilyName, packageProfile.LogoFilePath);
                     
                     // Add notifications to the group (sorted by most recent first)
                     var sortedNotifications = packageGroup.OrderByDescending(n => n.NotificationData.CreatedTime);
@@ -101,7 +102,7 @@ namespace INotify.KToastViewModel.ViewModel
                 var packagesWithNotifications = notificationsByPackage.Select(g => g.Key).ToHashSet();
                 foreach (var package in data.Packages.Where(p => !packagesWithNotifications.Contains(p.PackageFamilyName)))
                 {
-                    var group = new KPackageNotificationGroup(package);
+                    var group = new KPackageNotificationGroup(package.AppDisplayName, package.PackageFamilyName, package.LogoFilePath);
                     GroupedPackageNotifications.Add(group);
                 }
 

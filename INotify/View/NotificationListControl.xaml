@@ -68,31 +68,31 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <!--  App Icon  -->
+                    <!--  App Icon  --><!--
                     <Image
                         Grid.Column="0"
                         Width="32"
                         Height="32"
                         Margin="0,0,12,0"
-                        Source="{x:Bind ToastPackageProfile.LogoFilePath}" />
+                        Source="{x:Bind ToastPackageProfile.LogoFilePath, Mode=OneWay}" />-->
 
                     <!--  Notification Content  -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock
                             FontWeight="SemiBold"
-                            Text="{x:Bind NotificationData.NotificationTitle}"
+                            Text="{x:Bind NotificationData.NotificationTitle, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             MaxLines="2"
-                            Text="{x:Bind NotificationData.NotificationMessage}"
+                            Text="{x:Bind NotificationData.NotificationMessage, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             Margin="0,4,0,0"
                             FontSize="11"
                             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                            Text="{x:Bind ToastPackageProfile.AppDisplayName}" />
+                            Text="{x:Bind ToastPackageProfile.AppDisplayName, Mode=OneWay}" />
                     </StackPanel>
 
                     <!--  Time  -->
@@ -101,7 +101,7 @@
                         VerticalAlignment="Top"
                         FontSize="11"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind NotificationData.DisplayTime}" />
+                        Text="{x:Bind NotificationData.DisplayTime, Mode=OneWay}" />
                 </Grid>
             </Border>
         </DataTemplate>
@@ -122,12 +122,12 @@
                     </Grid.ColumnDefinitions>
 
                     <!--  App Icon  -->
-                    <Image
+                    <!--<Image
                         Grid.Column="0"
                         Width="40"
                         Height="40"
                         Margin="0,0,16,0"
-                        Source="{x:Bind IconPath, Mode=OneWay}" />
+                        Source="{x:Bind IconPath, Mode=OneWay}" />-->
 
                     <!--  Package Info  -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -166,7 +166,7 @@
                         Background="Transparent"
                         Click="TogglePackageGroup_Click"
                         Tag="{x:Bind}">
-                        <FontIcon
+                        <FontIcon           
                             FontSize="16"
                             Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
                             Glyph="{x:Bind IsExpanded, Converter={StaticResource ExpandCollapseIconConverter}, Mode=OneWay}" />
@@ -195,18 +195,18 @@
                         Width="40"
                         Height="40"
                         Margin="0,0,16,0"
-                        Source="{x:Bind LogoFilePath}" />
+                        Source="{x:Bind LogoFilePath, Mode=OneWay}" />
 
                     <!--  Package Content  -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock
                             FontWeight="SemiBold"
-                            Text="{x:Bind AppDisplayName}"
+                            Text="{x:Bind AppDisplayName, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{x:Bind AppDescription}"
+                            Text="{x:Bind AppDescription, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis" />
                     </StackPanel>
 
@@ -216,7 +216,7 @@
                         VerticalAlignment="Center"
                         FontSize="10"
                         Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                        Text="{x:Bind PackageFamilyName}" />
+                        Text="{x:Bind PackageFamilyName, Mode=OneWay}" />
                 </Grid>
             </Border>
         </DataTemplate>

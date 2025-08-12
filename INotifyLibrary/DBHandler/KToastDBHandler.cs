@@ -90,6 +90,11 @@ namespace INotifyLibrary.DBHandler
             return true;
         }
 
+        public void UpdateKPackageProfileFromAddition(KPackageProfile packageProfile, string userId)
+        {
+            IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
+            dBConnection.InsertOrReplace(packageProfile);
+        }   
 
         public void UpdateSpaces(IEnumerable<KSpace> spaces, string userId)
         {

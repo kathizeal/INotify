@@ -26,6 +26,8 @@ namespace INotifyLibrary.DBHandler.Contract
         void UpdateOrReplaceKToastNotification(ObservableCollection<KToastNotification> toastNotifications, string userId);
         void UpdateOrReplaceKToastNotification(KToastBObj toastData, string userId);
 
+        void UpdateKPackageProfileFromAddition(KPackageProfile packageProfile, string userId);
+
         IList<KPackageProfile> GetPackagesBySpaceId(string spaceId, string userId);
 
         IList<KSpace> GetAllSpaces(string userId);

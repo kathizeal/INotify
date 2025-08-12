@@ -2,6 +2,7 @@ using INotify.Controls;
 using INotify.KToastDI;
 using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
+using INotifyLibrary.Domain;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -26,20 +27,20 @@ namespace INotify.View
     {
         private NotificationListVMBase _viewModel;
 
-        public INotifyLibrary.Domain.SelectionTargetType CurrentTargetType
+        public SelectionTargetType CurrentTargetType
         {
-            get { return (INotifyLibrary.Domain.SelectionTargetType)GetValue(CurrentTargetTypeProperty); }
-            set { SetValue(CurrentTargetTypeProperty, value); UpdateViewModel(); }
+            get { return (SelectionTargetType)GetValue(CurrentTargetTypeProperty); }
+            set { SetValue(CurrentTargetTypeProperty, value);}
         }
 
         // Using a DependencyProperty as the backing store for CurrentTargetType.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CurrentTargetTypeProperty =
-            DependencyProperty.Register("CurrentTargetType", typeof(INotifyLibrary.Domain.SelectionTargetType), typeof(NotificationListControl), new PropertyMetadata(default));
+            DependencyProperty.Register("CurrentTargetType", typeof(SelectionTargetType), typeof(NotificationListControl), new PropertyMetadata(SelectionTargetType.Priority));
 
         public string SelectionTargetId
         {
             get { return (string)GetValue(SelectionTargetIdProperty); }
-            set { SetValue(SelectionTargetIdProperty, value); UpdateViewModel(); }
+            set { SetValue(SelectionTargetIdProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for SelectionTargetId.  This enables animation, styling, binding, etc...
@@ -58,7 +59,7 @@ namespace INotify.View
             this.DataContext = _viewModel;
         }
 
-        private void UpdateViewModel()
+        public void UpdateViewModel()
         {
             if (_viewModel != null)
             {

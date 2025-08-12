@@ -71,6 +71,7 @@ namespace INotify.Controls
             _VM.FilteredApps.Clear();
 
             _VM.GetInstalledApps();
+            _VM.GetAppPackageProfile();
             AppsList.ItemsSource = _VM.PackageProfiles;
         }
         #region Events

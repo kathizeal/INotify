@@ -497,9 +497,7 @@
                     <Grid x:Name="DetailListView" Visibility="Collapsed">
 
                         <view1:NotificationListControl
-                            x:Name="DetailListViewContent"
-                            CurrentTargetType="Space"
-                            SelectionTargetId="Space3" />
+                            x:Name="DetailListViewContent" />
 
                     </Grid>
 
