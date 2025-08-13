@@ -1,4 +1,5 @@
 using AppList; // For DndService and InstalledAppsService
+using INotify.KToastDI;
 using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
 using INotifyLibrary.DBHandler.Contract;
@@ -38,9 +39,10 @@ namespace INotify
         private NotificationPosition _currentNotificationPosition = NotificationPosition.TopLeft;
         private readonly SemaphoreSlim _fileAccessSemaphore = new SemaphoreSlim(1, 1);
         // Application ViewModel for UI state management
-      
+        private KToastListVMBase _VM;
         public MainWindow()
         {
+            _VM = KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
             this.InitializeComponent();
             InitializeServices();
             CheckFeatureSupport();
@@ -1012,15 +1014,16 @@ namespace INotify
                     };
                     KToastVObj kToastViewData = new KToastVObj(data, packageProfile);
 
-                    // Add null check before calling AddToastControl
-                    if (KToastListViewControl != null)
-                    {
-                        KToastListViewControl.AddToastControl(kToastViewData);
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Warning: KToastListViewControl is null in CreateKToastModel");
-                    }
+                    //// Add null check before calling AddToastControl
+                    //if (KToastListViewControl != null)
+                    //{
+                    //    KToastListViewControl.AddToastControl(kToastViewData);
+                    //}
+                    //else
+                    //{
+                    //    Debug.WriteLine("Warning: KToastListViewControl is null in CreateKToastModel");
+                    //}
+                    _VM.UpdateKToastNotification(kToastViewData);
                 }
             }
             catch (Exception ex)
@@ -1107,12 +1110,36 @@ namespace INotify
         {
             try
             {
+                // Unsubscribe from events
+                if (_listener != null)
+                {
+                    _listener.NotificationChanged -= _listener_NotificationChanged;
+                }
+
                 _dndService?.Dispose();
                 _notificationPositioner = null;
+                
+                Debug.WriteLine("MainWindow resources cleaned up successfully");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error disposing services: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Brings this window to foreground and ensures it's visible
+        /// </summary>
+        public void BringToForeground()
+        {
+            try
+            {
+                this.Activate();
+                Debug.WriteLine("MainWindow brought to foreground");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error bringing MainWindow to foreground: {ex.Message}");
             }
         }
         #endregion

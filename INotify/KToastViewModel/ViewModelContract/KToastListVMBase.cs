@@ -261,6 +261,7 @@ namespace INotify.KToastViewModel.ViewModelContract
         /// Add a single notification to the collection
         /// </summary>
         public abstract void AddNotification(KToastVObj notification);
+        public abstract void UpdateKToastNotification(KToastVObj notification);
 
         /// <summary>
         /// Handle scroll to bottom event for infinite scrolling

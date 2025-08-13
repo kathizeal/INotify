@@ -219,6 +219,12 @@ namespace INotify.KToastViewModel.ViewModelContract
             }
         }
 
+        public override void  UpdateKToastNotification(KToastVObj toastData)
+        {
+            UpdateKToastRequest request = new UpdateKToastRequest(toastData, INotifyConstant.CurrentUser);
+            UpdateKToast updateKToast = new UpdateKToast(request,default);
+            updateKToast.Execute();
+        }
         #endregion
 
         #region PresenterCallbacks
@@ -421,11 +427,7 @@ namespace INotify.KToastViewModel.ViewModelContract
             // Not applicable for notification-only view
         }
 
-        [Obsolete("This method is obsolete. Not supported in notification-only view.")]
-        public void UpdateKToastNotification(KToastVObj ToastData)
-        {
-            AddNotification(ToastData);
-        }
+     
         #endregion
     }
 }
