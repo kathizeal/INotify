@@ -14,7 +14,7 @@
     mc:Ignorable="d">
 
 
-    <Grid>
+    <Grid PreviewKeyDown="HandleKeyboardShortcut">
         <Grid.Resources>
             <ResourceDictionary>
                 <Style x:Key="CustomFlyoutPresenter" TargetType="FlyoutPresenter">

@@ -1,4 +1,5 @@
-﻿using INotifyLibrary;
+﻿using INotify.KToastDI;
+using INotifyLibrary;
 using INotifyLibrary.Util;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -36,6 +37,7 @@ namespace INotify.Manager
         {
             IServiceCollection services = new ServiceCollection();
             LibraryServiceManager.InitializeDI(services);
+            var di = KToastDIServiceProvider.Instance;
         }
 
         protected override async Task InitializeAppTheme()
@@ -45,11 +47,17 @@ namespace INotify.Manager
 
         protected override async Task InitializeLibraryServicesForUser()
         {
-            Logger.Info(LogManager.GetCallerInfo(), "START: Initialize librabry services for user");
+            Logger.Info(LogManager.GetCallerInfo(), "START: Initialize library services for user");
             var dbFolderPath = WinUI3CommonUtil.GetRootDBFolderPath();
             await LibraryServiceManager.IntializeDB(dbFolderPath, INotifyConstant.CurrentUser);
         }
 
-
+        /// <summary>
+        /// Public method to initialize library services for the current user
+        /// </summary>
+        public async Task InitializeLibraryServicesForCurrentUser()
+        {
+            await InitializeLibraryServicesForUser();
+        }
     }
 }

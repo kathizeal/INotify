@@ -12,6 +12,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove=".github\**" />
     <Compile Remove="KToastView\ViewContract\**" />
@@ -22,10 +23,12 @@
     <Page Remove=".github\**" />
     <Page Remove="KToastView\ViewContract\**" />
   </ItemGroup>
+
   <ItemGroup>
     <Content Remove="Assets\DefaultIcon\DefaultNotificationIcon.png" />
     <Content Remove="Assets\DefaultIcon\DefaultWorkSpaceIcon.png" />
   </ItemGroup>
+
   <ItemGroup>
     <None Remove="KToastView\Resources\MainResource.xaml" />
     <None Remove="KToastView\View\KSpaceControl.xaml" />
@@ -47,39 +50,34 @@
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <!--
-    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-    Tools extension to be activated for this project even if the Windows App SDK Nuget
-    package has not yet been restored.
-  -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
+
   <ItemGroup>
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.1.4" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.7" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\WinCommon\WinCommon.csproj" />
     <ProjectReference Include="..\..\WinLogger\WinLogger.csproj" />
     <ProjectReference Include="..\INotifyLibrary\INotifyLibrary.csproj" />
     <ProjectReference Include="..\WinUI3Component\WinUI3Component.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <Page Update="KToastView\View\KToastListControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
   <PropertyGroup Label="Globals">
     <WebView2UseWinRT>False</WebView2UseWinRT>
   </PropertyGroup>
 
-  <!--
-    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
-    Explorer "Package and Publish" context menu entry to be enabled for this project even if
-    the Windows App SDK Nuget package has not yet been restored.
-  -->
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
@@ -89,41 +87,54 @@
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">False</PublishTrimmed>
   </PropertyGroup>
+
+  <!-- Tell the linker to keep fields for the WinRT vtable type -->
+  <ItemGroup>
+    <TrimmerRootDescriptor Include="linker.xml" />
+  </ItemGroup>
+
   <ItemGroup>
     <PRIResource Remove="KToastView\ViewContract\**" />
   </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="ViewModels\PriorityAppViewModel.cs" />
     <Compile Remove="ViewModels\PriorityPackageViewModel.cs" />
     <Compile Remove="ViewModels\SpaceViewModel.cs" />
   </ItemGroup>
+
   <ItemGroup>
     <Page Update="KToastView\View\KSpaceControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
   <ItemGroup>
     <Page Update="KToastView\Resources\MainResource.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
   <ItemGroup>
     <Page Update="View\AllPackageControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
   <ItemGroup>
     <Page Update="Resources\ToastResources.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
   <ItemGroup>
     <Page Update="View\NotificationListControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
   <ItemGroup>
     <PRIResource Remove=".github\**" />
   </ItemGroup>

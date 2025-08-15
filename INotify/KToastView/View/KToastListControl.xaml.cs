@@ -38,7 +38,6 @@ namespace INotify.KToastView.View
             this.InitializeComponent();
             _VM = KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
             _VM.View = this;
-            this.DataContext = _VM;
         }
 
         public Visibility EmptyState(int count)

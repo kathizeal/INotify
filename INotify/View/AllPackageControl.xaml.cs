@@ -23,17 +23,51 @@ namespace INotify.View
     public sealed partial class AllPackageControl : UserControl
     {
         private ToastViewModelBase _VM;
+        
         public AllPackageControl()
         {
-            _VM = KToastDIServiceProvider.Instance.GetService<ToastViewModelBase>();
-            InitializeComponent();
-            GetAllApps();
+            try
+            {
+                InitializeComponent();
+                InitializeViewModel();
+                GetAllApps();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in AllPackageControl constructor: {ex.Message}");
+            }
+        }
+
+        private void InitializeViewModel()
+        {
+            try
+            {
+                _VM = KToastDIServiceProvider.Instance.GetService<ToastViewModelBase>();
+                if (_VM == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Warning: ToastViewModelBase service not available from DI container");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing ViewModel in AllPackageControl: {ex.Message}");
+            }
         }
 
         private async void GetAllApps()
         {
-            _VM.GetInstalledApps();
-            _VM.GetAppPackageProfile();
+            try
+            {
+                if (_VM != null)
+                {
+                    _VM.GetInstalledApps();
+                    _VM.GetAppPackageProfile();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in GetAllApps: {ex.Message}");
+            }
         }
 
         private void AppCheckBox_Checked(object sender, RoutedEventArgs e)

@@ -12,21 +12,65 @@ namespace INotify.KToastDI
 {
     internal class KToastDIServiceProvider : DotNetDIServiceProviderBase
     {
+        private static readonly object _lockObject = new object();
+        private static volatile bool _isInitialized = false;
+
         public static KToastDIServiceProvider Instance { get { return KToastDIServiceProviderSingleton.Instance; } }
 
         /// <summary>Initializes the <see cref="DIServiceProviderBase.Container"/> with module specific DI services</summary>
         private KToastDIServiceProvider()
         {
-            IServiceCollection servicesCollection = new ServiceCollection();
+            InitializeServices();
+        }
 
-            servicesCollection.AddTransient<ToastViewModelBase, ToastViewModel>();
-            servicesCollection.AddTransient<KToastListVMBase, KToastListViewModel>();
-            servicesCollection.AddTransient<KSpaceViewModelBase, KSpaceViewModel>();
-            servicesCollection.AddTransient<AppSelectionViewModelBase, AppSelectionViewModel>();
-            servicesCollection.AddTransient<NotificationListVMBase, NotificationListVM>();
-            servicesCollection.AddTransient<FeedbackVMBase, FeedbackVM>();
-            
-            BuildServiceProvider(servicesCollection, false); // addDefaultServices is sent as false since UIDI doesn't require PasswordProvider, DBAdapter & NetworkAdapter instances
+        void InitializeServices()
+        {
+            if (_isInitialized) return;
+
+            lock (_lockObject)
+            {
+                if (_isInitialized) return;
+
+                try
+                {
+                    IServiceCollection servicesCollection = new ServiceCollection();
+
+                    servicesCollection.AddTransient<ToastViewModelBase, ToastViewModel>();
+                    servicesCollection.AddTransient<KToastListVMBase, KToastListViewModel>();
+                    servicesCollection.AddTransient<KSpaceViewModelBase, KSpaceViewModel>();
+                    servicesCollection.AddTransient<AppSelectionViewModelBase, AppSelectionViewModel>();
+                    servicesCollection.AddTransient<NotificationListVMBase, NotificationListVM>();
+                    servicesCollection.AddTransient<FeedbackVMBase, FeedbackVM>();
+                    
+                    BuildServiceProvider(servicesCollection, false); // addDefaultServices is sent as false since UIDI doesn't require PasswordProvider, DBAdapter & NetworkAdapter instances
+
+                    _isInitialized = true;
+                    System.Diagnostics.Debug.WriteLine("KToastDIServiceProvider initialized successfully");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error initializing KToastDIServiceProvider: {ex.Message}");
+                    throw; // Re-throw to maintain existing behavior
+                }
+            }
+        }
+
+        public new T GetService<T>()
+        {
+            if (!_isInitialized)
+            {
+                InitializeServices();
+            }
+
+            try
+            {
+                return base.GetService<T>();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting service {typeof(T).Name}: {ex.Message}");
+                return default(T);
+            }
         }
 
         #region KToastDIServiceProvider class

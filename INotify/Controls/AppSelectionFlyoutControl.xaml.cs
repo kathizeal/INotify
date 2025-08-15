@@ -51,28 +51,54 @@ namespace INotify.Controls
 
         public AppSelectionFlyoutControl()
         {
-            IntilizeDI();
-            this.InitializeComponent();
+            try
+            {
+                this.InitializeComponent();
+                IntilizeDI();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in AppSelectionFlyoutControl constructor: {ex.Message}");
+            }
         }
 
         public void IntilizeDI()
         {
-            _VM = KToastDIServiceProvider.Instance.GetService<AppSelectionViewModelBase>();
-
+            try
+            {
+                _VM = KToastDIServiceProvider.Instance.GetService<AppSelectionViewModelBase>();
+                if (_VM == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Warning: AppSelectionViewModelBase service not available from DI container");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing DI in AppSelectionFlyoutControl: {ex.Message}");
+            }
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            if(_VM == null)
+            try
             {
-                IntilizeDI();
+                if(_VM == null)
+                {
+                    IntilizeDI();
+                }
+
+                if (_VM != null)
+                {
+                    _VM.FilteredApps.Clear();
+                    _VM.GetInstalledApps();
+                    _VM.GetAppPackageProfile();
+                    AppsList.ItemsSource = _VM.PackageProfiles;
+                }
             }
-
-            _VM.FilteredApps.Clear();
-
-            _VM.GetInstalledApps();
-            _VM.GetAppPackageProfile();
-            AppsList.ItemsSource = _VM.PackageProfiles;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in UserControl_Loaded: {ex.Message}");
+            }
         }
         #region Events
 

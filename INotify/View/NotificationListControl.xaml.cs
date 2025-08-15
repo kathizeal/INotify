@@ -49,18 +49,49 @@ namespace INotify.View
 
         public NotificationListControl()
         {
-            InitializeComponent();
-            InitializeViewModel();
+            try
+            {
+                InitializeComponent();
+                InitializeViewModel();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in NotificationListControl constructor: {ex.Message}");
+                // In case of error, we'll initialize the ViewModel later
+            }
         }
 
         private void InitializeViewModel()
         {
-            _viewModel = KToastDIServiceProvider.Instance.GetService<NotificationListVMBase>();
-            this.DataContext = _viewModel;
+            try
+            {
+                _viewModel = KToastDIServiceProvider.Instance.GetService<NotificationListVMBase>();
+                if (_viewModel != null)
+                {
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Warning: NotificationListVMBase service not available from DI container");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing ViewModel in NotificationListControl: {ex.Message}");
+                // ViewModel will be null, but the control won't crash
+            }
+        }
+
+        private void EnsureViewModelInitialized()
+        {
+            if (_viewModel == null)
+            {
+                InitializeViewModel();
+            }
         }
 
         public void UpdateViewModel()
         {
+            EnsureViewModelInitialized();
             if (_viewModel != null)
             {
                 _viewModel.CurrentTargetType = CurrentTargetType;
@@ -70,16 +101,19 @@ namespace INotify.View
 
         private void ToggleViewButton_Click(object sender, RoutedEventArgs e)
         {
+            EnsureViewModelInitialized();
             _viewModel?.ToggleView();
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
+            EnsureViewModelInitialized();
             _viewModel?.RefreshView();
         }
 
         private void TogglePackageGroup_Click(object sender, RoutedEventArgs e)
         {
+            EnsureViewModelInitialized();
             if (sender is Button button && button.Tag is KPackageNotificationGroup group)
             {
                 _viewModel?.TogglePackageGroup(group);
@@ -88,12 +122,20 @@ namespace INotify.View
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            EnsureViewModelInitialized();
             UpdateViewModel();
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            _viewModel?.Dispose();
+            try
+            {
+                _viewModel?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error disposing ViewModel: {ex.Message}");
+            }
         }
 
         /// <summary>

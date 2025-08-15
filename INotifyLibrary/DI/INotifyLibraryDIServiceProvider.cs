@@ -34,7 +34,7 @@ namespace INotifyLibrary.DI
             services.AddSingleton<IGetNotificationsByConditionDataManager, GetNotificationsByConditionDataManager>();
             services.AddSingleton<ISubmitFeedbackDataManager, SubmitFeedbackDataManager>();
 
-            BuildServiceProvider(services);
+            BuildServiceProvider(services, true); // Build the service provider with default services
         }
 
         #region DIServiceProviderSingleton Class

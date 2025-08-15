@@ -2,6 +2,7 @@ using AppList; // For DndService and InstalledAppsService
 using INotify.KToastDI;
 using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
+using INotify.Services;
 using INotifyLibrary.DBHandler.Contract;
 using INotifyLibrary.Domain;
 using INotifyLibrary.Model.Entity;
@@ -9,6 +10,7 @@ using INotifyLibrary.Util;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media.Imaging;
 using SampleNotify; // For StandaloneNotificationPositioner
@@ -25,6 +27,7 @@ using Windows.Foundation.Metadata;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using Windows.System;
 using Windows.UI.Notifications;
 using Windows.UI.Notifications.Management;
 using static SampleNotify.StandaloneNotificationPositioner;
@@ -33,24 +36,24 @@ namespace INotify
 {
     public sealed partial class MainWindow : Window
     {
-        UserNotificationListener _listener = default;
         private DndService _dndService;
         private StandaloneNotificationPositioner _notificationPositioner;
         private NotificationPosition _currentNotificationPosition = NotificationPosition.TopLeft;
         private readonly SemaphoreSlim _fileAccessSemaphore = new SemaphoreSlim(1, 1);
         // Application ViewModel for UI state management
         private KToastListVMBase _VM;
+
         public MainWindow()
         {
             _VM = KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
             this.InitializeComponent();
             InitializeServices();
-            CheckFeatureSupport();
-            if (_listener != null)
-                _listener.NotificationChanged += _listener_NotificationChanged;
 
             // Subscribe to the Closed event for cleanup
             this.Closed += MainWindow_Closed;
+
+            // Set up keyboard shortcuts after InitializeComponent
+            SetupKeyboardShortcuts();
 
             // Initialize UI - use a delay to ensure everything is ready
             _ = Task.Run(async () =>
@@ -61,6 +64,91 @@ namespace INotify
                     InitializeUI();
                 });
             });
+        }
+
+        /// <summary>
+        /// Sets up keyboard shortcuts for the application
+        /// </summary>
+        private void SetupKeyboardShortcuts()
+        {
+            try
+            {
+                // Set up keyboard handling on the main content - we'll handle this in the XAML with PreviewKeyDown
+                this.Activated += MainWindow_Activated;
+                Debug.WriteLine("Keyboard shortcuts ready: Ctrl+H or Escape to hide to tray");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error setting up keyboard shortcuts: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles window activation to ensure focus for keyboard shortcuts
+        /// </summary>
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            try
+            {
+                // Ensure the window content can receive keyboard input
+                if (this.Content is FrameworkElement content)
+                {
+                    content.Focus(FocusState.Programmatic);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error handling window activation: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles keyboard shortcuts - this method will be called from XAML PreviewKeyDown
+        /// </summary>
+        public void HandleKeyboardShortcut(object sender, KeyRoutedEventArgs e)
+        {
+            try
+            {
+                var isCtrlPressed = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+
+                // Check for Ctrl+H
+                if (isCtrlPressed && e.Key == VirtualKey.H)
+                {
+                    HideToTray();
+                    e.Handled = true;
+                    return;
+                }
+
+                // Check for Escape key
+                if (e.Key == VirtualKey.Escape)
+                {
+                    HideToTray();
+                    e.Handled = true;
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error handling keyboard shortcut: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Hides the window to system tray
+        /// </summary>
+        private void HideToTray()
+        {
+            try
+            {
+                if (Application.Current is App app)
+                {
+                    app.ToggleWindowVisibility();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error hiding to tray: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -80,9 +168,6 @@ namespace INotify
             try
             {
                 _dndService = new DndService();
-
-                // Initialize the DND service instance for InstalledAppInfo
-                //InstalledAppInfo.SetDndService(_dndService);
 
                 // Update DND status in UI
                 UpdateDndStatusUI();
@@ -154,6 +239,14 @@ namespace INotify
         private void SwitchToMiniWidget_Click(object sender, RoutedEventArgs e)
         {
             ShowStatusMessage("Switched to Mini Widget Mode", true);
+        }
+
+        /// <summary>
+        /// Hides the window to system tray
+        /// </summary>
+        private void HideToTray_Click(object sender, RoutedEventArgs e)
+        {
+            HideToTray();
         }
 
         #endregion
@@ -390,7 +483,7 @@ namespace INotify
         private void ShowWelcomeView()
         {
             if (ContentTitle != null) ContentTitle.Text = "Welcome to INotify";
-            if (ContentSubtitle != null) ContentSubtitle.Text = "Select a category from the menu to get started";
+            if (ContentSubtitle != null) ContentSubtitle.Text = "Select a category from the menu to get started. Press Ctrl+H or Escape to minimize to tray.";
             
             // All views are already hidden, so we just show the welcome message
         }
@@ -399,15 +492,12 @@ namespace INotify
 
         #region Data Loading Methods
 
-
         private async Task LoadAllApplicationsData()
         {
             try
             {
-
-                //ObservableCollection<InstalledAppInfo>? allApps = await InstalledAppsService.GetAllInstalledAppsAsync();
-                //ObservableCollection<InstalledAppInfo>? allApps = await InstalledAppsService.GetAllInstalledAppsAsync();
-
+                // Data loading is now handled by the background service
+                Debug.WriteLine("Application data loading delegated to background service");
             }
             catch (Exception ex)
             {
@@ -420,35 +510,14 @@ namespace INotify
         {
             try
             {
-                //if (AllAppsListView == null) return;
-
-                //AllAppsListView.Items.Clear();
-
-                //await LoadAllApplicationsData();
-
-                ////foreach (var app in AllApplicationsInfo)
-                ////{
-                ////    var item = new TextBlock { Text = $"{app.DisplayName} - {app.Name}" };
-                ////    AllAppsListView.Items.Add(item);
-                ////}
-
-                //if (AllAppsListView.Items.Count == 0)
-                //{
-                //    var placeholder = new TextBlock { Text = "No applications found", FontStyle = Windows.UI.Text.FontStyle.Italic };
-                //    AllAppsListView.Items.Add(placeholder);
-                //}
+                // This method is now handled by the background service
+                Debug.WriteLine("App data loading delegated to background service");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading all apps data: {ex.Message}");
             }
         }
-
-        #endregion
-
-        #region Service Factory Methods
-
-        /// </summary>
 
         #endregion
 
@@ -616,6 +685,7 @@ namespace INotify
             }
         }
 
+        #endregion
     
         #region DND Management
 
@@ -889,8 +959,6 @@ namespace INotify
 
         #endregion
 
-     
-
         #region Status Messages
 
         /// <summary>
@@ -913,196 +981,6 @@ namespace INotify
 
         #endregion
 
-        #region Notification Methods
-
-        private void CheckFeatureSupport()
-        {
-            if (ApiInformation.IsTypePresent("Windows.UI.Notifications.Management.UserNotificationListener"))
-            {
-                GetAccessFromUser();
-                FetchToastNotifications();
-            }
-            else
-            {
-                // Listener not supported!
-                ShowStatusMessage("UserNotificationListener not supported on this system", false);
-            }
-        }
-
-        public async void GetAccessFromUser()
-        {
-            _listener = UserNotificationListener.Current;
-            UserNotificationListenerAccessStatus accessStatus = await _listener.RequestAccessAsync();
-            switch (accessStatus)
-            {
-                case UserNotificationListenerAccessStatus.Allowed:
-                    ShowStatusMessage("Notification access granted", true);
-                    break;
-                case UserNotificationListenerAccessStatus.Denied:
-                    ShowStatusMessage("Notification access denied. Please grant access in Settings.", false);
-                    break;
-                case UserNotificationListenerAccessStatus.Unspecified:
-                    ShowStatusMessage("Notification access status unspecified", false);
-                    break;
-            }
-        }
-
-        private async void FetchToastNotifications()
-        {
-            var notifications = await _listener.GetNotificationsAsync(NotificationKinds.Toast);
-            foreach (UserNotification notification in notifications)
-            {
-                CreateKToastModel(notification);
-            }
-        }
-
-        HashSet<string> appsname = new();
-        public async void CreateKToastModel(UserNotification notif)
-        {
-            try
-            {
-                string appDisplayName = notif.AppInfo.DisplayInfo.DisplayName;
-                string appId = notif.AppInfo.AppUserModelId;
-                uint notificationId = notif.Id;
-                string packageName = string.IsNullOrWhiteSpace(notif.AppInfo.PackageFamilyName) ?  appId : notif.AppInfo.PackageFamilyName;
-
-                           NotificationBinding toastBinding = notif.Notification.Visual.GetBinding(KnownNotificationBindings.ToastGeneric);
-                string iconLocation = string.Empty;
-                try
-                {
-                    // Get the app's logo
-                    BitmapImage appLogo = new BitmapImage();
-                    RandomAccessStreamReference appLogoStream = notif.AppInfo?.DisplayInfo?.GetLogo(new Windows.Foundation.Size(64, 64));
-                    if (appLogoStream != null)
-                    {
-                        iconLocation = await SaveAppIconToLocalFolder(appLogo, appLogoStream, appDisplayName);
-                    }
-                }
-                catch (COMException exe)
-                {
-                    Debug.WriteLine($"Error getting app logo: {exe.Message}");
-                }
-
-
-                // Get the toast notification content
-
-                if (toastBinding != null)
-                {
-                    IReadOnlyList<AdaptiveNotificationText> textElements = toastBinding.GetTextElements();
-                    string titleText = textElements.FirstOrDefault()?.Text ?? "No Title";
-                    string bodyText = "\n";
-                    foreach (var text in textElements)
-                    {
-                        bodyText += "\n" + text.Text;
-                    }
-
-                    KToastNotification data = new KToastNotification
-                    {
-                        NotificationTitle = titleText?.Trim(),
-                        NotificationMessage = bodyText?.Trim(),
-                        NotificationId = notificationId.ToString(),
-                        CreatedTime = notif.CreationTime,
-                        PackageFamilyName = packageName
-                    };
-
-                    KPackageProfile packageProfile = new KPackageProfile()
-                    {
-                        PackageFamilyName = packageName,
-                        LogoFilePath = iconLocation,
-                        AppDescription = string.Empty,
-                        AppDisplayName = appDisplayName
-                    };
-                    KToastVObj kToastViewData = new KToastVObj(data, packageProfile);
-
-                    //// Add null check before calling AddToastControl
-                    //if (KToastListViewControl != null)
-                    //{
-                    //    KToastListViewControl.AddToastControl(kToastViewData);
-                    //}
-                    //else
-                    //{
-                    //    Debug.WriteLine("Warning: KToastListViewControl is null in CreateKToastModel");
-                    //}
-                    _VM.UpdateKToastNotification(kToastViewData);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error creating toast model: {ex.Message}");
-            }
-
-        }
-
-        private async Task<string> SaveAppIconToLocalFolder(
-            BitmapImage appLogo,
-            RandomAccessStreamReference inputStream,
-            string appName)
-        {
-            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
-            string fileName = $"{appName}.png";
-
-            await _fileAccessSemaphore.WaitAsync();
-            try
-            {
-                StorageFile existingFile = await localFolder.TryGetItemAsync(fileName) as StorageFile;
-                if (existingFile != null)
-                {
-                    return existingFile.Path;
-                }
-
-                StorageFile file = await localFolder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
-
-                using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                using (IRandomAccessStream input = await inputStream.OpenReadAsync())
-                {
-                    BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
-                    BitmapDecoder decoder = await BitmapDecoder.CreateAsync(input);
-
-                    var pixelData = await decoder.GetPixelDataAsync();
-                    encoder.SetPixelData(
-                        decoder.BitmapPixelFormat,
-                        decoder.BitmapAlphaMode,
-                        decoder.PixelWidth,
-                        decoder.PixelHeight,
-                        decoder.DpiX,
-                        decoder.DpiY,
-                        pixelData.DetachPixelData());
-
-                    await encoder.FlushAsync();
-                }
-
-                using (IRandomAccessStream readStream = await file.OpenAsync(FileAccessMode.Read))
-                {
-                    await appLogo.SetSourceAsync(readStream);
-                }
-
-                return file.Path;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error saving app icon: {ex.Message}");
-                return string.Empty;
-            }
-            finally
-            {
-                _fileAccessSemaphore.Release();
-            }
-        }
-
-        private void _listener_NotificationChanged(UserNotificationListener sender, Windows.UI.Notifications.UserNotificationChangedEventArgs args)
-        {
-            var notification = sender.GetNotification(args.UserNotificationId);
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                if (notification != null)
-                {
-                    CreateKToastModel(notification);
-                }
-            });
-        }
-
-        #endregion
-
         /// <summary>
         /// Clean up resources when window is closed
         /// </summary>
@@ -1110,12 +988,7 @@ namespace INotify
         {
             try
             {
-                // Unsubscribe from events
-                if (_listener != null)
-                {
-                    _listener.NotificationChanged -= _listener_NotificationChanged;
-                }
-
+                // Clean up local services (background service continues running)
                 _dndService?.Dispose();
                 _notificationPositioner = null;
                 
@@ -1142,6 +1015,5 @@ namespace INotify
                 Debug.WriteLine($"Error bringing MainWindow to foreground: {ex.Message}");
             }
         }
-        #endregion
     }
 }

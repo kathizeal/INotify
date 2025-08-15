@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using INotify.Manager;
+using INotify.Services;
 using INotify.Util;
+using INotify.KToastViewModel.ViewModelContract;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -22,6 +24,9 @@ using WinUI3Component.Util;
 using WinLogger;
 using WinLogger.Contract;
 using Microsoft.UI.Dispatching;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using INotify.KToastDI;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -36,6 +41,9 @@ namespace INotify
         private static readonly ILogger Logger = LogManager.GetLogger();
         private SingleInstanceManager? _singleInstanceManager;
         private Window? m_window;
+        private TrayManager? _trayManager;
+        private BackgroundNotificationService? _backgroundService;
+        private bool _isWindowVisible = true;
 
         /// <summary>
         /// Initializes the singleton application object. This is the first line of authored code
@@ -46,12 +54,40 @@ namespace INotify
         /// </summary>
         public App()
         {
+            InitializeDependencyInjection();
             this.InitializeComponent();
             WinUI3AppInfo.Initialize("INotify");
             ZAppInfoProvider.Initialize(WinUI3AppInfo.Instance);
             
+            // Initialize DI services first
+            
             // Initialize single instance management
             InitializeSingleInstance();
+        }
+
+        /// <summary>
+        /// Initializes dependency injection services
+        /// </summary>
+        private void InitializeDependencyInjection()
+        {
+            try
+            {
+                Logger.Info(LogManager.GetCallerInfo(), "Initializing dependency injection services");
+                
+                // Initialize the main DI container
+                InitializationManager.Instance.InitializeDI();
+
+                                // Also ensure KToastDIServiceProvider is initialized
+                                var testService = INotify.KToastDI.KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
+                Logger.Info(LogManager.GetCallerInfo(), $"KToastDIServiceProvider test: {(testService != null ? "Success" : "Failed")}");
+                
+                Logger.Info(LogManager.GetCallerInfo(), "Dependency injection services initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error initializing dependency injection: {ex.Message}");
+                // Don't throw here as we want the app to continue even if DI fails
+            }
         }
 
         /// <summary>
@@ -95,36 +131,20 @@ namespace INotify
             catch (Exception ex)
             {
                 Logger.Error(LogManager.GetCallerInfo(), $"Error initializing single instance: {ex.Message}");
-                // Continue anyway in case of error
             }
         }
 
         /// <summary>
-        /// Handles when another instance is detected
+        /// Event handler for when another instance is detected
         /// </summary>
         private void OnAnotherInstanceDetected(object? sender, string[] args)
         {
             try
             {
-                Logger.Info(LogManager.GetCallerInfo(), $"Another instance detected with args: {string.Join(", ", args)}");
+                Logger.Info(LogManager.GetCallerInfo(), $"Another instance detected with args: {string.Join(" ", args)}");
                 
-                // Bring main window to foreground on UI thread
-                if (m_window != null)
-                {
-                    var dispatcher = DispatcherQueue.GetForCurrentThread();
-                    if (dispatcher != null)
-                    {
-                        dispatcher.TryEnqueue(() =>
-                        {
-                            BringMainWindowToForeground();
-                        });
-                    }
-                    else
-                    {
-                        // Fallback: try to activate directly
-                        BringMainWindowToForeground();
-                    }
-                }
+                // Bring the main window to foreground
+                ShowMainWindow();
             }
             catch (Exception ex)
             {
@@ -133,93 +153,246 @@ namespace INotify
         }
 
         /// <summary>
-        /// Brings the main window to foreground
-        /// </summary>
-        private void BringMainWindowToForeground()
-        {
-            try
-            {
-                if (m_window != null)
-                {
-                    // Activate the window
-                    m_window.Activate();
-                    
-                    // If MainWindow has a BringToForeground method, call it
-                    if (m_window is MainWindow mainWindow)
-                    {
-                        mainWindow.BringToForeground();
-                    }
-                    
-                    Logger.Info(LogManager.GetCallerInfo(), "Main window brought to foreground.");
-                }
-                else
-                {
-                    Logger.Warning(LogManager.GetCallerInfo(), "Main window is null, cannot bring to foreground.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(LogManager.GetCallerInfo(), $"Error bringing main window to foreground: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             try
             {
-                // Only proceed if this is the first instance
-                if (_singleInstanceManager?.IsFirstInstance != true)
-                {
-                    Logger.Info(LogManager.GetCallerInfo(), "OnLaunched called on non-first instance, exiting.");
-                    return;
-                }
+                Logger.Info(LogManager.GetCallerInfo(), "Application launched");
 
-                await InitializationManager.Instance.InitializeApp(args);
+                // Initialize library services for the current user
+                InitializeLibraryServices();
+
+                // Initialize background services first
+                InitializeBackgroundServices();
+
+                // Create and show main window
                 m_window = new MainWindow();
+                m_window.Closed += OnMainWindowClosed;
                 m_window.Activate();
 
-                // Subscribe to window closed event for cleanup
-                if (m_window is MainWindow mainWindow)
-                {
-                    mainWindow.Closed += (s, e) =>
-                    {
-                        CleanupSingleInstance();
-                    };
-                }
-
-                Logger.Info(LogManager.GetCallerInfo(), "Application launched successfully.");
+                Logger.Info(LogManager.GetCallerInfo(), "Main window created and activated");
             }
             catch (Exception ex)
             {
-                Logger.Error(LogManager.GetCallerInfo(), $"Error in OnLaunched: {ex.Message}");
-                throw;
+                Logger.Error(LogManager.GetCallerInfo(), $"Error during application launch: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Clean up single instance resources
+        /// Initializes library services for the current user
         /// </summary>
-        private void CleanupSingleInstance()
+        private async void InitializeLibraryServices()
         {
             try
             {
-                Logger.Info(LogManager.GetCallerInfo(), "Cleaning up single instance resources.");
+                Logger.Info(LogManager.GetCallerInfo(), "Initializing library services");
                 
-                if (_singleInstanceManager != null)
+                // Initialize library services (database, etc.)
+                await InitializationManager.Instance.InitializeLibraryServicesForCurrentUser();
+                
+                Logger.Info(LogManager.GetCallerInfo(), "Library services initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error initializing library services: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Initializes background services including tray and notification monitoring
+        /// </summary>
+        private async void InitializeBackgroundServices()
+        {
+            try
+            {
+                // Run tray diagnostics first (only in debug mode)
+#if DEBUG
+                Debug.WriteLine("Running tray diagnostics...");
+                await TrayDiagnostics.RunTrayDiagnosticsAsync();
+                TrayDiagnostics.CheckNotificationAreaSettings();
+#endif
+
+                // Initialize tray manager first
+                _trayManager = new TrayManager();
+                _trayManager.ShowMainWindowRequested += OnShowMainWindowRequested;
+                _trayManager.ExitApplicationRequested += OnExitApplicationRequested;
+                
+                try
                 {
-                    _singleInstanceManager.AnotherInstanceDetected -= OnAnotherInstanceDetected;
-                    _singleInstanceManager.Dispose();
-                    _singleInstanceManager = null;
+                    _trayManager.Initialize();
+                    Logger.Info(LogManager.GetCallerInfo(), "Tray manager initialized successfully");
+                    
+                    // Test the tray icon by showing a welcome notification
+                    _trayManager.ShowBalloonTip("INotify Started", "INotify is now running in the system tray. Click the icon to show the window.");
+                }
+                catch (Exception trayEx)
+                {
+                    Logger.Warning(LogManager.GetCallerInfo(), $"Tray manager initialization had issues but continuing: {trayEx.Message}");
+                    
+                    // Run quick tray test to help diagnose the issue
+#if DEBUG
+                    Debug.WriteLine("Running quick tray test due to initialization issues...");
+                    await TrayDiagnostics.QuickTrayTestAsync();
+#endif
+                    // Continue without tray functionality if it fails
+                }
+
+                // Initialize background notification service
+                _backgroundService = new BackgroundNotificationService();
+                bool started = await _backgroundService.StartAsync();
+                
+                if (started)
+                {
+                    Logger.Info(LogManager.GetCallerInfo(), "Background notification service started successfully");
+                }
+                else
+                {
+                    Logger.Warning(LogManager.GetCallerInfo(), "Failed to start background notification service");
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error(LogManager.GetCallerInfo(), $"Error during single instance cleanup: {ex.Message}");
+                Logger.Error(LogManager.GetCallerInfo(), $"Error initializing background services: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Handles main window close event - minimizes to tray instead of exiting
+        /// </summary>
+        private void OnMainWindowClosed(object sender, WindowEventArgs e)
+        {
+            try
+            {
+                // Prevent the window from actually closing, just hide it
+                e.Handled = true;
+                HideMainWindow();
+                
+                Logger.Info(LogManager.GetCallerInfo(), "Main window hidden to tray");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error handling window close: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Shows the main window and brings it to foreground
+        /// </summary>
+        private void ShowMainWindow()
+        {
+            try
+            {
+                if (m_window == null)
+                {
+                    m_window = new MainWindow();
+                    m_window.Closed += OnMainWindowClosed;
+                }
+
+                m_window.Activate();
+                if (m_window is MainWindow mainWindow)
+                {
+                    mainWindow.BringToForeground();
+                }
+
+                _isWindowVisible = true;
+                Logger.Info(LogManager.GetCallerInfo(), "Main window shown and activated");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error showing main window: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Hides the main window to system tray
+        /// </summary>
+        private void HideMainWindow()
+        {
+            try
+            {
+                // For WinUI 3, we need to use SetWindowPos to hide the window
+                if (m_window != null)
+                {
+                    var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(m_window);
+                    ShowWindow(hwnd, 0); // SW_HIDE
+                    _isWindowVisible = false;
+                    
+                    _trayManager?.ShowBalloonTip("INotify", "Application minimized to tray. Notifications will continue to be monitored.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error hiding main window: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Event handler for tray "Show" menu item
+        /// </summary>
+        private void OnShowMainWindowRequested(object? sender, EventArgs e)
+        {
+            ShowMainWindow();
+        }
+
+        /// <summary>
+        /// Event handler for tray "Exit" menu item
+        /// </summary>
+        private void OnExitApplicationRequested(object? sender, EventArgs e)
+        {
+            ExitApplication();
+        }
+
+        /// <summary>
+        /// Completely exits the application
+        /// </summary>
+        private void ExitApplication()
+        {
+            try
+            {
+                Logger.Info(LogManager.GetCallerInfo(), "Exiting application");
+
+                // Clean up background services
+                _backgroundService?.Dispose();
+                _trayManager?.Dispose();
+                _singleInstanceManager?.Dispose();
+
+                // Close the main window properly
+                if (m_window != null)
+                {
+                    m_window.Closed -= OnMainWindowClosed; // Prevent hiding logic
+                    m_window.Close();
+                }
+
+                // Exit the application
+                Exit();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error during application exit: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles keyboard shortcuts for showing/hiding the application
+        /// This can be called from the main window to toggle visibility
+        /// </summary>
+        public void ToggleWindowVisibility()
+        {
+            if (_isWindowVisible)
+            {
+                HideMainWindow();
+            }
+            else
+            {
+                ShowMainWindow();
+            }
+        }
+
+        // P/Invoke for hiding window
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }
