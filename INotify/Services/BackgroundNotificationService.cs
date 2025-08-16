@@ -1,6 +1,7 @@
 using INotify.KToastDI;
 using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
+using INotify.Util;
 using INotifyLibrary.Model.Entity;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
@@ -30,8 +31,6 @@ namespace INotify.Services
         private readonly SemaphoreSlim _fileAccessSemaphore = new SemaphoreSlim(1, 1);
         private bool _isRunning = false;
         private bool _disposed = false;
-
-        public event EventHandler<NotificationReceivedEventArgs>? NotificationReceived;
 
         public bool IsRunning => _isRunning;
 
@@ -204,7 +203,7 @@ namespace INotify.Services
                     _viewModel?.UpdateKToastNotification(kToastViewData);
 
                     // Raise event for UI updates
-                    NotificationReceived?.Invoke(this, new NotificationReceivedEventArgs(kToastViewData));
+                    NotificationEventInokerUtil.NotifyNotificationListened(new NotificationReceivedEventArgs(kToastViewData));
 
                     Debug.WriteLine($"Processed notification from {appDisplayName}: {titleText}");
                 }
@@ -284,13 +283,5 @@ namespace INotify.Services
         }
     }
 
-    public class NotificationReceivedEventArgs : EventArgs
-    {
-        public KToastVObj Notification { get; }
-
-        public NotificationReceivedEventArgs(KToastVObj notification)
-        {
-            Notification = notification;
-        }
-    }
+   
 }

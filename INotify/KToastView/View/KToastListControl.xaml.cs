@@ -2,6 +2,8 @@ using INotify.KToastDI;
 using INotify.KToastView.Model;
 using INotify.KToastView.View.ViewContract;
 using INotify.KToastViewModel.ViewModelContract;
+using INotify.Services;
+using INotify.Util;
 using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
@@ -11,6 +13,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
 using System;
+using System.Linq;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -20,6 +23,7 @@ namespace INotify.KToastView.View
     public sealed partial class KToastListControl : UserControl, IKToastListView
     {
         private KToastListVMBase _VM;
+        private bool _isListeningToRealTimeNotifications = false;
 
         public CollectionViewSource KToastCollectionViewSource => null; // Not used in this implementation
 
@@ -38,6 +42,9 @@ namespace INotify.KToastView.View
             this.InitializeComponent();
             _VM = KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
             _VM.View = this;
+            
+            // Subscribe to visibility changed to manage real-time subscription
+            this.RegisterPropertyChangedCallback(UIElement.VisibilityProperty, OnVisibilityChanged);
         }
 
         public Visibility EmptyState(int count)
@@ -50,12 +57,213 @@ namespace INotify.KToastView.View
             return visible ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// Subscribes to real-time notification events for the "All Notifications" view
+        /// </summary>
+        private void SubscribeToRealTimeNotifications()
+        {
+            if (!_isListeningToRealTimeNotifications)
+            {
+                NotificationEventInokerUtil.NotificationReceived += OnRealTimeNotificationReceived;
+                _isListeningToRealTimeNotifications = true;
+                System.Diagnostics.Debug.WriteLine("KToastListControl subscribed to real-time notifications for All Notifications view");
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribes from real-time notification events
+        /// </summary>
+        private void UnsubscribeFromRealTimeNotifications()
+        {
+            if (_isListeningToRealTimeNotifications)
+            {
+                NotificationEventInokerUtil.NotificationReceived -= OnRealTimeNotificationReceived;
+                _isListeningToRealTimeNotifications = false;
+                System.Diagnostics.Debug.WriteLine("KToastListControl unsubscribed from real-time notifications");
+            }
+        }
+
+        /// <summary>
+        /// Handles real-time notification received events with filter consideration
+        /// </summary>
+        private void OnRealTimeNotificationReceived(NotificationReceivedEventArgs args)
+        {
+            try
+            {
+                if (args?.Notification == null || _VM == null)
+                    return;
+
+                var notification = args.Notification;
+
+                // Ensure UI updates happen on the UI thread
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    try
+                    {
+                        // Check if this notification passes the current filters
+                        if (ShouldNotificationBeDisplayed(notification))
+                        {
+                            HandleRealTimeNotificationOnUIThread(notification);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Real-time notification filtered out: {notification.NotificationData?.NotificationTitle}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error handling real-time notification on UI thread: {ex.Message}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in OnRealTimeNotificationReceived: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Determines if a notification should be displayed based on current filter settings
+        /// </summary>
+        private bool ShouldNotificationBeDisplayed(KToastVObj notification)
+        {
+            try
+            {
+                if (notification?.NotificationData == null || notification.ToastPackageProfile == null)
+                    return false;
+
+                // Check search keyword filter
+                if (!string.IsNullOrEmpty(_VM.SearchKeyword))
+                {
+                    var searchTerm = _VM.SearchKeyword.ToLowerInvariant();
+                    var title = notification.NotificationData.NotificationTitle?.ToLowerInvariant() ?? "";
+                    var message = notification.NotificationData.NotificationMessage?.ToLowerInvariant() ?? "";
+                    var appName = notification.ToastPackageProfile.AppDisplayName?.ToLowerInvariant() ?? "";
+
+                    if (!title.Contains(searchTerm) && !message.Contains(searchTerm) && !appName.Contains(searchTerm))
+                    {
+                        return false;
+                    }
+                }
+
+                // Check app filter
+                if (!string.IsNullOrEmpty(_VM.SelectedAppFilter) && _VM.SelectedAppFilter != "")
+                {
+                    if (notification.ToastPackageProfile.PackageFamilyName != _VM.SelectedAppFilter)
+                    {
+                        return false;
+                    }
+                }
+
+                // Check date filters
+                var notificationDate = notification.NotificationData.CreatedTime;
+
+                // Specific date filter
+                if (_VM.SelectedDate.HasValue)
+                {
+                    var selectedDate = _VM.SelectedDate.Value.Date;
+                    if (notificationDate.Date != selectedDate)
+                    {
+                        return false;
+                    }
+                }
+                // Date range filter
+                else if (_VM.FromDate.HasValue || _VM.ToDate.HasValue)
+                {
+                    if (_VM.FromDate.HasValue && notificationDate.Date < _VM.FromDate.Value.Date)
+                    {
+                        return false;
+                    }
+
+                    if (_VM.ToDate.HasValue && notificationDate.Date > _VM.ToDate.Value.Date)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error checking notification filter criteria: {ex.Message}");
+                // On error, allow the notification to be displayed
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Handles real-time notification updates on the UI thread
+        /// </summary>
+        private void HandleRealTimeNotificationOnUIThread(KToastVObj notification)
+        {
+            try
+            {
+                // Check if notification already exists (duplicate prevention)
+                var existingNotification = _VM.KToastNotifications.FirstOrDefault(n => 
+                    n.NotificationData.NotificationId == notification.NotificationData.NotificationId);
+
+                if (existingNotification != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Duplicate notification detected in KToastListControl, skipping: {notification.NotificationData.NotificationId}");
+                    return;
+                }
+
+                // Insert notification in chronological order (most recent first)
+                var insertIndex = 0;
+                for (int i = 0; i < _VM.KToastNotifications.Count; i++)
+                {
+                    if (_VM.KToastNotifications[i].NotificationData.CreatedTime < notification.NotificationData.CreatedTime)
+                    {
+                        insertIndex = i;
+                        break;
+                    }
+                    insertIndex = i + 1;
+                }
+
+                _VM.KToastNotifications.Insert(insertIndex, notification);
+
+                // Note: TotalCountText will be updated automatically through property binding
+                // since it's computed from TotalCount which reflects the collection count
+
+                System.Diagnostics.Debug.WriteLine($"Added real-time notification to KToastListControl: {notification.NotificationData.NotificationTitle}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error handling real-time notification on UI thread: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Called when the control's visibility changes to manage real-time subscription
+        /// </summary>
+        private void OnVisibilityChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            try
+            {
+                if (this.Visibility == Visibility.Visible)
+                {
+                    SubscribeToRealTimeNotifications();
+                }
+                else
+                {
+                    UnsubscribeFromRealTimeNotifications();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in OnVisibilityChanged: {ex.Message}");
+            }
+        }
+
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
                 // Load initial notifications when control is loaded
                 _VM.LoadInitialNotifications();
+
+                // Subscribe to real-time notifications when the control is loaded and visible
+                SubscribeToRealTimeNotifications();
 
                 // Subscribe to scroll events for infinite scrolling - use this to get the ListView after InitializeComponent
                 var scrollViewer = GetScrollViewer(this);
@@ -75,6 +283,9 @@ namespace INotify.KToastView.View
         {
             try
             {
+                // Unsubscribe from real-time notifications when the control is unloaded
+                UnsubscribeFromRealTimeNotifications();
+
                 // Unsubscribe from scroll events
                 var scrollViewer = GetScrollViewer(this);
                 if (scrollViewer != null)
@@ -141,6 +352,10 @@ namespace INotify.KToastView.View
             try
             {
                 _VM?.ApplyFilters();
+                
+                // After applying filters, we need to re-evaluate existing real-time notifications
+                // This ensures that notifications added in real-time are also subject to the new filters
+                FilterExistingNotifications();
             }
             catch (Exception ex)
             {
@@ -246,6 +461,36 @@ namespace INotify.KToastView.View
         #endregion
 
         #region Helper Methods
+
+        /// <summary>
+        /// Filters existing notifications when filter criteria change
+        /// This ensures real-time notifications are also subject to current filters
+        /// </summary>
+        private void FilterExistingNotifications()
+        {
+            try
+            {
+                // Create a list of notifications that should be removed based on current filters
+                var notificationsToRemove = _VM.KToastNotifications
+                    .Where(notification => !ShouldNotificationBeDisplayed(notification))
+                    .ToList();
+
+                // Remove notifications that no longer match the filters
+                foreach (var notification in notificationsToRemove)
+                {
+                    _VM.KToastNotifications.Remove(notification);
+                }
+
+                // Note: TotalCountText will be updated automatically through property binding
+                // since it's computed from TotalCount which reflects the collection count
+
+                System.Diagnostics.Debug.WriteLine($"Filtered out {notificationsToRemove.Count} existing notifications based on new filter criteria");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error filtering existing notifications: {ex.Message}");
+            }
+        }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {

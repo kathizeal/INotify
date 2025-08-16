@@ -74,12 +74,6 @@ namespace INotify.KToastViewModel.ViewModelContract
         {
         }
 
-        protected virtual void RegisterNotification()
-        {
-        }
-        protected virtual void UnRegisterNotification()
-        {
-        }
 
         protected virtual void ClearData()
         {
