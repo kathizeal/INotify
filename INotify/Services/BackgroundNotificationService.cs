@@ -28,6 +28,7 @@ namespace INotify.Services
     {
         private UserNotificationListener? _listener;
         private KToastListVMBase? _viewModel;
+        private INotifyToastService? _toastService;
         private readonly SemaphoreSlim _fileAccessSemaphore = new SemaphoreSlim(1, 1);
         private bool _isRunning = false;
         private bool _disposed = false;
@@ -44,6 +45,9 @@ namespace INotify.Services
 
                 // Get ViewModel
                 _viewModel = KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
+
+                // Initialize INotify Toast Service
+                _toastService = INotifyToastService.Instance;
 
                 // Check feature support
                 if (!ApiInformation.IsTypePresent("Windows.UI.Notifications.Management.UserNotificationListener"))
@@ -151,6 +155,13 @@ namespace INotify.Services
                 uint notificationId = notification.Id;
                 string packageName = string.IsNullOrWhiteSpace(notification.AppInfo.PackageFamilyName) ? appId : notification.AppInfo.PackageFamilyName;
 
+                // Skip notifications from INotify itself to prevent infinite loops
+                if (IsINotifyNotification(appId, packageName, appDisplayName))
+                {
+                    Debug.WriteLine($"Skipping INotify notification to prevent loop: {appDisplayName}");
+                    return;
+                }
+
                 NotificationBinding toastBinding = notification.Notification.Visual.GetBinding(KnownNotificationBindings.ToastGeneric);
                 string iconLocation = string.Empty;
 
@@ -199,11 +210,14 @@ namespace INotify.Services
 
                     KToastVObj kToastViewData = new KToastVObj(data, packageProfile);
 
-                    // Update ViewModel
+                    // Update ViewModel (this will also store in database)
                     _viewModel?.UpdateKToastNotification(kToastViewData);
 
                     // Raise event for UI updates
                     NotificationEventInokerUtil.NotifyNotificationListened(new NotificationReceivedEventArgs(kToastViewData));
+
+                    // Process for INotify toast creation (new feature)
+                    await ProcessForINotifyToast(kToastViewData);
 
                     Debug.WriteLine($"Processed notification from {appDisplayName}: {titleText}");
                 }
@@ -211,6 +225,50 @@ namespace INotify.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error processing notification: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Checks if a notification is from INotify itself to prevent infinite loops
+        /// </summary>
+        private bool IsINotifyNotification(string appId, string packageName, string appDisplayName)
+        {
+            try
+            {
+                // Check if it's from INotify by comparing package info
+                var currentPackage = Package.Current;
+                var currentPackageFamily = currentPackage.Id.FamilyName;
+                var currentAppDisplayName = currentPackage.DisplayName;
+
+                return packageName == currentPackageFamily ||
+                       appDisplayName == "INotify" ||
+                       appDisplayName == currentAppDisplayName ||
+                       appId.Contains("INotify");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error checking if INotify notification: {ex.Message}");
+                // If we can't determine, err on the side of caution and allow the notification
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Processes notification for potential INotify toast creation
+        /// Only creates toast if the app is categorized (has priority or space assignment)
+        /// </summary>
+        private async Task ProcessForINotifyToast(KToastVObj kToastViewData)
+        {
+            try
+            {
+                if (_toastService != null)
+                {
+                    await _toastService.ProcessNotificationAsync(kToastViewData);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error processing notification for INotify toast: {ex.Message}");
             }
         }
 
@@ -279,9 +337,8 @@ namespace INotify.Services
             // UserNotificationListener doesn't implement IDisposable, so we just clear the reference
             _listener = null;
             _fileAccessSemaphore?.Dispose();
+            _toastService?.Dispose();
             _disposed = true;
         }
     }
-
-   
 }

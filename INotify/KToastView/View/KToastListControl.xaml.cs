@@ -539,37 +539,7 @@ namespace INotify.KToastView.View
 
             return null;
         }
-
-        /// <summary>
-        /// Get appropriate empty state text based on filter status
-        /// </summary>
-        public string GetEmptyStateText(bool hasActiveFilters)
-        {
-            return hasActiveFilters 
-                ? "No notifications match your current filters. Try adjusting your search criteria."
-                : "Notifications will appear here when they are received";
-        }
-
         #endregion
-
-        #region Obsolete Methods - Kept for Interface Compatibility
-        [Obsolete("This method is obsolete. Not supported in notification-only view.")]
-        public void UpdateToastView(ViewType viewType)
-        {
-            // Not applicable for notification-only view
-        }
-
-        [Obsolete("This method is obsolete. Not supported in notification-only view.")]
-        public void UpdateNotificationsList(ObservableCollection<KToastNotification> currentSystemNotifications)
-        {
-            // Not applicable for notification-only view
-        }
-
-        [Obsolete("This method is obsolete. Use AddNotification instead.")]
-        public void AddToastControl(KToastVObj notification)
-        {
-            _VM?.AddNotification(notification);
-        }
-        #endregion
+       
     }
 }
