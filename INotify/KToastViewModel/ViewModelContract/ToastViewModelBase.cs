@@ -1,5 +1,6 @@
 ﻿using AppList;
 using INotify.KToastView.Model;
+using INotify.KToastView.View.ViewContract;
 using INotifyLibrary.Domain;
 using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util;
@@ -16,11 +17,13 @@ using WinCommon.Error;
 using WinCommon.Util;
 using WinLogger;
 using WinLogger.Contract;
+using WinUI3Component.ViewContract;
 
 namespace INotify.KToastViewModel.ViewModelContract
 {
     public abstract class ToastViewModelBase : ObservableObject,ICleanup
     {
+        public IView View;
         private bool IsInstalledAppFetched = false;
 
         public readonly ObservableCollection<KPackageProfileVObj> PackageProfiles = new();
@@ -94,7 +97,6 @@ namespace INotify.KToastViewModel.ViewModelContract
             var hashSet = PackageProfiles.Select(p => p.PackageFamilyName).ToHashSet();
             foreach (var app in InstalledApps)
             {
-
                 if (!hashSet.Contains(app.PackageFamilyName))
                 {
                     KPackageProfileVObj package = new KPackageProfileVObj();
@@ -102,7 +104,19 @@ namespace INotify.KToastViewModel.ViewModelContract
                     PackageProfiles.Add(package);
                 }
                 hashSet.Add(app.PackageFamilyName);
-              
+            }
+            
+            // Sort the collection by AppDisplayName
+            var sortedItems = PackageProfiles.OrderBy(p => p.AppDisplayName).ToList();
+            PackageProfiles.Clear();
+            foreach (var item in sortedItems)
+            {
+                PackageProfiles.Add(item);
+            }
+
+            if(View is IAllPackageView allPackageView)
+            {
+                allPackageView.Package1Fetched();
             }
         }
 
@@ -128,6 +142,18 @@ namespace INotify.KToastViewModel.ViewModelContract
                     }
                     hashSet.Add(package.PackageFamilyName);
                 }
+                
+                // Sort the collection by AppDisplayName
+                var sortedItems = PackageProfiles.OrderBy(p => p.AppDisplayName).ToList();
+                PackageProfiles.Clear();
+                foreach (var item in sortedItems)
+                {
+                    PackageProfiles.Add(item);
+                }
+            }
+            if (View is IAllPackageView allPackageView)
+            {
+                allPackageView.Package2Fetched();
             }
         }
 

@@ -33,7 +33,6 @@
     <None Remove="KToastView\Resources\MainResource.xaml" />
     <None Remove="KToastView\View\KSpaceControl.xaml" />
     <None Remove="KToastView\View\KToastListControl.xaml" />
-    <None Remove="View\NotificationListControl.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -100,12 +99,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ViewModels\PriorityAppViewModel.cs" />
-    <Compile Remove="ViewModels\PriorityPackageViewModel.cs" />
-    <Compile Remove="ViewModels\SpaceViewModel.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Update="KToastView\View\KSpaceControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -118,24 +111,26 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="View\AllPackageControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Update="Resources\ToastResources.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="View\NotificationListControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <PRIResource Remove=".github\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PRIResource Remove=".github\**" />
+    <Page Remove="Controls\SoundTestControl.xaml" />
+    <Page Remove="View\AllPackageControl.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Controls\SoundTestControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="View\AllPackageControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
 </Project>

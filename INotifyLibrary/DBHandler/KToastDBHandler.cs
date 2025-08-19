@@ -77,10 +77,10 @@ namespace INotifyLibrary.DBHandler
                                .ToList();
         }
 
-        public IList<KSpace> GetAllSpaces(string userId)
+        public IList<KSpaceMapper> GetAllSpaceMappers(string userId)
         {
             IDBConnection dBConnection = DBAdapter.GetDBConnection(userId);
-            return dBConnection.Table<KSpace>().ToList();
+            return dBConnection.Table<KSpaceMapper>().ToList();
         }
 
         public bool AddPackageToSpace(KSpaceMapper mapper, string userId)

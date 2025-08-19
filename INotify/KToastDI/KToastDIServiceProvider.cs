@@ -41,7 +41,8 @@ namespace INotify.KToastDI
                     servicesCollection.AddTransient<AppSelectionViewModelBase, AppSelectionViewModel>();
                     servicesCollection.AddTransient<NotificationListVMBase, NotificationListVM>();
                     servicesCollection.AddTransient<FeedbackVMBase, FeedbackVM>();
-                    
+                    servicesCollection.AddTransient<SoundSelectionVMBase, SoundSelectionVM>();
+
                     BuildServiceProvider(servicesCollection, false); // addDefaultServices is sent as false since UIDI doesn't require PasswordProvider, DBAdapter & NetworkAdapter instances
 
                     _isInitialized = true;

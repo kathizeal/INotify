@@ -30,7 +30,7 @@ namespace INotifyLibrary.DBHandler.Contract
 
         IList<KPackageProfile> GetPackagesBySpaceId(string spaceId, string userId);
 
-        IList<KSpace> GetAllSpaces(string userId);
+        IList<KSpaceMapper> GetAllSpaceMappers(string userId);
         void UpdateSpaces(IEnumerable<KSpace> kSpaces, string userId);
 
         bool AddPackageToSpace(KSpaceMapper mapper, string userId);
@@ -106,6 +106,35 @@ namespace INotifyLibrary.DBHandler.Contract
         /// Updates feedback status
         /// </summary>
         bool UpdateFeedbackStatus(string feedbackId, FeedbackStatus status, string userId);
+
+        #endregion
+
+        #region Sound Mapping Methods
+
+        /// <summary>
+        /// Gets all sound mappings for a user
+        /// </summary>
+        IList<KSoundMapper> GetSoundMappings(string userId);
+
+        /// <summary>
+        /// Gets sound mapping for a specific package
+        /// </summary>
+        NotificationSounds GetPackageSound(string packageFamilyName, string userId);
+
+        /// <summary>
+        /// Adds or updates sound mapping for a package
+        /// </summary>
+        bool AddOrUpdateSoundMapping(string packageFamilyName, NotificationSounds sound, string userId);
+
+        /// <summary>
+        /// Removes sound mapping for a package (resets to None)
+        /// </summary>
+        bool RemoveSoundMapping(string packageFamilyName, string userId);
+
+        /// <summary>
+        /// Gets packages grouped by their assigned sound
+        /// </summary>
+        Dictionary<NotificationSounds, List<string>> GetPackagesBySound(string userId);
 
         #endregion
     }

@@ -26,7 +26,8 @@ namespace INotifyLibrary.DBHandler
                 typeof(KSpace),
                 typeof(KSpaceMapper),
                 typeof(KCustomPriorityApp), // Add custom priority model
-                typeof(KFeedback) // Add feedback model
+                typeof(KFeedback), // Add feedback model
+                typeof(KSoundMapper) // Add sound mapping model
             };
             return dbModels;
         }
@@ -429,6 +430,146 @@ namespace INotifyLibrary.DBHandler
             {
                 Logger.Error(LogManager.GetCallerInfo(), ex.Message);
                 return false;
+            }
+        }
+
+        #endregion
+
+        #region Sound Mapping Methods
+
+        /// <summary>
+        /// Gets all sound mappings for a user
+        /// </summary>
+        public IList<KSoundMapper> GetSoundMappings(string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
+                return dbConnection.Table<KSoundMapper>()
+                    .Where(x => x.UserId == userId && x.IsEnabled)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return new List<KSoundMapper>();
+            }
+        }
+
+        /// <summary>
+        /// Gets sound mapping for a specific package
+        /// </summary>
+        public NotificationSounds GetPackageSound(string packageFamilyName, string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
+                var mapping = dbConnection.Table<KSoundMapper>()
+                    .FirstOrDefault(x => x.PackageFamilyName == packageFamilyName && 
+                                    x.UserId == userId && 
+                                    x.IsEnabled);
+                
+                return mapping?.Sound ?? NotificationSounds.None;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return NotificationSounds.None;
+            }
+        }
+
+        /// <summary>
+        /// Adds or updates sound mapping for a package
+        /// </summary>
+        public bool AddOrUpdateSoundMapping(string packageFamilyName, NotificationSounds sound, string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
+                
+                // Check if mapping already exists
+                var existingMapping = dbConnection.Table<KSoundMapper>()
+                    .FirstOrDefault(x => x.PackageFamilyName == packageFamilyName && x.UserId == userId);
+
+                if (existingMapping != null)
+                {
+                    // Update existing
+                    existingMapping.Sound = sound;
+                    existingMapping.UpdatedTime = DateTimeOffset.Now;
+                    existingMapping.IsEnabled = sound != NotificationSounds.None; // Disable if None
+                    
+                    dbConnection.UpdateAll(new[] { existingMapping });
+                }
+                else
+                {
+                    // Create new
+                    var newMapping = new KSoundMapper
+                    {
+                        PackageFamilyName = packageFamilyName,
+                        Sound = sound,
+                        UserId = userId,
+                        CreatedTime = DateTimeOffset.Now,
+                        UpdatedTime = DateTimeOffset.Now,
+                        IsEnabled = sound != NotificationSounds.None
+                    };
+                    
+                    dbConnection.InsertAll(new[] { newMapping });
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Removes sound mapping for a package (resets to None)
+        /// </summary>
+        public bool RemoveSoundMapping(string packageFamilyName, string userId)
+        {
+            try
+            {
+                return AddOrUpdateSoundMapping(packageFamilyName, NotificationSounds.None, userId);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets packages grouped by their assigned sound
+        /// </summary>
+        public Dictionary<NotificationSounds, List<string>> GetPackagesBySound(string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
+                var mappings = dbConnection.Table<KSoundMapper>()
+                    .Where(x => x.UserId == userId && x.IsEnabled && x.Sound != NotificationSounds.None)
+                    .ToList();
+
+                var result = new Dictionary<NotificationSounds, List<string>>();
+                
+                foreach (var mapping in mappings)
+                {
+                    if (!result.ContainsKey(mapping.Sound))
+                    {
+                        result[mapping.Sound] = new List<string>();
+                    }
+                    result[mapping.Sound].Add(mapping.PackageFamilyName);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return new Dictionary<NotificationSounds, List<string>>();
             }
         }
 

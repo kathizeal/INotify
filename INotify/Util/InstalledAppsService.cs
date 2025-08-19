@@ -340,7 +340,10 @@ namespace AppList
                 if (sizeValue != null && long.TryParse(sizeValue.ToString(), out var size))
                 {
                     app.Size = size * 1024; // Convert from KB to bytes
+                
                 }
+                app.PackageFamilyName = app.DisplayName + "_" + app.Publisher;
+                app.PackageFamilyName = app.PackageFamilyName.Trim().Replace(" ", "_");
 
                 return app;
             }

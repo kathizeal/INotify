@@ -166,7 +166,7 @@ namespace INotify.Services
                 try
                 {
                     // Load all spaces from database
-                    var spaces = _dbHandler.GetAllSpaces(INotifyConstant.CurrentUser);
+                    var spaces = _dbHandler.GetAllSpaceMappers(INotifyConstant.CurrentUser);
                     
                     // Clear existing cache
                     _spacePackageCache.Clear();

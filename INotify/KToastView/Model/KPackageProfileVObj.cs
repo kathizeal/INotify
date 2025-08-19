@@ -13,6 +13,7 @@ namespace INotify.KToastView.Model
     {
         private BitmapImage _appIcon;
         private Priority _priority = Priority.None;
+        private NotificationSounds _notificationSounds;
         private bool _isSelected;
         private int _notificationCount;
         private string _publisher = string.Empty;
@@ -29,7 +30,7 @@ namespace INotify.KToastView.Model
         public Priority Priority
         {
             get => _priority;
-            set { SetIfDifferent(ref _priority, value); OnPropertyChanged(nameof(PriorityText)); }
+            set { SetIfDifferent(ref _priority, value); _PriorityText = value.ToString(); }
         }
 
         /// <summary>
@@ -80,13 +81,34 @@ namespace INotify.KToastView.Model
         /// <summary>
         /// Text representation of priority level
         /// </summary>
-        public string PriorityText => Priority switch
+        /// 
+
+        private string _PriorityText;
+        public string PriorityText
         {
-            Priority.High => "High",
-            Priority.Medium => "Medium",
-            Priority.Low => "Low",
-            _ => "None"
-        };
+            get => Priority.ToString();
+            
+            set => SetIfDifferent(ref _PriorityText, value);
+
+        }
+      
+
+
+        public NotificationSounds NotificationSounds
+        {
+            get => _notificationSounds;
+            set { SetIfDifferent(ref _notificationSounds, value); _NotificationSoundText = value.ToString(); }
+        }
+
+        private string _NotificationSoundText;
+        public string NotificationSoundText
+        {
+            get => NotificationSounds.ToString();
+
+            set => SetIfDifferent(ref _NotificationSoundText, value);
+
+        }
+
 
         /// <summary>
         /// Creates a KPackageProfileVObj from InstalledAppInfo

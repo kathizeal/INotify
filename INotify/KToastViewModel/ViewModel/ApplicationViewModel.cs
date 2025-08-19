@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace INotify.ViewModels
+namespace INotify.KToastViewModel.ViewModel
 {
     /// <summary>
     /// Main application state and UI mode management

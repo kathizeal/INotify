@@ -137,7 +137,7 @@ namespace INotify.Services
                 var notification = sender.GetNotification(args.UserNotificationId);
                 if (notification != null)
                 {
-                    _ = Task.Run(async () => await ProcessNotification(notification));
+                    _ = Task.Run(async () => await ProcessNotification(notification, true));
                 }
             }
             catch (Exception ex)
@@ -146,7 +146,7 @@ namespace INotify.Services
             }
         }
 
-        private async Task ProcessNotification(UserNotification notification)
+        private async Task ProcessNotification(UserNotification notification, bool newNotification = false)
         {
             try
             {
@@ -217,7 +217,10 @@ namespace INotify.Services
                     NotificationEventInokerUtil.NotifyNotificationListened(new NotificationReceivedEventArgs(kToastViewData));
 
                     // Process for INotify toast creation (new feature)
-                    await ProcessForINotifyToast(kToastViewData);
+                    if (newNotification)
+                    {
+                        await ProcessForINotifyToast(kToastViewData);
+                    }
 
                     Debug.WriteLine($"Processed notification from {appDisplayName}: {titleText}");
                 }

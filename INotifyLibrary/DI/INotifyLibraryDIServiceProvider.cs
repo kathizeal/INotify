@@ -33,6 +33,7 @@ namespace INotifyLibrary.DI
             services.AddSingleton<IAddAppsToConditionDataManager, AddAppsToConditionDataManager>();
             services.AddSingleton<IGetNotificationsByConditionDataManager, GetNotificationsByConditionDataManager>();
             services.AddSingleton<ISubmitFeedbackDataManager, SubmitFeedbackDataManager>();
+            services.AddSingleton<ISoundMappingDataManager, SoundMappingDataManager>();
 
             BuildServiceProvider(services, true); // Build the service provider with default services
         }

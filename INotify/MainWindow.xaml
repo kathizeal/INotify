@@ -151,6 +151,7 @@
                         x:Name="ContentSubtitle"
                         Foreground="{ThemeResource SystemColorGrayTextBrush}"
                         Style="{StaticResource SubtitleTextBlockStyle}"
+                        Tapped="ContentSubtitle_Tapped"
                         Text="Select a category from the menu to get started" />
                 </StackPanel>
 

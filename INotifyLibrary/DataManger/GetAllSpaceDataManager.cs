@@ -17,24 +17,24 @@ namespace INotifyLibrary.DataManger
 
         public void GetAllSpacesAsync(GetAllSpaceRequest request, ICallback<GetAllSpaceResponse> callback, CancellationTokenSource cts)
         {
-            try
-            {
-                List<KSpace> spaces = DBHandler.GetAllSpaces(request.UserId).ToList();
-                if(CommonUtil.IsNullOrEmpty(spaces))
-                {
-                    spaces = CreateDefaultWorkSpace();
-                    DBHandler.UpdateSpaces(spaces, request.UserId);
-                }
-                GetAllSpaceResponse response = new GetAllSpaceResponse(new ObservableCollection<KSpace>(spaces));
-                ZResponse<GetAllSpaceResponse> zResponse = new ZResponse<GetAllSpaceResponse>(ResponseType.LocalStorage)
-                { Data = response, Status = ResponseStatus.Success };
+            //try
+            //{
+            //    List<KSpace> spaces = DBHandler.GetAllSpaceMappers(request.UserId).ToList();
+            //    if(CommonUtil.IsNullOrEmpty(spaces))
+            //    {
+            //        spaces = CreateDefaultWorkSpace();
+            //        DBHandler.UpdateSpaces(spaces, request.UserId);
+            //    }
+            //    GetAllSpaceResponse response = new GetAllSpaceResponse(new ObservableCollection<KSpace>(spaces));
+            //    ZResponse<GetAllSpaceResponse> zResponse = new ZResponse<GetAllSpaceResponse>(ResponseType.LocalStorage)
+            //    { Data = response, Status = ResponseStatus.Success };
 
-                callback.OnSuccess(zResponse);
-            }
-            catch (Exception ex)
-            {
-                callback.OnError(new ZError(ErrorType.Unknown, ex));
-            }
+            //    callback.OnSuccess(zResponse);
+            //}
+            //catch (Exception ex)
+            //{
+            //    callback.OnError(new ZError(ErrorType.Unknown, ex));
+            //}
         }
 
 

@@ -1,35 +1,18 @@
 using AppList; // For DndService and InstalledAppsService
 using INotify.KToastDI;
-using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
-using INotify.Services;
-using INotifyLibrary.DBHandler.Contract;
 using INotifyLibrary.Domain;
-using INotifyLibrary.Model.Entity;
-using INotifyLibrary.Util;
-using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Markup;
-using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using SampleNotify; // For StandaloneNotificationPositioner
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
-using Windows.Foundation.Metadata;
-using Windows.Graphics.Imaging;
-using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.System;
-using Windows.UI.Notifications;
-using Windows.UI.Notifications.Management;
 using static SampleNotify.StandaloneNotificationPositioner;
 
 namespace INotify
@@ -366,11 +349,11 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = "Priority Management";
             if (ContentSubtitle != null) ContentSubtitle.Text = "Manage notification priorities across High, Medium, and Low categories";
-            
+
             if (PriorityBoardView != null)
             {
                 PriorityBoardView.Visibility = Visibility.Visible;
-                
+
             }
         }
 
@@ -381,7 +364,7 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = "Space Management";
             if (ContentSubtitle != null) ContentSubtitle.Text = "Organize your notifications into custom spaces";
-            
+
             if (SpaceBoardView != null)
             {
                 SpaceBoardView.Visibility = Visibility.Visible;
@@ -395,7 +378,7 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = title;
             if (ContentSubtitle != null) ContentSubtitle.Text = $"Notifications and apps in {title}";
-            
+
             if (DetailListView != null)
             {
                 DetailListView.Visibility = Visibility.Visible;
@@ -412,7 +395,7 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = "All Applications";
             if (ContentSubtitle != null) ContentSubtitle.Text = "Browse and manage all installed applications";
-            
+
             if (AllAppsView != null)
             {
                 AllAppsView.Visibility = Visibility.Visible;
@@ -426,7 +409,7 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = "All Notifications";
             if (ContentSubtitle != null) ContentSubtitle.Text = "View and manage all system notifications";
-            
+
             if (AllNotificationsView != null)
             {
                 AllNotificationsView.Visibility = Visibility.Visible;
@@ -441,7 +424,7 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = "Do Not Disturb";
             if (ContentSubtitle != null) ContentSubtitle.Text = "Manage focus assist and notification settings";
-            
+
             if (DndControlView != null)
             {
                 DndControlView.Visibility = Visibility.Visible;
@@ -456,7 +439,7 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = "System Status";
             if (ContentSubtitle != null) ContentSubtitle.Text = "View system information and statistics";
-            
+
             if (StatusView != null)
             {
                 StatusView.Visibility = Visibility.Visible;
@@ -470,7 +453,7 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = "Submit Feedback";
             if (ContentSubtitle != null) ContentSubtitle.Text = "Help us improve INotify by sharing your feedback";
-            
+
             if (FeedbackView != null)
             {
                 FeedbackView.Visibility = Visibility.Visible;
@@ -484,7 +467,7 @@ namespace INotify
         {
             if (ContentTitle != null) ContentTitle.Text = "Welcome to INotify";
             if (ContentSubtitle != null) ContentSubtitle.Text = "Select a category from the menu to get started. Press Ctrl+H or Escape to minimize to tray.";
-            
+
             // All views are already hidden, so we just show the welcome message
         }
 
@@ -545,15 +528,15 @@ namespace INotify
                     if (appSelector != null)
                     {
                         // Set up event handlers
-                     //   appSelector.AppsSelected -= OnPriorityAppsSelected;
+                        //   appSelector.AppsSelected -= OnPriorityAppsSelected;
                         appSelector.Cancelled -= OnFlyoutCancelled;
-                       // appSelector.AppsSelected += OnPriorityAppsSelected;
+                        // appSelector.AppsSelected += OnPriorityAppsSelected;
                         appSelector.Cancelled += OnFlyoutCancelled;
 
                         // Store the priority level for later use
                         appSelector.Tag = priorityLevel;
 
-                      
+
                     }
 
                     Debug.WriteLine($"Opened {priorityLevel} priority flyout");
@@ -587,15 +570,15 @@ namespace INotify
                     if (appSelector != null)
                     {
                         // Set up event handlers
-                       // appSelector.AppsSelected -= OnSpaceAppsSelected;
+                        // appSelector.AppsSelected -= OnSpaceAppsSelected;
                         appSelector.Cancelled -= OnFlyoutCancelled;
-                       // appSelector.AppsSelected += OnSpaceAppsSelected;
+                        // appSelector.AppsSelected += OnSpaceAppsSelected;
                         appSelector.Cancelled += OnFlyoutCancelled;
 
                         // Store the space ID for later use
                         appSelector.Tag = spaceId;
 
-               
+
                     }
 
                     Debug.WriteLine($"Opened {spaceId} space flyout");
@@ -615,11 +598,11 @@ namespace INotify
         {
             try
             {
-                if (sender is Controls.AppSelectionFlyoutControl appSelector && 
+                if (sender is Controls.AppSelectionFlyoutControl appSelector &&
                     appSelector.Tag is string priorityLevel)
                 {
                     //await ProcessSelectedAppsForPriority(priorityLevel, e.SelectedApps);
-                    
+
                     // Close the flyout
                     var flyout = priorityLevel switch
                     {
@@ -645,11 +628,11 @@ namespace INotify
         {
             try
             {
-                if (sender is Controls.AppSelectionFlyoutControl appSelector && 
+                if (sender is Controls.AppSelectionFlyoutControl appSelector &&
                     appSelector.Tag is string spaceId)
                 {
                     //await ProcessSelectedAppsForSpace(spaceId, e.SelectedApps);
-                    
+
                     // Close the flyout
                     var flyout = spaceId switch
                     {
@@ -686,7 +669,7 @@ namespace INotify
         }
 
         #endregion
-    
+
         #region DND Management
 
         /// <summary>
@@ -991,7 +974,7 @@ namespace INotify
                 // Clean up local services (background service continues running)
                 _dndService?.Dispose();
                 _notificationPositioner = null;
-                
+
                 Debug.WriteLine("MainWindow resources cleaned up successfully");
             }
             catch (Exception ex)
@@ -1014,6 +997,16 @@ namespace INotify
             {
                 Debug.WriteLine($"Error bringing MainWindow to foreground: {ex.Message}");
             }
+        }
+
+        private void ContentSubtitle_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            AppNotification notification = new AppNotificationBuilder()
+.AddText("Welcome to WinUI 3 Gallery")
+.AddText("Explore interactive samples and discover the power of modern Windows UI.")
+.BuildNotification();
+
+            AppNotificationManager.Default.Show(notification);
         }
     }
 }
