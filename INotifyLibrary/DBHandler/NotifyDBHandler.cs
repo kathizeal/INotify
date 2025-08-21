@@ -574,5 +574,51 @@ namespace INotifyLibrary.DBHandler
         }
 
         #endregion
+
+        #region Notification Management Methods
+
+        /// <summary>
+        /// Removes all notifications for a specific package
+        /// </summary>
+        public bool ClearPackageNotifications(string packageFamilyName, string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(userId);
+                
+                var result = dbConnection.Execute(
+                    "DELETE FROM KToastNotification WHERE PackageFamilyName = ?",
+                    packageFamilyName);
+
+                Logger.Info(LogManager.GetCallerInfo(), $"Cleared {result} notifications for package {packageFamilyName}");
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets notification count for a specific package
+        /// </summary>
+        public int GetPackageNotificationCount(string packageFamilyName, string userId)
+        {
+            try
+            {
+                IDBConnection dbConnection = GetDBConnection(userId);
+                
+                return dbConnection.Table<KToastNotification>()
+                    .Count(x => x.PackageFamilyName == packageFamilyName);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+                return 0;
+            }
+        }
+
+        #endregion
     }
 }

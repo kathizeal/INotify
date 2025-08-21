@@ -7,6 +7,7 @@ using INotifyLibrary.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using WinCommon.Error;
 using WinCommon.Util;
 using WinLogger;
 
@@ -52,6 +53,7 @@ namespace INotify.KToastViewModel.ViewModel
             IsPackageView = !IsPackageView;
             OnPropertyChanged(nameof(ToggleButtonText));
             OnPropertyChanged(nameof(ViewDisplayText));
+            OnPropertyChanged(nameof(NavigationPackages));
         }
 
         public override void RefreshView()
@@ -71,6 +73,50 @@ namespace INotify.KToastViewModel.ViewModel
             {
                 Logger.Error(LogManager.GetCallerInfo(), 
                     $"Error toggling package group: {ex.Message}");
+            }
+        }
+
+        public override void NavigateToPackage(string packageFamilyName)
+        {
+            try
+            {
+                // This method will be called from the UI to trigger navigation
+                // The actual scrolling logic will be handled in the code-behind
+                Logger.Info(LogManager.GetCallerInfo(), 
+                    $"Navigation requested to package: {packageFamilyName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), 
+                    $"Error navigating to package: {ex.Message}");
+            }
+        }
+
+        public override void ClearPackageNotifications(KPackageNotificationGroup group)
+        {
+            try
+            {
+                if (group == null || string.IsNullOrEmpty(group.PackageFamilyName))
+                {
+                    Logger.Error(LogManager.GetCallerInfo(), "Invalid package group provided for clearing notifications");
+                    return;
+                }
+
+                Logger.Info(LogManager.GetCallerInfo(), 
+                    $"Clear notifications requested for package: {group.DisplayName} ({group.PackageFamilyName})");
+
+                var request = new ClearPackageNotificationsRequest(
+                    group.PackageFamilyName,
+                    INotifyConstant.CurrentUser);
+
+                var presenterCallback = new ClearPackageNotificationsPresenterCallback(this, group);
+                var useCase = new ClearPackageNotifications(request, presenterCallback);
+                useCase.Execute();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), 
+                    $"Error clearing package notifications: {ex.Message}");
             }
         }
 
@@ -154,6 +200,7 @@ namespace INotify.KToastViewModel.ViewModel
 
                     _viewModel.OnPropertyChanged(nameof(_viewModel.TotalCount));
                     _viewModel.OnPropertyChanged(nameof(_viewModel.ViewDisplayText));
+                    _viewModel.OnPropertyChanged(nameof(_viewModel.NavigationPackages));
                     });
                 }
                 catch (Exception ex)
@@ -195,6 +242,78 @@ namespace INotify.KToastViewModel.ViewModel
                 _viewModel.IsLoading = false;
                 _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
                     "Load operation was ignored");
+            }
+        }
+
+        private class ClearPackageNotificationsPresenterCallback : IClearPackageNotificationsPresenterCallback
+        {
+            private readonly NotificationListVM _viewModel;
+            private readonly KPackageNotificationGroup _group;
+
+            public ClearPackageNotificationsPresenterCallback(NotificationListVM viewModel, KPackageNotificationGroup group)
+            {
+                _viewModel = viewModel;
+                _group = group;
+            }
+
+            public void OnSuccess(ZResponse<ClearPackageNotificationsResponse> response)
+            {
+                try
+                {
+                    _viewModel.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        var data = response.Data;
+                        
+                        // Remove the package group from the UI
+                        if (_group != null)
+                        {
+                            _viewModel.GroupedPackageNotifications.Remove(_group);
+                        }
+
+                        // Update UI counts
+                        _viewModel.OnPropertyChanged(nameof(_viewModel.TotalCount));
+                        _viewModel.OnPropertyChanged(nameof(_viewModel.ViewDisplayText));
+                        _viewModel.OnPropertyChanged(nameof(_viewModel.NavigationPackages));
+
+                        _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                            $"Successfully cleared {data.ClearedCount} notifications for package {data.PackageFamilyName}");
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _viewModel.Logger.Error(LogManager.GetCallerInfo(), 
+                        $"Error processing clear notifications success response: {ex.Message}");
+                }
+            }
+
+            public void OnProgress(ZResponse<ClearPackageNotificationsResponse> response)
+            {
+                // Progress updates if needed
+            }
+
+            public void OnFailed(ZResponse<ClearPackageNotificationsResponse> response)
+            {
+                _viewModel.Logger.Error(LogManager.GetCallerInfo(), 
+                    $"Failed to clear notifications for package {_group?.PackageFamilyName}");
+            }
+
+            public void OnError(ZError error)
+            {
+                var errorMessage = error?.ErrorObject?.ToString() ?? "Unknown error";
+                _viewModel.Logger.Error(LogManager.GetCallerInfo(), 
+                    $"Error clearing notifications: {errorMessage}");
+            }
+
+            public void OnCanceled(ZResponse<ClearPackageNotificationsResponse> response)
+            {
+                _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                    "Clear notifications operation was canceled");
+            }
+
+            public void OnIgnored(ZResponse<ClearPackageNotificationsResponse> response)
+            {
+                _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                    "Clear notifications operation was ignored");
             }
         }
     }

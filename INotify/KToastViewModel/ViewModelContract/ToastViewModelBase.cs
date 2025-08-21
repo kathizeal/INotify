@@ -85,38 +85,81 @@ namespace INotify.KToastViewModel.ViewModelContract
 
         public async void GetInstalledApps()
         {
-            InstalledApps = await AppService.GetAllInstalledAppsAsync();
-            IsInstalledAppFetched = true;
-            ConvertInstalledAppsToPackageProfiles();
-
-
+            try
+            {
+                Logger.Info(LogManager.GetCallerInfo(), "Starting to load installed apps with icons...");
+                
+                // Load apps with icons on background thread
+                InstalledApps = await AppService.GetAllInstalledAppsAsync();
+                IsInstalledAppFetched = true;
+                
+                Logger.Info(LogManager.GetCallerInfo(), $"Successfully loaded {InstalledApps.Count} apps with icons");
+                
+                // Convert on UI thread
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    ConvertInstalledAppsToPackageProfiles();
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error loading installed apps: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in GetInstalledApps: {ex.Message}");
+            }
         }
 
         public void ConvertInstalledAppsToPackageProfiles()
         {
-            var hashSet = PackageProfiles.Select(p => p.PackageFamilyName).ToHashSet();
-            foreach (var app in InstalledApps)
+            try
             {
-                if (!hashSet.Contains(app.PackageFamilyName))
+                var hashSet = PackageProfiles.Select(p => p.PackageFamilyName).ToHashSet();
+                int appsWithIcons = 0;
+                int totalApps = 0;
+                
+                foreach (var app in InstalledApps)
                 {
-                    KPackageProfileVObj package = new KPackageProfileVObj();
-                    package.PopulateInstalledAppInfo(app, 0);
-                    PackageProfiles.Add(package);
+                    totalApps++;
+                    if (!hashSet.Contains(app.PackageFamilyName))
+                    {
+                        KPackageProfileVObj package = new KPackageProfileVObj();
+                        package.PopulateInstalledAppInfo(app, 0);
+                        
+                        // Debug icon loading
+                        if (app.Icon != null)
+                        {
+                            appsWithIcons++;
+                            System.Diagnostics.Debug.WriteLine($"App {app.DisplayName} has icon loaded");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"App {app.DisplayName} has NO icon");
+                        }
+                        
+                        PackageProfiles.Add(package);
+                    }
+                    hashSet.Add(app.PackageFamilyName);
                 }
-                hashSet.Add(app.PackageFamilyName);
-            }
-            
-            // Sort the collection by AppDisplayName
-            var sortedItems = PackageProfiles.OrderBy(p => p.AppDisplayName).ToList();
-            PackageProfiles.Clear();
-            foreach (var item in sortedItems)
-            {
-                PackageProfiles.Add(item);
-            }
+                
+                // Sort the collection by AppDisplayName
+                var sortedItems = PackageProfiles.OrderBy(p => p.AppDisplayName).ToList();
+                PackageProfiles.Clear();
+                foreach (var item in sortedItems)
+                {
+                    PackageProfiles.Add(item);
+                }
 
-            if(View is IAllPackageView allPackageView)
+                Logger.Info(LogManager.GetCallerInfo(), $"Converted {totalApps} apps to package profiles. {appsWithIcons} apps have icons.");
+                System.Diagnostics.Debug.WriteLine($"Icon stats: {appsWithIcons}/{totalApps} apps have icons loaded");
+
+                if(View is IAllPackageView allPackageView)
+                {
+                    allPackageView.Package1Fetched();
+                }
+            }
+            catch (Exception ex)
             {
-                allPackageView.Package1Fetched();
+                Logger.Error(LogManager.GetCallerInfo(), $"Error converting apps to package profiles: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in ConvertInstalledAppsToPackageProfiles: {ex.Message}");
             }
         }
 

@@ -2,7 +2,9 @@ using INotify.KToastView.Model;
 using INotifyLibrary.Domain;
 using INotifyLibrary.Model;
 using INotifyLibrary.Model.Entity;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace INotify.KToastViewModel.ViewModelContract
 {
@@ -133,6 +135,22 @@ namespace INotify.KToastViewModel.ViewModelContract
         /// Abstract method to toggle package group expansion
         /// </summary>
         public abstract void TogglePackageGroup(KPackageNotificationGroup group);
+
+        /// <summary>
+        /// Abstract method to navigate to a specific package group
+        /// </summary>
+        public abstract void NavigateToPackage(string packageFamilyName);
+
+        /// <summary>
+        /// Abstract method to clear all notifications for a specific package
+        /// </summary>
+        public abstract void ClearPackageNotifications(KPackageNotificationGroup group);
+
+        /// <summary>
+        /// Collection of package names for navigation (used in Go to flyout)
+        /// </summary>
+        public IEnumerable<KPackageNotificationGroup> NavigationPackages => 
+            GroupedPackageNotifications?.Where(g => g.NotificationCount > 0) ?? Enumerable.Empty<KPackageNotificationGroup>();
 
         protected NotificationListVMBase()
         {

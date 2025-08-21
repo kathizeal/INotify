@@ -413,6 +413,103 @@ namespace INotify.View
             }
         }
 
+        private async void ClearPackageNotifications_Click(object sender, RoutedEventArgs e)
+        {
+            EnsureViewModelInitialized();
+            
+            if (sender is Button button && button.Tag is KPackageNotificationGroup group)
+            {
+                try
+                {
+                    // Show confirmation dialog
+                    var dialog = new ContentDialog()
+                    {
+                        Title = "Clear Notifications",
+                        Content = $"Clear notification will remove all the notification history of '{group.DisplayName}' package. Do you wish to continue?",
+                        PrimaryButtonText = "Yes",
+                        SecondaryButtonText = "Cancel",
+                        DefaultButton = ContentDialogButton.Secondary,
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    var result = await dialog.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        // User confirmed - proceed with clearing
+                        _viewModel?.ClearPackageNotifications(group);
+                        
+                        System.Diagnostics.Debug.WriteLine($"User confirmed clearing notifications for package: {group.DisplayName}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"User canceled clearing notifications for package: {group.DisplayName}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error showing clear notifications dialog: {ex.Message}");
+                }
+            }
+        }
+
+        private void NavigationPackagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            EnsureViewModelInitialized();
+            
+            if (sender is ListView listView && listView.SelectedItem is KPackageNotificationGroup selectedGroup)
+            {
+                try
+                {
+                    // Call ViewModel navigation method
+                    _viewModel?.NavigateToPackage(selectedGroup.PackageFamilyName);
+                    
+                    // Scroll to the selected package group header in the ListView
+                    ScrollToPackageGroup(selectedGroup);
+                    
+                    // Close the flyout by finding the button
+                    var goToButton = this.FindName("GoToButton") as Button;
+                    if (goToButton?.Flyout is Flyout flyout)
+                    {
+                        flyout.Hide();
+                    }
+                    
+                    // Clear selection to allow reselection of the same item
+                    listView.SelectedItem = null;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error navigating to package: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Scrolls the grouped packages ListView to the specified package group
+        /// </summary>
+        private void ScrollToPackageGroup(KPackageNotificationGroup targetGroup)
+        {
+            try
+            {
+                if (GroupedPackagesListView == null || targetGroup == null)
+                    return;
+
+                // Find the group in the ListView and scroll to it
+                var groupIndex = _viewModel.GroupedPackageNotifications.IndexOf(targetGroup);
+                if (groupIndex >= 0)
+                {
+                    // Scroll to the group header
+                    GroupedPackagesListView.ScrollIntoView(targetGroup, ScrollIntoViewAlignment.Leading);
+                    
+                    System.Diagnostics.Debug.WriteLine($"Scrolled to package group: {targetGroup.DisplayName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error scrolling to package group: {ex.Message}");
+            }
+        }
+
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             EnsureViewModelInitialized();

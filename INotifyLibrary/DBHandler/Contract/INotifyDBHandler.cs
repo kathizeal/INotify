@@ -137,6 +137,20 @@ namespace INotifyLibrary.DBHandler.Contract
         Dictionary<NotificationSounds, List<string>> GetPackagesBySound(string userId);
 
         #endregion
+
+        #region Notification Management Methods
+
+        /// <summary>
+        /// Removes all notifications for a specific package
+        /// </summary>
+        bool ClearPackageNotifications(string packageFamilyName, string userId);
+
+        /// <summary>
+        /// Gets notification count for a specific package
+        /// </summary>
+        int GetPackageNotificationCount(string packageFamilyName, string userId);
+
+        #endregion
     }
 
 }

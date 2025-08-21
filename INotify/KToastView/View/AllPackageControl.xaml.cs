@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -77,15 +78,55 @@ namespace INotify.View
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("AllPackageControl: Starting to get all apps...");
+                
                 if (_VM != null)
                 {
                     _VM.GetInstalledApps();
                     _VM.GetAppPackageProfile();
+                    
+                    System.Diagnostics.Debug.WriteLine("AllPackageControl: Called GetInstalledApps and GetAppPackageProfile");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("AllPackageControl: ViewModel is null!");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error in GetAllApps: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Force refresh of app icons - useful for debugging
+        /// </summary>
+        public async void RefreshAppIcons()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("AllPackageControl: Manually refreshing app icons...");
+                
+                if (_VM != null)
+                {
+                    // Force reload of apps with icons
+                    _VM.GetInstalledApps();
+                    
+                    // Update the ListView binding
+                    await Task.Delay(1000); // Give time for loading
+                    
+                    if (PackageListView != null)
+                    {
+                        PackageListView.ItemsSource = null;
+                        PackageListView.ItemsSource = _VM.PackageProfiles;
+                    }
+                    
+                    System.Diagnostics.Debug.WriteLine($"AllPackageControl: Refreshed {_VM.PackageProfiles.Count} packages");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in RefreshAppIcons: {ex.Message}");
             }
         }
 
