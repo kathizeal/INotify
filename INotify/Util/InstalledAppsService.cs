@@ -141,16 +141,25 @@ namespace AppList
         private static readonly Dictionary<string, BitmapImage> _iconCache = new();
 
         /// <summary>
-        /// Gets all installed applications (Win32 + UWP)
+        /// Gets all installed applications (Win32 + UWP) excluding the current app
         /// </summary>
         public async Task<ObservableCollection<InstalledAppInfo>> GetAllInstalledAppsAsync()
         {
             var apps = new ObservableCollection<InstalledAppInfo>();
 
+            // Current app identifiers to exclude
+            const string currentAppName = "INotify";
+            const string currentAppPackageName = "53bb359b-204d-49dc-a511-4e29dc79d34b";
+            const string currentAppPublisher = "Kathi";
+
             // Get Win32 applications
             var win32Apps = await GetWin32AppsAsync();
             foreach (var app in win32Apps)
             {
+                // Skip the current app based on display name and publisher
+                if (IsCurrentApp(app, currentAppName, currentAppPackageName, currentAppPublisher))
+                    continue;
+
                 apps.Add(app);
             }
 
@@ -158,10 +167,44 @@ namespace AppList
             var uwpApps = await GetUWPAppsAsync();
             foreach (var app in uwpApps)
             {
+                // Skip the current app based on package name or display name
+                if (IsCurrentApp(app, currentAppName, currentAppPackageName, currentAppPublisher))
+                    continue;
+
                 apps.Add(app);
             }
 
             return apps;
+        }
+
+        /// <summary>
+        /// Determines if the given app is the current INotify app
+        /// </summary>
+        private bool IsCurrentApp(InstalledAppInfo app, string currentAppName, string currentAppPackageName, string currentAppPublisher)
+        {
+            // Check by package name (for UWP apps)
+            if (!string.IsNullOrEmpty(app.Name) && 
+                app.Name.Equals(currentAppPackageName, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Check by display name
+            if (!string.IsNullOrEmpty(app.DisplayName) && 
+                app.DisplayName.Equals(currentAppName, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Check by display name and publisher combination
+            if (!string.IsNullOrEmpty(app.DisplayName) && 
+                !string.IsNullOrEmpty(app.Publisher) &&
+                app.DisplayName.Equals(currentAppName, StringComparison.OrdinalIgnoreCase) &&
+                app.Publisher.Equals(currentAppPublisher, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Check if executable path contains the current app name
+            if (!string.IsNullOrEmpty(app.ExecutablePath) && 
+                app.ExecutablePath.Contains(currentAppName, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return false;
         }
 
         /// <summary>
@@ -464,7 +507,7 @@ namespace AppList
             });
         }
         /// <summary>
-        /// Gets applications with icons loaded
+        /// Gets applications with icons loaded, excluding the current app
         /// </summary>
         public async Task<ObservableCollection<InstalledAppInfo>> GetInstalledAppsWithIconsAsync()
         {
@@ -472,8 +515,8 @@ namespace AppList
             {
                 System.Diagnostics.Debug.WriteLine("Starting GetInstalledAppsWithIconsAsync...");
                 
-                var apps = await GetAllInstalledAppsAsync();
-                System.Diagnostics.Debug.WriteLine($"Retrieved {apps.Count} total apps");
+                var apps = await GetAllInstalledAppsAsync(); // This now already excludes the current app
+                System.Diagnostics.Debug.WriteLine($"Retrieved {apps.Count} total apps (excluding current app)");
 
                 // Load icons with better error handling and progress tracking
                 int iconLoadTasks = 0;
