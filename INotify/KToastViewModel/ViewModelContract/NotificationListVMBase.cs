@@ -113,7 +113,7 @@ namespace INotify.KToastViewModel.ViewModelContract
         /// Display text for current view
         /// </summary>
         public string ViewDisplayText => IsPackageView 
-            ? $"{TotalCount} Package(s)" 
+            ? $"{TotalCount} Apps(s)" 
             : $"{TotalCount} Notification(s)";
 
         /// <summary>

@@ -6,6 +6,7 @@ using INotifyLibrary.Domain;
 using INotifyLibrary.Util.Enums;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -242,6 +243,182 @@ namespace INotify.Controls
 
             AppsList.ItemsSource = _VM.FilteredApps;
         }
+
+        /// <summary>
+        /// Shows an internal in-app toast notification when apps are successfully added
+        /// </summary>
+        private void ShowInAppToast(int appCount, SelectionTargetType targetType, string targetId)
+        {
+            try
+            {
+                // Create success message
+                var targetName = targetType switch
+                {
+                    SelectionTargetType.Priority => $"{targetId} Priority",
+                    SelectionTargetType.Space => GetSpaceDisplayName(targetId),
+                    _ => "Category"
+                };
+
+                var message = appCount == 1 
+                    ? $"? 1 app successfully added to {targetName}"
+                    : $"? {appCount} apps successfully added to {targetName}";
+
+                // Find the main window through the visual tree
+                var mainWindow = GetMainWindow();
+                if (mainWindow != null)
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        ShowToastInMainWindow(mainWindow, message, targetName);
+                    });
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"? Apps added: {message} (Main window not found for in-app toast)");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"? Error showing in-app toast: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Shows toast notification within the main window
+        /// </summary>
+        private void ShowToastInMainWindow(Window mainWindow, string message, string targetName)
+        {
+            try
+            {
+                if (mainWindow.Content is FrameworkElement rootElement)
+                {
+                    // Find the main content area
+                    var contentArea = FindElementByName(rootElement, "ContentArea") as Grid;
+                    
+                    if (contentArea != null)
+                    {
+                        // Create in-app toast using InfoBar
+                        var infoBar = new InfoBar
+                        {
+                            Title = "?? Success!",
+                            Message = message,
+                            Severity = InfoBarSeverity.Success,
+                            IsOpen = true,
+                            IsClosable = true,
+                            Margin = new Thickness(24, 16, 24, 0),
+                            HorizontalAlignment = HorizontalAlignment.Stretch,
+                            VerticalAlignment = VerticalAlignment.Top
+                        };
+
+                        // Set high Z-index to ensure it appears on top
+                        Canvas.SetZIndex(infoBar, 9999);
+
+                        // Auto-close after 4 seconds
+                        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+                        timer.Tick += (s, e) =>
+                        {
+                            timer.Stop();
+                            infoBar.IsOpen = false;
+                            
+                            // Remove from parent after close animation
+                            var removeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+                            removeTimer.Tick += (s2, e2) =>
+                            {
+                                removeTimer.Stop();
+                                try
+                                {
+                                    contentArea.Children.Remove(infoBar);
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Error removing toast: {ex.Message}");
+                                }
+                            };
+                            removeTimer.Start();
+                        };
+                        timer.Start();
+
+                        // Add to the content area at the top
+                        contentArea.Children.Add(infoBar);
+                        Grid.SetRow(infoBar, 0);
+                        Grid.SetColumnSpan(infoBar, 10); // Span across all columns
+                        
+                        System.Diagnostics.Debug.WriteLine($"? In-app toast displayed: {message}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("?? Could not find ContentArea in main window for in-app toast");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"? Error showing toast in main window: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Gets the main window from the current context
+        /// </summary>
+        private Window GetMainWindow()
+        {
+            try
+            {
+                // Try to get the main window through App.Current
+                if (Application.Current is App app)
+                {
+                    // Get the main window using reflection (adjust based on your App class structure)
+                    var windowField = typeof(App).GetField("m_window", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (windowField != null)
+                    {
+                        return windowField.GetValue(app) as Window;
+                    }
+
+                    // Alternative: try public property if available
+                    var windowProperty = typeof(App).GetProperty("MainWindow", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    if (windowProperty != null)
+                    {
+                        return windowProperty.GetValue(app) as Window;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting main window: {ex.Message}");
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// Finds an element by name in the visual tree
+        /// </summary>
+        private FrameworkElement FindElementByName(FrameworkElement parent, string name)
+        {
+            try
+            {
+                if (parent.Name == name)
+                    return parent;
+
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+                {
+                    var child = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
+                    if (child != null)
+                    {
+                        var result = FindElementByName(child, name);
+                        if (result != null)
+                            return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error finding element by name: {ex.Message}");
+            }
+            
+            return null;
+        }
+
         #endregion
 
         #region Event Handlers
@@ -279,6 +456,9 @@ namespace INotify.Controls
             {
                 var appSelectionEventArgs = new AppSelectionEventArgs(selectedApps, CurrentTargetType, SelectionTypeId);
                 _VM.AddSelectedAppsToCondition(appSelectionEventArgs);
+
+                // Show internal in-app toast notification
+                ShowInAppToast(selectedApps.Count, CurrentTargetType, SelectionTypeId);
 
                 AppsSelected?.Invoke(this, appSelectionEventArgs);
             }

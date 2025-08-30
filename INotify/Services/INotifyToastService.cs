@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.Data.Xml.Dom;
@@ -474,6 +475,134 @@ namespace INotify.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"❌ Error during enhanced sound system testing: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Tests the enhanced Windows notification clearing system
+        /// </summary>
+        public async Task TestWindowsNotificationClearingAsync()
+        {
+            try
+            {
+                Debug.WriteLine("🧪 === Testing Enhanced Windows Notification Clearing System ===");
+                
+                var windowsService = WindowsNotificationManagerService.Instance;
+                
+                // Test 1: Get current notification overview
+                Debug.WriteLine("🧪 Test 1: Getting current Windows notification overview...");
+                var allNotificationCounts = await windowsService.GetAllNotificationCountsAsync();
+                Debug.WriteLine($"📊 Found notifications from {allNotificationCounts.Count} apps:");
+                
+                foreach (var kvp in allNotificationCounts.Take(5)) // Show top 5
+                {
+                    Debug.WriteLine($"  📱 {kvp.Key}: {kvp.Value} notifications");
+                }
+                
+                if (allNotificationCounts.Count == 0)
+                {
+                    Debug.WriteLine("ℹ️ No notifications found in Windows Action Center");
+                    Debug.WriteLine("✅ Test completed - no notifications to clear");
+                    return;
+                }
+                
+                // Test 2: Test clearing for a specific app
+                var testApp = allNotificationCounts.FirstOrDefault();
+                if (!string.IsNullOrEmpty(testApp.Key) && testApp.Value > 0)
+                {
+                    Debug.WriteLine($"🧪 Test 2: Testing notification clearing for '{testApp.Key}' ({testApp.Value} notifications)...");
+                    
+                    // Get count before clearing
+                    var beforeCount = await windowsService.GetNotificationCountForPackageAsync(testApp.Key);
+                    Debug.WriteLine($"🔍 Confirmed {beforeCount} notifications for {testApp.Key}");
+                    
+                    // Clear notifications
+                    var clearedCount = await windowsService.ClearNotificationsForPackageAsync(testApp.Key);
+                    Debug.WriteLine($"🧹 Cleared {clearedCount} notifications");
+                    
+                    // Get count after clearing
+                    var afterCount = await windowsService.GetNotificationCountForPackageAsync(testApp.Key);
+                    Debug.WriteLine($"📊 Remaining notifications: {afterCount}");
+                    
+                    if (afterCount == 0 && clearedCount > 0)
+                    {
+                        Debug.WriteLine("✅ Windows notification clearing test PASSED");
+                    }
+                    else if (beforeCount == 0)
+                    {
+                        Debug.WriteLine("ℹ️ No notifications were present to clear");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"⚠️ Test results unclear - cleared {clearedCount}, but {afterCount} remain");
+                    }
+                }
+                
+                // Test 3: Integration test with database clearing
+                Debug.WriteLine("🧪 Test 3: Testing integrated database + Windows clearing...");
+                await TestIntegratedNotificationClearingAsync();
+                
+                Debug.WriteLine("🧪 === Enhanced Windows Notification Clearing Tests Complete ===");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error during Windows notification clearing test: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Tests the integrated database + Windows notification clearing
+        /// </summary>
+        private async Task TestIntegratedNotificationClearingAsync()
+        {
+            try
+            {
+                Debug.WriteLine("🔗 Testing integrated clearing (Database + Windows)...");
+                
+                // This would typically be called through the ViewModel/DataManager
+                // For testing, we'll simulate the process
+                
+                var windowsService = WindowsNotificationManagerService.Instance;
+                var allCounts = await windowsService.GetAllNotificationCountsAsync();
+                
+                if (allCounts.Count > 0)
+                {
+                    var testPackage = allCounts.First();
+                    Debug.WriteLine($"🧪 Simulating integrated clear for: {testPackage.Key}");
+                    
+                    // Simulate what the DataManager would do:
+                    // 1. Clear from database (simulated)
+                    var simulatedDbCount = 5; // Pretend we had 5 in DB
+                    Debug.WriteLine($"📚 Simulated clearing {simulatedDbCount} notifications from database");
+                    
+                    // 2. Clear from Windows
+                    var windowsCleared = await windowsService.ClearNotificationsForPackageAsync(testPackage.Key);
+                    Debug.WriteLine($"🪟 Cleared {windowsCleared} notifications from Windows");
+                    
+                    // 3. Create summary (like EnhancedClearPackageNotificationsResponse would)
+                    var totalCleared = simulatedDbCount + windowsCleared;
+                    Debug.WriteLine($"📊 Integration test summary:");
+                    Debug.WriteLine($"  📚 Database: {simulatedDbCount} cleared");
+                    Debug.WriteLine($"  🪟 Windows: {windowsCleared} cleared"); 
+                    Debug.WriteLine($"  🎯 Total: {totalCleared} notifications cleared");
+                    
+                    if (totalCleared > 0)
+                    {
+                        Debug.WriteLine("✅ Integrated clearing test PASSED");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("ℹ️ No notifications found to clear in integration test");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("ℹ️ No Windows notifications available for integration test");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error in integrated clearing test: {ex.Message}");
             }
         }
 

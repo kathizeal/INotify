@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:INotifyLibrary.Model"
     xmlns:viewModel="using:INotify.KToastView.Model"
+    xmlns:controls="using:INotify.Controls"
     Loaded="UserControl_Loaded"
     Unloaded="UserControl_Unloaded"
     mc:Ignorable="d">
@@ -19,6 +20,18 @@
         <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
         <converters:CountToReverseVisibilityConverter x:Key="CountToReverseVisibilityConverter" />
         <converters:ExpandCollapseIconConverter x:Key="ExpandCollapseIconConverter" />
+
+        <!--  Custom Flyout Presenter Style  -->
+        <Style x:Key="CustomFlyoutPresenter" TargetType="FlyoutPresenter">
+            <!--  Remove width constraints  -->
+            <Setter Property="MaxWidth" Value="Infinity" />
+            <!--  Disable horizontal scrolling  -->
+            <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <!--  Optional: Also disable vertical scrolling if needed  -->
+            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+        </Style>
 
         <!--  CollectionViewSource for grouped packages  -->
         <CollectionViewSource
@@ -251,6 +264,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!--  Title and Count  -->
@@ -265,10 +279,34 @@
                     Text="{x:Bind CurrentTargetType, Mode=OneWay}" />
             </StackPanel>
 
+            <!--  Add Apps Button (Visible when SelectionTargetId is not empty)  -->
+            <Button
+                x:Name="AddAppsButton"
+                Grid.Column="1"
+                Margin="0,0,8,0"
+                Content="+ Add Apps"
+                Style="{StaticResource AccentButtonStyle}"
+                Visibility="{x:Bind IsAddAppButtonVisible(SelectionTargetId), Mode=OneWay}"
+                Click="AddAppsButton_Click">
+                <Button.Flyout>
+                    <Flyout
+                        x:Name="AddAppsFlyout"
+                        FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}"
+                        Placement="Bottom">
+                        <controls:AppSelectionFlyoutControl
+                            x:Name="AppSelectionControl"
+                            CurrentTargetType="{x:Bind CurrentTargetType, Mode=OneWay}"
+                            SelectionTypeId="{x:Bind SelectionTargetId, Mode=OneWay}"
+                            AppsSelected="AppSelectionControl_AppsSelected"
+                            Cancelled="AppSelectionControl_Cancelled" />
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+
             <!--  Go to Button (Only visible in Package View)  -->
             <Button
                 x:Name="GoToButton"
-                Grid.Column="1"
+                Grid.Column="2"
                 Margin="0,0,8,0"
                 Content="Go to"
                 Visibility="{x:Bind TogglePackageView(_viewModel.IsPackageView), Mode=OneWay}">
@@ -324,14 +362,14 @@
 
             <!--  Toggle View Button  -->
             <Button
-                Grid.Column="2"
+                Grid.Column="3"
                 Margin="0,0,8,0"
                 Click="ToggleViewButton_Click"
                 Content="{x:Bind _viewModel.ToggleButtonText, Mode=OneWay}"
                 Style="{ThemeResource AccentButtonStyle}" />
 
             <!--  Refresh Button  -->
-            <Button Grid.Column="3" Click="RefreshButton_Click">
+            <Button Grid.Column="4" Click="RefreshButton_Click">
                 <FontIcon FontSize="16" Glyph="&#xE72C;" />
             </Button>
         </Grid>

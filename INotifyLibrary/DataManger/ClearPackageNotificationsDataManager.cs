@@ -1,6 +1,8 @@
 using INotifyLibrary.DBHandler.Contract;
 using INotifyLibrary.Domain;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using WinCommon.Error;
 using WinCommon.Util;
 
@@ -14,13 +16,13 @@ namespace INotifyLibrary.DataManger
         {
             try
             {
-                // Get count before clearing
+                // Get count before clearing from database
                 int notificationCount = DBHandler.GetPackageNotificationCount(request.PackageFamilyName, request.UserId);
                 
-                // Clear notifications
+                // Clear notifications from database
                 bool isSuccess = DBHandler.ClearPackageNotifications(request.PackageFamilyName, request.UserId);
                 
-                // Create response
+                // Create response with flag indicating Windows clearing should be attempted by UI layer
                 var response = new ClearPackageNotificationsResponse(
                     isSuccess, 
                     isSuccess ? notificationCount : 0, 

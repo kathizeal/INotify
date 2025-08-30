@@ -392,6 +392,36 @@ namespace INotify.View
             }
         }
 
+        #region Helper Functions for XAML Binding
+
+        /// <summary>
+        /// Determines if the Add Apps button should be visible based on SelectionTargetId
+        /// </summary>
+        public Visibility IsAddAppButtonVisible(string selectionTargetId)
+        {
+            return string.IsNullOrEmpty(selectionTargetId) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Converter function for toggling notification view visibility
+        /// </summary>
+        public Visibility ToggleNotificationView(bool isPackageView)
+        {
+            return isPackageView ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Converter function for toggling package view visibility
+        /// </summary>
+        public Visibility TogglePackageView(bool isPackageView)
+        {
+            return isPackageView ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        #endregion
+
+        #region Event Handlers
+
         private void ToggleViewButton_Click(object sender, RoutedEventArgs e)
         {
             EnsureViewModelInitialized();
@@ -421,12 +451,33 @@ namespace INotify.View
             {
                 try
                 {
-                    // Show confirmation dialog
+                    // Get counts for the confirmation dialog
+                    int dbCount = group.NotificationCount;
+                    int windowsCount = 0;
+                    
+                    try
+                    {
+                        // Try to get Windows notification count
+                        var windowsService = WindowsNotificationManagerService.Instance;
+                        windowsCount = await windowsService.GetNotificationCountForPackageAsync(group.PackageFamilyName);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"?? Could not get Windows notification count: {ex.Message}");
+                    }
+
+                    // Build detailed confirmation message
+                    var contentText = $"This will clear all notifications for '{group.DisplayName}':\n\n";
+                    contentText += $"• {dbCount} notification(s) from INotify history\n";
+                    contentText += $"• {windowsCount} notification(s) from Windows Action Center\n\n";
+                    contentText += "This action cannot be undone. Do you wish to continue?";
+
+                    // Show enhanced confirmation dialog
                     var dialog = new ContentDialog()
                     {
-                        Title = "Clear Notifications",
-                        Content = $"Clear notification will remove all the notification history of '{group.DisplayName}' package. Do you wish to continue?",
-                        PrimaryButtonText = "Yes",
+                        Title = "Clear All Notifications",
+                        Content = contentText,
+                        PrimaryButtonText = "Yes, Clear All",
                         SecondaryButtonText = "Cancel",
                         DefaultButton = ContentDialogButton.Secondary,
                         XamlRoot = this.XamlRoot
@@ -439,7 +490,7 @@ namespace INotify.View
                         // User confirmed - proceed with clearing
                         _viewModel?.ClearPackageNotifications(group);
                         
-                        System.Diagnostics.Debug.WriteLine($"User confirmed clearing notifications for package: {group.DisplayName}");
+                        System.Diagnostics.Debug.WriteLine($"User confirmed clearing {dbCount} DB + {windowsCount} Windows notifications for: {group.DisplayName}");
                     }
                     else
                     {
@@ -485,6 +536,96 @@ namespace INotify.View
         }
 
         /// <summary>
+        /// Handles adding apps button click
+        /// </summary>
+        private void AddAppsButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Set up header text based on target type and id
+                if (AppSelectionControl != null)
+                {
+                    var headerText = CurrentTargetType switch
+                    {
+                        SelectionTargetType.Priority => $"Add Apps to {SelectionTargetId} Priority",
+                        SelectionTargetType.Space => $"Add Apps to {GetSpaceDisplayName(SelectionTargetId)}",
+                        _ => "Add Apps"
+                    };
+                    
+                    AppSelectionControl.HeaderTextValue = headerText;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Opened Add Apps flyout for {CurrentTargetType}:{SelectionTargetId}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in AddAppsButton_Click: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles when apps are selected in the flyout
+        /// </summary>
+        private void AppSelectionControl_AppsSelected(object sender, AppSelectionEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"Apps selected for {e.TargetType}:{e.CurrentTargetId}, Count: {e.SelectedApps?.Count() ?? 0}");
+
+                // Close the flyout
+                AddAppsFlyout?.Hide();
+
+                // Clear selections for next use
+                AppSelectionControl?.ClearSelections();
+
+                // Refresh the current view to show updated data
+                _viewModel?.RefreshView();
+
+                System.Diagnostics.Debug.WriteLine($"Successfully processed app selection for {e.TargetType}:{e.CurrentTargetId}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in AppSelectionControl_AppsSelected: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles when the app selection flyout is cancelled
+        /// </summary>
+        private void AppSelectionControl_Cancelled(object sender, EventArgs e)
+        {
+            try
+            {
+                // Close the flyout
+                AddAppsFlyout?.Hide();
+
+                // Clear selections
+                AppSelectionControl?.ClearSelections();
+
+                System.Diagnostics.Debug.WriteLine("App selection cancelled");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in AppSelectionControl_Cancelled: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Gets display name for space ID
+        /// </summary>
+        private string GetSpaceDisplayName(string spaceId) => spaceId switch
+        {
+            "Space1" => "Space 1",
+            "Space2" => "Space 2", 
+            "Space3" => "Space 3",
+            _ => spaceId
+        };
+
+        /// <summary>
         /// Scrolls the grouped packages ListView to the specified package group
         /// </summary>
         private void ScrollToPackageGroup(KPackageNotificationGroup targetGroup)
@@ -509,6 +650,10 @@ namespace INotify.View
                 System.Diagnostics.Debug.WriteLine($"Error scrolling to package group: {ex.Message}");
             }
         }
+
+        #endregion
+
+        #region Lifecycle Events
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
@@ -556,20 +701,6 @@ namespace INotify.View
             }
         }
 
-        /// <summary>
-        /// Converter function for toggling notification view visibility
-        /// </summary>
-        public Visibility ToggleNotificationView(bool isPackageView)
-        {
-            return isPackageView ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        /// <summary>
-        /// Converter function for toggling package view visibility
-        /// </summary>
-        public Visibility TogglePackageView(bool isPackageView)
-        {
-            return isPackageView ? Visibility.Visible : Visibility.Collapsed;
-        }
+        #endregion
     }
 }

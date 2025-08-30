@@ -17,19 +17,6 @@
     <Grid PreviewKeyDown="HandleKeyboardShortcut">
         <Grid.Resources>
             <ResourceDictionary>
-                <Style x:Key="CustomFlyoutPresenter" TargetType="FlyoutPresenter">
-                    <!--  Remove width constraints  -->
-                    <Setter Property="MaxWidth" Value="Infinity" />
-
-                    <!--  Disable horizontal scrolling  -->
-                    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-
-                    <!--  Optional: Also disable vertical scrolling if needed  -->
-                    <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-                    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
-                </Style>
-
                 <!--  You can add more resources here  -->
                 <SolidColorBrush x:Key="MyBrush" Color="Blue" />
             </ResourceDictionary>
@@ -175,40 +162,11 @@
                                 <RowDefinition Height="auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    Margin="0,0,0,0"
-                                    FontSize="20"
-                                    FontWeight="SemiBold"
-                                    Text="High Priority" />
-
-                                <Button
-                                    x:Name="AddHighPriorityBtn"
-                                    Grid.Column="1"
-                                    Margin="0,0,0,0"
-                                    HorizontalAlignment="Right"
-                                    Click="AddToPriority_Click"
-                                    Content="+ Add Apps"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    Tag="High">
-                                    <Button.Flyout>
-                                        <Flyout
-                                            x:Name="HighPriorityFlyout"
-                                            FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}"
-                                            Placement="Bottom">
-                                            <controls:AppSelectionFlyoutControl
-                                                x:Name="HighPriorityAppSelector"
-                                                CurrentTargetType="Priority"
-                                                SelectionTypeId="High" />
-                                        </Flyout>
-
-                                    </Button.Flyout>
-                                </Button>
-                            </Grid>
+                            <TextBlock
+                                Margin="0,0,0,16"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Text="High Priority" />
 
                             <view1:NotificationListControl
                                 x:Name="HighPriorityListControl"
@@ -230,39 +188,11 @@
                                 <RowDefinition Height="auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    Margin="0,0,0,0"
-                                    FontSize="20"
-                                    FontWeight="SemiBold"
-                                    Text="Medium Priority" />
-
-                                <Button
-                                    x:Name="AddMediumPriorityBtn"
-                                    Grid.Column="1"
-                                    Margin="0,0,0,0"
-                                    HorizontalAlignment="Right"
-                                    Click="AddToPriority_Click"
-                                    Content="+ Add Apps"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    Tag="Medium">
-                                    <Button.Flyout>
-                                        <Flyout
-                                            x:Name="MediumPriorityFlyout"
-                                            FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}"
-                                            Placement="Bottom">
-                                            <controls:AppSelectionFlyoutControl
-                                                x:Name="MediumPriorityAppSelector"
-                                                CurrentTargetType="Priority"
-                                                SelectionTypeId="Medium" />
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </Grid>
+                            <TextBlock
+                                Margin="0,0,0,16"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Text="Medium Priority" />
 
                             <view1:NotificationListControl
                                 x:Name="MediumPriorityListControl"
@@ -283,39 +213,11 @@
                                 <RowDefinition Height="auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    Margin="0,0,0,0"
-                                    FontSize="20"
-                                    FontWeight="SemiBold"
-                                    Text="Low Priority" />
-
-                                <Button
-                                    x:Name="AddLowPriorityBtn"
-                                    Grid.Column="1"
-                                    Margin="0,0,0,0"
-                                    HorizontalAlignment="Right"
-                                    Click="AddToPriority_Click"
-                                    Content="+ Add Apps"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    Tag="Low">
-                                    <Button.Flyout>
-                                        <Flyout
-                                            x:Name="LowPriorityFlyout"
-                                            FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}"
-                                            Placement="Bottom">
-                                            <controls:AppSelectionFlyoutControl
-                                                x:Name="LowPriorityAppSelector"
-                                                CurrentTargetType="Priority"
-                                                SelectionTypeId="Low" />
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </Grid>
+                            <TextBlock
+                                Margin="0,0,0,16"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Text="Low Priority" />
 
                             <view1:NotificationListControl
                                 x:Name="LowPriorityListControl"
@@ -345,39 +247,11 @@
                                 <RowDefinition Height="auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    Margin="0,0,0,0"
-                                    FontSize="20"
-                                    FontWeight="SemiBold"
-                                    Text="Space 1" />
-
-                                <Button
-                                    x:Name="AddSpace1Btn"
-                                    Grid.Column="1"
-                                    Margin="0,0,0,0"
-                                    HorizontalAlignment="Right"
-                                    Click="AddToSpace_Click"
-                                    Content="+ Add Apps"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    Tag="Space1">
-                                    <Button.Flyout>
-                                        <Flyout
-                                            x:Name="Space1Flyout"
-                                            FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}"
-                                            Placement="Bottom">
-                                            <controls:AppSelectionFlyoutControl
-                                                x:Name="Space1AppSelector"
-                                                CurrentTargetType="Space"
-                                                SelectionTypeId="Space1" />
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </Grid>
+                            <TextBlock
+                                Margin="0,0,0,16"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Text="Space 1" />
 
                             <view1:NotificationListControl
                                 x:Name="Space1ListControl"
@@ -398,39 +272,11 @@
                                 <RowDefinition Height="auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    Margin="0,0,0,0"
-                                    FontSize="20"
-                                    FontWeight="SemiBold"
-                                    Text="Space 2" />
-
-                                <Button
-                                    x:Name="AddSpace2Btn"
-                                    Grid.Column="1"
-                                    Margin="0,0,0,0"
-                                    HorizontalAlignment="Right"
-                                    Click="AddToSpace_Click"
-                                    Content="+ Add Apps"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    Tag="Space2">
-                                    <Button.Flyout>
-                                        <Flyout
-                                            x:Name="Space2Flyout"
-                                            FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}"
-                                            Placement="Bottom">
-                                            <controls:AppSelectionFlyoutControl
-                                                x:Name="Space2AppSelector"
-                                                CurrentTargetType="Space"
-                                                SelectionTypeId="Space2" />
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </Grid>
+                            <TextBlock
+                                Margin="0,0,0,16"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Text="Space 2" />
 
                             <view1:NotificationListControl
                                 x:Name="Space2ListControl"
@@ -451,39 +297,11 @@
                                 <RowDefinition Height="auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    Margin="0,0,0,0"
-                                    FontSize="20"
-                                    FontWeight="SemiBold"
-                                    Text="Space 3" />
-
-                                <Button
-                                    x:Name="AddSpace3Btn"
-                                    Grid.Column="1"
-                                    Margin="0,0,0,0"
-                                    HorizontalAlignment="Right"
-                                    Click="AddToSpace_Click"
-                                    Content="+ Add Apps"
-                                    Style="{StaticResource AccentButtonStyle}"
-                                    Tag="Space3">
-                                    <Button.Flyout>
-                                        <Flyout
-                                            x:Name="Space3Flyout"
-                                            FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenter}"
-                                            Placement="Bottom">
-                                            <controls:AppSelectionFlyoutControl
-                                                x:Name="Space3AppSelector"
-                                                CurrentTargetType="Space"
-                                                SelectionTypeId="Space3" />
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </Grid>
+                            <TextBlock
+                                Margin="0,0,0,16"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Text="Space 3" />
 
                             <view1:NotificationListControl
                                 x:Name="Space3ListControl"

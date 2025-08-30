@@ -1,11 +1,14 @@
 using INotify.KToastView.Model;
 using INotify.KToastViewModel.ViewModelContract;
+using INotify.Services;
+using INotifyLibrary.DataManger;
 using INotifyLibrary.Domain;
 using INotifyLibrary.Model;
 using INotifyLibrary.Model.Entity;
 using INotifyLibrary.Util;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using WinCommon.Error;
 using WinCommon.Util;
@@ -256,14 +259,33 @@ namespace INotify.KToastViewModel.ViewModel
                 _group = group;
             }
 
-            public void OnSuccess(ZResponse<ClearPackageNotificationsResponse> response)
+            public async void OnSuccess(ZResponse<ClearPackageNotificationsResponse> response)
             {
                 try
                 {
+                    var data = response.Data;
+                    
+                    // After database clearing succeeds, also clear Windows notifications
+                    int windowsClearedCount = 0;
+                    try
+                    {
+                        var windowsService = WindowsNotificationManagerService.Instance;
+                        windowsClearedCount = await windowsService.ClearNotificationsForPackageAsync(data.PackageFamilyName);
+                        
+                        if (windowsClearedCount > 0)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"?? Additionally cleared {windowsClearedCount} Windows notifications for {data.PackageFamilyName}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"?? Failed to clear Windows notifications: {ex.Message}");
+                        // Continue - Windows clearing is best effort
+                    }
+                    
+                    // Update UI on the main thread
                     _viewModel.DispatcherQueue.TryEnqueue(() =>
                     {
-                        var data = response.Data;
-                        
                         // Remove the package group from the UI
                         if (_group != null)
                         {
@@ -275,8 +297,13 @@ namespace INotify.KToastViewModel.ViewModel
                         _viewModel.OnPropertyChanged(nameof(_viewModel.ViewDisplayText));
                         _viewModel.OnPropertyChanged(nameof(_viewModel.NavigationPackages));
 
-                        _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
-                            $"Successfully cleared {data.ClearedCount} notifications for package {data.PackageFamilyName}");
+                        // Enhanced logging with total cleared count
+                        var totalCleared = data.ClearedCount + windowsClearedCount;
+                        var summary = $"Successfully cleared notifications for {data.PackageFamilyName}: " +
+                                    $"Database: {data.ClearedCount}, Windows: {windowsClearedCount}, Total: {totalCleared}";
+                                    
+                        _viewModel.Logger.Info(LogManager.GetCallerInfo(), summary);
+                        System.Diagnostics.Debug.WriteLine($"? {summary}");
                     });
                 }
                 catch (Exception ex)
