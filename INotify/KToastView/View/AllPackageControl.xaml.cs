@@ -130,16 +130,6 @@ namespace INotify.View
             }
         }
 
-        private void AppCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void AppCheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void SoundSelectionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try

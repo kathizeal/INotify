@@ -122,11 +122,15 @@
 
   <ItemGroup>
     <Page Remove="Controls\SoundTestControl.xaml" />
+    <Page Remove="KToastView\View\AllPackageControl_New.xaml" />
     <Page Remove="View\AllPackageControl.xaml" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="Controls\SoundTestControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="KToastView\View\AllPackageControl_New.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
     <None Update="View\AllPackageControl.xaml">

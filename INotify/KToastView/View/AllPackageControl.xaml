@@ -14,88 +14,81 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Resources/ToastResources.xaml" />
-
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate x:Key="PackageProfileItemTemplate" x:DataType="model:KPackageProfileVObj">
-                <Grid
+                <Border
                     Margin="0,4"
-                    Padding="12"
+                    Padding="16,12"
                     HorizontalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    CornerRadius="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                    CornerRadius="6">
+                    
+                    <Border.Shadow>
+                        <ThemeShadow />
+                    </Border.Shadow>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                    <!--  Selection CheckBox  -->
-                    <CheckBox
-                        Grid.Column="0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Checked="AppCheckBox_Checked"
-                        IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
-                        Tag="{x:Bind}"
-                        Unchecked="AppCheckBox_Unchecked" />
+                        <!--  App Information Section (Left Side)  -->
+                        <StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Spacing="2">
+                            
+                            <!--  Primary: App Display Name  -->
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                Text="{x:Bind DisplayName, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
+                            
+                            <!--  Secondary: Publisher  -->
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="Normal"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind Publisher, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
+                            
+                            <!--  Secondary: Package Family Name  -->
+                            <TextBlock
+                                FontSize="11"
+                                FontWeight="Normal"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Text="{x:Bind PackageFamilyName, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
+                        </StackPanel>
 
-                    <!--  App Icon  -->
-                    <Border
-                        Grid.Column="1"
-                        Width="32"
-                        Height="32"
-                        Margin="8,0"
-                        HorizontalAlignment="Left"
-                        Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
-                        CornerRadius="4">
-                        <FontIcon
-                            FontSize="16"
-                            Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                            Glyph="&#xE8FA;" />
-                    </Border>
+                        <!--  Sound Configuration Section (Right Side)  -->
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="8">
 
-                    <!--  App Information  -->
-                    <StackPanel
-                        Grid.Column="2"
-                        Margin="8,0"
-                        HorizontalAlignment="Left">
-                        <TextBlock
-                            FontWeight="SemiBold"
-                            MaxLines="1"
-                            Text="{x:Bind DisplayName, Mode=OneWay}"
-                            TextTrimming="CharacterEllipsis" />
-                        <TextBlock
-                            FontSize="12"
-                            Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                            MaxLines="1"
-                            Text="{x:Bind Publisher, Mode=OneWay}"
-                            TextTrimming="CharacterEllipsis" />
-                    </StackPanel>
-
-                    <!--  Sound Selection and Priority Status  -->
-                    <StackPanel
-                        Grid.Column="3"
-                        Margin="8,0,0,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Spacing="4">
-
-                        <!--  Sound Selection Row  -->
-                        <StackPanel Orientation="Horizontal" Spacing="8">
                             <!--  Sound Selection ComboBox  -->
                             <ComboBox
                                 x:Name="SoundSelectionComboBox"
-                                MinWidth="120"
-                                HorizontalAlignment="Right"
-                                Header="Notification Sound"
+                                MinWidth="160"
+                                MaxWidth="200"
+                                VerticalAlignment="Center"
                                 PlaceholderText="{x:Bind NotificationSoundText, Mode=OneWay}"
                                 SelectionChanged="SoundSelectionComboBox_SelectionChanged"
                                 Tag="{x:Bind}">
-                                <!--  Default  -->
+                                
+                                <!--  Default Option  -->
                                 <ComboBoxItem Content="Default" Tag="None" />
 
                                 <!--  Custom Sounds (from Assets)  -->
@@ -146,43 +139,113 @@
                             <!--  Test Sound Button  -->
                             <Button
                                 x:Name="TestSoundButton"
-                                Width="32"
-                                Height="32"
+                                Width="36"
+                                Height="36"
                                 Padding="0"
-                                HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Background="Transparent"
-                                BorderThickness="1"
+                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                BorderThickness="0"
                                 Click="TestSoundButton_Click"
-                                CornerRadius="4"
+                                CornerRadius="18"
                                 Tag="{x:Bind}"
-                                ToolTipService.ToolTip="Test this sound">
+                                ToolTipService.ToolTip="Test notification sound">
+                                
+                                <Button.Resources>
+                                    <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+                                    <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+                                </Button.Resources>
+                                
                                 <FontIcon
                                     FontSize="14"
-                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
                                     Glyph="&#xE767;" />
                             </Button>
                         </StackPanel>
-
-                        <!--  Priority Status  -->
-                        <TextBlock
-                            HorizontalAlignment="Right"
-                            FontSize="11"
-                            FontWeight="SemiBold"
-                            Text="{x:Bind PriorityText, Mode=OneWay}" />
-                    </StackPanel>
-                </Grid>
+                    </Grid>
+                </Border>
             </DataTemplate>
 
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid>
-
+    <Grid Padding="16">
         <ListView
             x:Name="PackageListView"
+            HorizontalAlignment="Stretch"
             ItemTemplate="{StaticResource PackageProfileItemTemplate}"
-            ItemsSource="{x:Bind _VM.PackageProfiles, Mode=OneWay}" />
-
+            ItemsSource="{x:Bind _VM.PackageProfiles, Mode=OneWay}"
+            SelectionMode="None"
+            ShowsScrollingPlaceholders="True"
+            IncrementalLoadingThreshold="5">
+            
+            <!-- Enable smooth transitions -->
+            <ListView.ItemContainerTransitions>
+                <TransitionCollection>
+                    <AddDeleteThemeTransition />
+                    <ContentThemeTransition />
+                    <ReorderThemeTransition />
+                    <EntranceThemeTransition IsStaggeringEnabled="True" />
+                </TransitionCollection>
+            </ListView.ItemContainerTransitions>
+            
+            <!-- Custom item container style for better performance -->
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="MinHeight" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="UseSystemFocusVisuals" Value="False" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <ContentPresenter 
+                                    x:Name="Root"
+                                    Background="{TemplateBinding Background}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    RenderTransformOrigin="0.5,0.5">
+                                    
+                                    <ContentPresenter.RenderTransform>
+                                        <CompositeTransform />
+                                    </ContentPresenter.RenderTransform>
+                                    
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <VisualState.Setters>
+                                                    <Setter Target="Root.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <VisualState.Setters>
+                                                    <Setter Target="Root.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                </ContentPresenter>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+            
+            <!-- Enable item panel virtualization -->
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel 
+                        VirtualizationMode="Recycling"
+                        Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
     </Grid>
 </UserControl>
