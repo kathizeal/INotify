@@ -123,6 +123,31 @@ namespace INotify.KToastViewModel.ViewModel
             }
         }
 
+        /// <summary>
+        /// Removes an app from its associated category (Priority or Space)
+        /// </summary>
+        public override void RemoveAppFromCategory(string packageFamilyName, string appDisplayName)
+        {
+            try
+            {
+                Logger.Info(LogManager.GetCallerInfo(), $"Removing app {appDisplayName} from {CurrentTargetType}:{SelectionTypeId}");
+
+                var request = new RemoveAppFromConditionRequest(
+                    CurrentTargetType, 
+                    SelectionTypeId, 
+                    packageFamilyName, 
+                    appDisplayName, 
+                    INotifyConstant.CurrentUser);
+
+                var useCase = new RemoveAppFromCondition(request, new RemoveAppFromConditionPresenterCallback(this, packageFamilyName, appDisplayName));
+                useCase.Execute();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), ex.Message);
+            }
+        }
+
         private void CreateGroupedPackageNotifications(GetNotificationsByConditionResponse data)
         {
             try
@@ -342,6 +367,117 @@ namespace INotify.KToastViewModel.ViewModel
                 _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
                     "Clear notifications operation was ignored");
             }
+        }
+
+        private class RemoveAppFromConditionPresenterCallback : IRemoveAppFromConditionPresenterCallback
+        {
+            private readonly NotificationListVM _viewModel;
+            private readonly string _packageFamilyName;
+            private readonly string _appDisplayName;
+
+            public RemoveAppFromConditionPresenterCallback(NotificationListVM viewModel, string packageFamilyName, string appDisplayName)
+            {
+                _viewModel = viewModel;
+                _packageFamilyName = packageFamilyName;
+                _appDisplayName = appDisplayName;
+            }
+
+            public void OnSuccess(ZResponse<RemoveAppFromConditionResponse> response)
+            {
+                try
+                {
+                    _viewModel.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        var data = response.Data;
+                        
+                        // Remove the package group from the UI if it exists
+                        var groupToRemove = _viewModel.GroupedPackageNotifications.FirstOrDefault(g => 
+                            g.PackageFamilyName == _packageFamilyName);
+                        
+                        if (groupToRemove != null)
+                        {
+                            _viewModel.GroupedPackageNotifications.Remove(groupToRemove);
+                        }
+
+                        // Remove individual notifications for this package
+                        var notificationsToRemove = _viewModel.Notifications.Where(n => 
+                            n.ToastPackageProfile?.PackageFamilyName == _packageFamilyName).ToList();
+                        
+                        foreach (var notification in notificationsToRemove)
+                        {
+                            _viewModel.Notifications.Remove(notification);
+                        }
+
+                        // Update UI counts
+                        _viewModel.OnPropertyChanged(nameof(_viewModel.TotalCount));
+                        _viewModel.OnPropertyChanged(nameof(_viewModel.ViewDisplayText));
+                        _viewModel.OnPropertyChanged(nameof(_viewModel.NavigationPackages));
+
+                        var categoryName = data.TargetType == SelectionTargetType.Priority 
+                            ? $"{data.TargetId} Priority" 
+                            : GetSpaceDisplayName(data.TargetId);
+
+                        _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                            $"Successfully removed {data.AppDisplayName} from {categoryName}");
+                        
+                        System.Diagnostics.Debug.WriteLine($"? Removed {data.AppDisplayName} from {categoryName}");
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _viewModel.Logger.Error(LogManager.GetCallerInfo(), 
+                        $"Error processing remove app success response: {ex.Message}");
+                }
+            }
+
+            public void OnProgress(ZResponse<RemoveAppFromConditionResponse> response)
+            {
+                // Progress updates if needed
+            }
+
+            public void OnFailed(ZResponse<RemoveAppFromConditionResponse> response)
+            {
+                _viewModel.DispatcherQueue.TryEnqueue(() =>
+                {
+                    var errorMessage = response.Data?.ErrorMessage ?? "Unknown error";
+                    _viewModel.Logger.Error(LogManager.GetCallerInfo(), 
+                        $"Failed to remove {_appDisplayName}: {errorMessage}");
+                    
+                    System.Diagnostics.Debug.WriteLine($"? Failed to remove {_appDisplayName}: {errorMessage}");
+                });
+            }
+
+            public void OnError(ZError error)
+            {
+                _viewModel.DispatcherQueue.TryEnqueue(() =>
+                {
+                    var errorMessage = error?.ErrorObject?.ToString() ?? "Unknown error";
+                    _viewModel.Logger.Error(LogManager.GetCallerInfo(), 
+                        $"Error removing {_appDisplayName}: {errorMessage}");
+                    
+                    System.Diagnostics.Debug.WriteLine($"? Error removing {_appDisplayName}: {errorMessage}");
+                });
+            }
+
+            public void OnCanceled(ZResponse<RemoveAppFromConditionResponse> response)
+            {
+                _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                    "Remove app operation was canceled");
+            }
+
+            public void OnIgnored(ZResponse<RemoveAppFromConditionResponse> response)
+            {
+                _viewModel.Logger.Info(LogManager.GetCallerInfo(), 
+                    "Remove app operation was ignored");
+            }
+
+            private string GetSpaceDisplayName(string spaceId) => spaceId switch
+            {
+                "Space1" => "Space 1",
+                "Space2" => "Space 2", 
+                "Space3" => "Space 3",
+                _ => spaceId
+            };
         }
     }
 }

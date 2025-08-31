@@ -15,7 +15,7 @@ namespace INotifyLibrary.DataManger
         {
             try
             {
-                KSpaceMapper mapper = new KSpaceMapper
+                KSpaceMapper mapper = new KSpaceMapper(request.SpaceId, request.PackageId)
                 {
                     SpaceId = request.SpaceId,
                     PackageFamilyName = request.PackageId

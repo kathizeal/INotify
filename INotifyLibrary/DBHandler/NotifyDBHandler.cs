@@ -160,7 +160,7 @@ namespace INotifyLibrary.DBHandler
                 IDBConnection dbConnection = GetDBConnection(INotifyConstant.CurrentUser);
                 
                 var result = dbConnection.Execute(
-                    "DELETE FROM KCustomPriorityApp WHERE PackageId = ? AND UserId = ?",
+                    "DELETE FROM KCustomPriorityApp WHERE PackageName = ? AND UserId = ?",
                     packageId, userId);
 
                 return result > 0;
@@ -269,7 +269,7 @@ namespace INotifyLibrary.DBHandler
 
                     if (existingMapper == null)
                     {
-                        var mapper = new KSpaceMapper
+                        var mapper = new KSpaceMapper(spaceId, packageFamilyName)
                         {
                             PackageFamilyName = packageFamilyName,
                             SpaceId = spaceId

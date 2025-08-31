@@ -77,6 +77,15 @@
                 Padding="16"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 CornerRadius="8">
+                <Border.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem 
+                            Icon="Remove" 
+                            Text="Remove app from category"
+                            Click="RemoveAppFromCategoryNotification_Click"
+                            Tag="{x:Bind}" />
+                    </MenuFlyout>
+                </Border.ContextFlyout>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -132,6 +141,15 @@
                 Padding="16,12"
                 Background="{ThemeResource ListViewGroupHeaderForegroundThemeBrush}"
                 CornerRadius="8">
+                <Border.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem 
+                            Icon="Remove" 
+                            Text="Remove from category"
+                            Click="RemoveAppFromCategory_Click"
+                            Tag="{x:Bind}" />
+                    </MenuFlyout>
+                </Border.ContextFlyout>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />

@@ -147,6 +147,11 @@ namespace INotify.KToastViewModel.ViewModelContract
         public abstract void ClearPackageNotifications(KPackageNotificationGroup group);
 
         /// <summary>
+        /// Abstract method to remove an app from its associated category (Priority or Space)
+        /// </summary>
+        public abstract void RemoveAppFromCategory(string packageFamilyName, string appDisplayName);
+
+        /// <summary>
         /// Collection of package names for navigation (used in Go to flyout)
         /// </summary>
         public IEnumerable<KPackageNotificationGroup> NavigationPackages => 

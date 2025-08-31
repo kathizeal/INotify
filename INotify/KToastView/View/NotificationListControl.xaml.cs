@@ -610,6 +610,117 @@ namespace INotify.View
             }
         }
 
+        /// <summary>
+        /// Handles removing an app from its category via the package group header context menu
+        /// </summary>
+        private async void RemoveAppFromCategory_Click(object sender, RoutedEventArgs e)
+        {
+            EnsureViewModelInitialized();
+            
+            if (sender is MenuFlyoutItem menuItem && menuItem.Tag is KPackageNotificationGroup group && _viewModel != null)
+            {
+                try
+                {
+                    // Build confirmation message based on current target type
+                    var categoryName = CurrentTargetType == SelectionTargetType.Priority 
+                        ? $"{SelectionTargetId} Priority" 
+                        : GetSpaceDisplayName(SelectionTargetId);
+
+                    var contentText = $"Remove '{group.DisplayName}' from {categoryName}?\n\n";
+                    contentText += "This will remove the app from this category but won't delete any notifications.";
+
+                    // Show confirmation dialog
+                    var dialog = new ContentDialog()
+                    {
+                        Title = "Remove from Category",
+                        Content = contentText,
+                        PrimaryButtonText = "Remove",
+                        SecondaryButtonText = "Cancel",
+                        DefaultButton = ContentDialogButton.Secondary,
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    var result = await dialog.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        // User confirmed - proceed with removal
+                        _viewModel.RemoveAppFromCategory(group.PackageFamilyName, group.DisplayName);
+                        
+                        System.Diagnostics.Debug.WriteLine($"User confirmed removing {group.DisplayName} from {categoryName}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"User canceled removing {group.DisplayName} from {categoryName}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error removing app from category: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles removing an app from its category via the notification item context menu
+        /// </summary>
+        private async void RemoveAppFromCategoryNotification_Click(object sender, RoutedEventArgs e)
+        {
+            EnsureViewModelInitialized();
+            
+            if (sender is MenuFlyoutItem menuItem && menuItem.Tag is KToastBObj notification && _viewModel != null)
+            {
+                try
+                {
+                    var packageFamilyName = notification.ToastPackageProfile?.PackageFamilyName;
+                    var appDisplayName = notification.ToastPackageProfile?.AppDisplayName;
+
+                    if (string.IsNullOrEmpty(packageFamilyName) || string.IsNullOrEmpty(appDisplayName))
+                    {
+                        System.Diagnostics.Debug.WriteLine("Cannot remove app: missing package or app information");
+                        return;
+                    }
+
+                    // Build confirmation message based on current target type
+                    var categoryName = CurrentTargetType == SelectionTargetType.Priority 
+                        ? $"{SelectionTargetId} Priority" 
+                        : GetSpaceDisplayName(SelectionTargetId);
+
+                    var contentText = $"Remove '{appDisplayName}' from {categoryName}?\n\n";
+                    contentText += "This will remove the app from this category but won't delete any notifications.";
+
+                    // Show confirmation dialog
+                    var dialog = new ContentDialog()
+                    {
+                        Title = "Remove from Category",
+                        Content = contentText,
+                        PrimaryButtonText = "Remove",
+                        SecondaryButtonText = "Cancel",
+                        DefaultButton = ContentDialogButton.Secondary,
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    var result = await dialog.ShowAsync();
+
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        // User confirmed - proceed with removal
+                        _viewModel.RemoveAppFromCategory(packageFamilyName, appDisplayName);
+                        
+                        System.Diagnostics.Debug.WriteLine($"User confirmed removing {appDisplayName} from {categoryName}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"User canceled removing {appDisplayName} from {categoryName}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error removing app from category via notification: {ex.Message}");
+                }
+            }
+        }
+
         #endregion
 
         #region Helper Methods

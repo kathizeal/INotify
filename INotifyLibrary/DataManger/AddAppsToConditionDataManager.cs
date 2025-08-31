@@ -116,11 +116,8 @@ namespace INotifyLibrary.DataManger
             {
                 try
                 {
-                    var spaceMapper = new KSpaceMapper
-                    {
-                        SpaceId = request.TargetId,
-                        PackageFamilyName = app.PackageName
-                    };
+                    var spaceMapper = new KSpaceMapper(request.TargetId, app.PackageName);
+                  
 
                     bool success = DBHandler.AddPackageToSpace(spaceMapper, request.UserId);
 
