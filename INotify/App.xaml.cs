@@ -35,11 +35,12 @@ namespace INotify
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
+    /// Single instance behavior is handled by the custom Program.cs using Microsoft's 
+    /// official Windows App SDK pattern.
     /// </summary>
     public partial class App : Application
     {
         private static readonly ILogger Logger = LogManager.GetLogger();
-        private SingleInstanceManager? _singleInstanceManager;
         private Window? m_window;
         private TrayManager? _trayManager;
         private BackgroundNotificationService? _backgroundService;
@@ -48,9 +49,6 @@ namespace INotify
         /// <summary>
         /// Initializes the singleton application object. This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// 
-        /// Single instance support is initialized here to ensure only one instance of the application
-        /// can run at a time.
         /// </summary>
         public App()
         {
@@ -59,10 +57,7 @@ namespace INotify
             WinUI3AppInfo.Initialize("INotify");
             ZAppInfoProvider.Initialize(WinUI3AppInfo.Instance);
             
-            // Initialize DI services first
-            
-            // Initialize single instance management
-            InitializeSingleInstance();
+            Logger.Info(LogManager.GetCallerInfo(), "App constructor called");
         }
 
         /// <summary>
@@ -77,8 +72,8 @@ namespace INotify
                 // Initialize the main DI container
                 InitializationManager.Instance.InitializeDI();
 
-                                // Also ensure KToastDIServiceProvider is initialized
-                                var testService = INotify.KToastDI.KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
+                // Also ensure KToastDIServiceProvider is initialized
+                var testService = INotify.KToastDI.KToastDIServiceProvider.Instance.GetService<KToastListVMBase>();
                 Logger.Info(LogManager.GetCallerInfo(), $"KToastDIServiceProvider test: {(testService != null ? "Success" : "Failed")}");
                 
                 Logger.Info(LogManager.GetCallerInfo(), "Dependency injection services initialized successfully");
@@ -87,68 +82,6 @@ namespace INotify
             {
                 Logger.Error(LogManager.GetCallerInfo(), $"Error initializing dependency injection: {ex.Message}");
                 // Don't throw here as we want the app to continue even if DI fails
-            }
-        }
-
-        /// <summary>
-        /// Initializes single instance functionality
-        /// </summary>
-        private async void InitializeSingleInstance()
-        {
-            try
-            {
-                _singleInstanceManager = new SingleInstanceManager();
-                
-                if (!_singleInstanceManager.IsFirstInstance)
-                {
-                    Logger.Info(LogManager.GetCallerInfo(), "Another instance is already running. Notifying existing instance and exiting.");
-                    
-                    // Get command line arguments
-                    var args = Environment.GetCommandLineArgs();
-                    
-                    // Notify the existing instance
-                    bool notified = await _singleInstanceManager.NotifyExistingInstanceAsync(args);
-                    
-                    if (notified)
-                    {
-                        Logger.Info(LogManager.GetCallerInfo(), "Successfully notified existing instance. Exiting current instance.");
-                    }
-                    else
-                    {
-                        Logger.Warning(LogManager.GetCallerInfo(), "Failed to notify existing instance, but another instance is detected. Exiting anyway.");
-                    }
-                    
-                    // Exit the current instance
-                    this.Exit();
-                    return;
-                }
-                
-                // This is the first instance, set up event handling
-                _singleInstanceManager.AnotherInstanceDetected += OnAnotherInstanceDetected;
-                
-                Logger.Info(LogManager.GetCallerInfo(), "First instance initialized successfully with single instance support.");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(LogManager.GetCallerInfo(), $"Error initializing single instance: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Event handler for when another instance is detected
-        /// </summary>
-        private void OnAnotherInstanceDetected(object? sender, string[] args)
-        {
-            try
-            {
-                Logger.Info(LogManager.GetCallerInfo(), $"Another instance detected with args: {string.Join(" ", args)}");
-                
-                // Bring the main window to foreground
-                ShowMainWindow();
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(LogManager.GetCallerInfo(), $"Error handling another instance detection: {ex.Message}");
             }
         }
 
@@ -187,8 +120,9 @@ namespace INotify
 
         /// <summary>
         /// Shows the main window and brings it to foreground
+        /// Called by Program.cs when another instance tries to launch
         /// </summary>
-        private void ShowMainWindow()
+        public void ShowMainWindow()
         {
             try
             {
@@ -265,7 +199,6 @@ namespace INotify
                 // Clean up background services
                 _backgroundService?.Dispose();
                 _trayManager?.Dispose();
-                _singleInstanceManager?.Dispose();
 
                 // Close the main window properly
                 if (m_window != null)

@@ -11,6 +11,8 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+    <!-- Disable auto-generated Program code for custom single instance implementation -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -123,7 +125,6 @@
   <ItemGroup>
     <Page Remove="Controls\SoundTestControl.xaml" />
     <Page Remove="KToastView\View\AllPackageControl_New.xaml" />
-    <Page Remove="View\AllPackageControl.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -133,8 +134,9 @@
     <None Update="KToastView\View\AllPackageControl_New.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
-    <None Update="View\AllPackageControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="View\" />
   </ItemGroup>
 </Project>

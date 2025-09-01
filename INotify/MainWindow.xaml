@@ -315,8 +315,7 @@
                     <!--  Detail List View (Initially Hidden)  -->
                     <Grid x:Name="DetailListView" Visibility="Collapsed">
 
-                        <view1:NotificationListControl
-                            x:Name="DetailListViewContent" />
+                        <view1:NotificationListControl x:Name="DetailListViewContent" />
 
                     </Grid>
 
@@ -350,11 +349,13 @@
                                     <Button
                                         x:Name="SetAlarmsOnlyButton"
                                         Click="SetAlarmsOnly_Click"
-                                        Content="Alarms Only" />
+                                        Content="Alarms Only"
+                                        Visibility="Collapsed" />
                                     <Button
                                         x:Name="ShowDndStatusButton"
                                         Click="ShowDndStatus_Click"
-                                        Content="Show Status" />
+                                        Content="Show Status"
+                                        Visibility="Collapsed" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
