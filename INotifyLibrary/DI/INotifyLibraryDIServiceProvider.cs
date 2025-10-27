@@ -30,9 +30,14 @@ namespace INotifyLibrary.DI
             services.AddSingleton<IGetAllKPackageProfilesDataManager, GetAllKPackageProfilesDataManager>();
             services.AddSingleton<IAddPackageToSpaceDataManager, AddPackageToSpaceDataManager>();
             services.AddSingleton<IGetPackageBySpaceDataManager, GetPackageBySpaceDataManager>();
+            services.AddSingleton<IAddAppsToConditionDataManager, AddAppsToConditionDataManager>();
+            services.AddSingleton<IGetNotificationsByConditionDataManager, GetNotificationsByConditionDataManager>();
+            services.AddSingleton<ISubmitFeedbackDataManager, SubmitFeedbackDataManager>();
+            services.AddSingleton<ISoundMappingDataManager, SoundMappingDataManager>();
+            services.AddSingleton<IClearPackageNotificationsDataManager, ClearPackageNotificationsDataManager>();
+            services.AddSingleton<IRemoveAppFromConditionDataManager, RemoveAppFromConditionDataManager>();
 
-
-            BuildServiceProvider(services);
+            BuildServiceProvider(services, true); // Build the service provider with default services
         }
 
         #region DIServiceProviderSingleton Class

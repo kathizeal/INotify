@@ -27,12 +27,40 @@ namespace INotifyLibrary.Domain
         public NotificatioRequestType NotificationRequestType { get; set; }
         public ViewType ViewType { get; set; }
         public string PackageId { get; set; }
+        public int Skip { get; set; }
+        public int Take { get; set; }
+        
+        // Filter properties
+        public string SearchKeyword { get; set; }
+        public string FilterByApp { get; set; }
+        public DateTimeOffset? FilterDate { get; set; }
+        public DateTimeOffset? FromDate { get; set; }
+        public DateTimeOffset? ToDate { get; set; }
 
-        public GetKToastsRequest(NotificatioRequestType notificationRequestType, ViewType viewType, string packageId, string userId) : base(RequestType.LocalStorage, userId, default)
+        public GetKToastsRequest(
+            NotificatioRequestType notificationRequestType, 
+            ViewType viewType, 
+            string packageId, 
+            string userId, 
+            int skip = 0, 
+            int take = 50, 
+            string searchKeyword = null, 
+            string filterByApp = null, 
+            DateTimeOffset? filterDate = null, 
+            DateTimeOffset? fromDate = null, 
+            DateTimeOffset? toDate = null) 
+            : base(RequestType.LocalStorage, userId, default)
         {
             NotificationRequestType = notificationRequestType;
             ViewType = viewType;
             PackageId = packageId;
+            Skip = skip;
+            Take = take;
+            SearchKeyword = searchKeyword;
+            FilterByApp = filterByApp;
+            FilterDate = filterDate;
+            FromDate = fromDate;
+            ToDate = toDate;
         }
     }
 
@@ -42,16 +70,21 @@ namespace INotifyLibrary.Domain
         public ViewType ViewType { get; set; }
         public ObservableCollection<KToastBObj> ToastDataNotifications { get; set; }
         public string PackageId { get; set; }
-        public GetKToastsResponse(string packageId, NotificatioRequestType notificationRequestType, ViewType viewType ,ObservableCollection<KToastBObj> toastDataNotifications)
+        public int TotalCount { get; set; }
+        public bool HasMoreData { get; set; }
+        public int CurrentPage { get; set; }
+
+        public GetKToastsResponse(string packageId, NotificatioRequestType notificationRequestType, ViewType viewType, ObservableCollection<KToastBObj> toastDataNotifications, int totalCount = 0, bool hasMoreData = false, int currentPage = 0)
         {
             NotificationRequestType = notificationRequestType;
             ViewType = viewType;
             PackageId = packageId;
             ToastDataNotifications = toastDataNotifications;
+            TotalCount = totalCount;
+            HasMoreData = hasMoreData;
+            CurrentPage = currentPage;
         }
-
     }
-
 
     public class GetKToasts : UseCaseBase<GetKToastsResponse>
     {

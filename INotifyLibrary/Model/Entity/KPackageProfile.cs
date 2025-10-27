@@ -17,8 +17,6 @@ namespace INotifyLibrary.Model.Entity
         private string _logoFilePath;
 
         [PrimaryKey]
-        public string PackageId { get; set; }
-
         public string PackageFamilyName { get;  set; }
 
         public string AppDisplayName
@@ -43,6 +41,8 @@ namespace INotifyLibrary.Model.Entity
             }
         }
 
+        public string Publisher { get; set; }
+
         [Ignore]
         public bool IsIconAvailable { get; private set; }
         public bool IsIconOverride { get; set; }
@@ -54,13 +54,14 @@ namespace INotifyLibrary.Model.Entity
         {
             return new KPackageProfile
             {
-                PackageId = this.PackageId,
                 PackageFamilyName = this.PackageFamilyName,
                 AppDisplayName = this.AppDisplayName,
                 AppDescription = this.AppDescription,
                 LogoFilePath = this.LogoFilePath,
                 IsIconAvailable = this.IsIconAvailable,
-                IsIconOverride = this.IsIconOverride
+                IsIconOverride = this.IsIconOverride,
+                Publisher = this.Publisher
+
             };
         }
 
@@ -68,13 +69,13 @@ namespace INotifyLibrary.Model.Entity
         {
             if (newData == null) { return; }
 
-            PackageId = newData.PackageId;
             PackageFamilyName = newData.PackageFamilyName;
             AppDisplayName = newData.AppDisplayName;
             AppDescription = newData.AppDescription;
             LogoFilePath = newData.LogoFilePath;
             IsIconAvailable = newData.IsIconAvailable;
             IsIconOverride = newData.IsIconOverride;
+            Publisher = newData.Publisher;
         }
     }
 }

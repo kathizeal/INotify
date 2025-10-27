@@ -1,4 +1,5 @@
 ﻿using INotify.KToastView.Model;
+using INotify.Util;
 using INotifyLibrary.Domain;
 using INotifyLibrary.Model;
 using INotifyLibrary.Model.Entity;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 using WinCommon.Error;
 using WinCommon.Extension;
 using WinCommon.Util;
+using WinLogger;
 using Windows.ApplicationModel;
 using Windows.UI.Core;
 
@@ -22,400 +24,338 @@ namespace INotify.KToastViewModel.ViewModelContract
     {
         public KToastListViewModel()
         {
+            // Load available apps when ViewModel is created
+            LoadAvailableApps();
         }
 
         #region Public Methods
 
-        public override void LoadControl()
+        public override void LoadInitialNotifications()
         {
-            PoputeAllNotifications();
-        }
-
-        public override void UpdateViewType(ViewType viewType)
-        {
-            CurrentViewType = viewType;
-            switch (viewType)
+            try
             {
-                case ViewType.All:
-                    PoputeAllNotifications();
-                    break;
-                case ViewType.Space:
-                    PopulateSpaceCVS();
-                    break;
-                case ViewType.Package:
-                    PopulatePackageCVS();
-                    break;
+                if (IsLoading) return;
+
+                IsLoading = true;
+                ResetPagination();
+                KToastNotifications.Clear();
+
+                var (skip, take) = GetPaginationParams();
+                var getKToastsRequest = new GetKToastsRequest(
+                    NotificatioRequestType.All, 
+                    ViewType.All, 
+                    default, 
+                    INotifyConstant.CurrentUser, 
+                    skip, 
+                    take,
+                    SearchKeyword,
+                    SelectedAppFilter,
+                    SelectedDate,
+                    FromDate,
+                    ToDate);
+
+                var getKToasts = new GetKToasts(getKToastsRequest, new GetKToastsNotificationPresenterCallback(this, false));
+                getKToasts.Execute();
+
+                Logger.Info(LogManager.GetCallerInfo(), "Loading initial notifications with filters");
+            }
+            catch (Exception ex)
+            {
+                IsLoading = false;
+                Logger.Error(LogManager.GetCallerInfo(), $"Error loading initial notifications: {ex.Message}");
             }
         }
 
-        public void PoputeAllNotifications()
+        public override void LoadMoreNotifications()
         {
-            KToastNotifications.Clear();
-            if (View is null)
+            try
             {
-                return;
+                if (!HasMoreData || IsLoadingMore || IsLoading) return;
+
+                IsLoadingMore = true;
+                CurrentPage++;
+
+                var (skip, take) = GetPaginationParams();
+                var getKToastsRequest = new GetKToastsRequest(
+                    NotificatioRequestType.All, 
+                    ViewType.All, 
+                    default, 
+                    INotifyConstant.CurrentUser, 
+                    skip, 
+                    take,
+                    SearchKeyword,
+                    SelectedAppFilter,
+                    SelectedDate,
+                    FromDate,
+                    ToDate);
+
+                var getKToasts = new GetKToasts(getKToastsRequest, new GetKToastsNotificationPresenterCallback(this, true));
+                getKToasts.Execute();
+
+                Logger.Info(LogManager.GetCallerInfo(), $"Loading more notifications - Page {CurrentPage} with filters");
             }
-            GetAllNotifications();
-        }
-
-        public void PopulateSpaceCVS()
-        {
-            if (View is null)
+            catch (Exception ex)
             {
-                return;
-            }
-            GetAllSpace();
-        }
-
-        public void PopulatePackageCVS()
-        {
-            if (View is null)
-            {
-                return;
-            }
-            GetAllPackages();
-        }
-
-        [Obsolete]
-        public override void UpdateKToastNotifications(ObservableCollection<KToastNotification> kToastNotifications)
-        {
-        }
-
-        public void GetAllNotifications()
-        {
-            var getKToastsRequest = new GetKToastsRequest(NotificatioRequestType.All, CurrentViewType, default, INotifyConstant.CurrentUser);
-            var getKToasts = new GetKToasts(getKToastsRequest, new GetAllKToastsNotificationPresenterCallback(this));
-            getKToasts.Execute();
-        }
-
-        public override void GetKToastNotificationByPackageId(string packageId)
-        {
-            var getKToastsRequest = new GetKToastsRequest(NotificatioRequestType.Individual, CurrentViewType, packageId, INotifyConstant.CurrentUser);
-            var getKToasts = new GetKToasts(getKToastsRequest, new GetAllKToastsNotificationPresenterCallback(this));
-            getKToasts.Execute();
-        }
-
-        public override void UpdateKToastNotification(KToastVObj ToastData)
-        {
-            var updateKToastRequest = new UpdateKToastRequest(ToastData, INotifyConstant.CurrentUser);
-            var updateKToast = new UpdateKToast(updateKToastRequest, new UpdateKToastsNotificationPresenterCallback(this));
-            updateKToast.Execute();
-        }
-
-        public override async Task PopulateKToastNotifications(ObservableCollection<KToastBObj> kToastDataNotifications)
-        {
-            KToastNotifications.Clear();
-            foreach (var kToastData in kToastDataNotifications)
-            {
-                var data = await AddKToastNotification(kToastData);
-                KToastUtil.InsertNotificationByCreatedTime(KToastNotifications, data);
+                IsLoadingMore = false;
+                Logger.Error(LogManager.GetCallerInfo(), $"Error loading more notifications: {ex.Message}");
             }
         }
 
-        public override async Task PopulateKToastNotificationsByPackageId(string packageId, ObservableCollection<KToastBObj> kToastDataNotifications)
+        public override void RefreshNotifications()
         {
-            KToastNotifications.Clear();
-            await PopulateKToastNotifications(kToastDataNotifications);
+            try
+            {
+                Logger.Info(LogManager.GetCallerInfo(), "Refreshing notifications");
+                LoadInitialNotifications();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error refreshing notifications: {ex.Message}");
+            }
         }
 
-        public override async Task<KToastVObj> AddKToastNotification(KToastBObj toastData)
+        public override void ApplyFilters()
         {
-            var kToastViewData = new KToastVObj(toastData.NotificationData, toastData.ToastPackageProfile);
-            if (IconCache.ContainsKey(kToastViewData.ToastPackageProfile.PackageId))
+            try
             {
-                kToastViewData.AppIcon = IconCache[kToastViewData.ToastPackageProfile.PackageId];
+                Logger.Info(LogManager.GetCallerInfo(), $"Applying filters - Keyword: '{SearchKeyword}', App: '{SelectedAppFilter}', Date: {SelectedDate}, Range: {FromDate} to {ToDate}");
+                LoadInitialNotifications();
             }
-            else
+            catch (Exception ex)
             {
-                var (icon, success) = await kToastViewData.SetAppIcon();
-                if (success)
+                Logger.Error(LogManager.GetCallerInfo(), $"Error applying filters: {ex.Message}");
+            }
+        }
+
+        public override void ClearFilters()
+        {
+            try
+            {
+                Logger.Info(LogManager.GetCallerInfo(), "Clearing all filters");
+                ClearFilterValues();
+                LoadInitialNotifications();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error clearing filters: {ex.Message}");
+            }
+        }
+
+        public override void LoadAvailableApps()
+        {
+            try
+            {
+                var getAllPackageRequest = new GetAllKPackageProfilesRequest(INotifyConstant.CurrentUser);
+                var getAllPackage = new GetAllKPackageProfiles(getAllPackageRequest, new GetAllAppsPresenterCallback(this));
+                getAllPackage.Execute();
+
+                Logger.Info(LogManager.GetCallerInfo(), "Loading available apps for filtering");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error loading available apps: {ex.Message}");
+            }
+        }
+
+        public override void AddNotification(KToastVObj notification)
+        {
+            try
+            {
+                if (notification != null)
                 {
-                    IconCache[kToastViewData.ToastPackageProfile.PackageId] = icon;
+                    // Insert at the beginning since notifications are in chronological order (latest first)
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        KToastNotifications.Insert(0, notification);
+                        UpdateTotalCountText();
+                    });
                 }
             }
-            return kToastViewData;
-        }
-
-        public override void GetAllSpace()
-        {
-            var getAllSpaceRequest = new GetAllSpaceRequest(INotifyConstant.CurrentUser);
-            var getAllSpace = new GetAllSpace(getAllSpaceRequest, new GetAllSpacePresenterCallback(this));
-            getAllSpace.Execute();
-        }
-
-        public override void GetAllPackages()
-        {
-            var getAllPackageRequest = new GetAllKPackageProfilesRequest(INotifyConstant.CurrentUser);
-            var getAllPackage = new GetAllKPackageProfiles(getAllPackageRequest, new GetAllKPackageProfilesPresenterCallback(this));
-            getAllPackage.Execute();
-        }
-
-        public override void GetPackagesBySpaceById(string spaceId)
-        {
-            var getPackageBySpaceRequest = new GetPackageBySpaceRequest(spaceId, INotifyConstant.CurrentUser);
-            var getPackageBySpace = new GetPackageBySpace(getPackageBySpaceRequest, new GetPackageBySpacePresenterCallback(this));
-            getPackageBySpace.Execute();
-        }
-
-        public override void AddPackageToSpace(KPackageProfile package, string spaceId)
-        {
-            var addPackageToSpaceRequest = new AddPackageToSpaceRequest(package.PackageId, spaceId, INotifyConstant.CurrentUser);
-            var addPackageToSpace = new AddPackageToSpace(addPackageToSpaceRequest, new AddPackageToSpacePresenterCallback(this));
-            addPackageToSpace.Execute();
-        }
-
-        public override async Task PopulateSpaces(ObservableCollection<KSpace> kSpaceDataNotifications)
-        {
-            foreach (var kSpaceData in kSpaceDataNotifications)
+            catch (Exception ex)
             {
-                await AddKToastSpace(kSpaceData);
+                Logger.Error(LogManager.GetCallerInfo(), $"Error adding notification: {ex.Message}");
             }
         }
 
-        public override void PopulatePackageBySpaceId(string spaceId, ObservableCollection<KPackageProfile> packageProfiles)
+        public override void OnScrollToBottom()
         {
-            PopulatePackages(packageProfiles);
-        }
-
-        public override void PopulatePackages(ObservableCollection<KPackageProfile> packageProfiles)
-        {
-            KPackageProfilesList.Clear();
-            foreach (var packageProfile in packageProfiles)
+            try
             {
-                var packageProfileVObj = new KPackageProfileVObj();
-                packageProfileVObj.Update(packageProfile);
-                packageProfileVObj.PopulateAppIconAsync();
-                KPackageProfilesList.Add(packageProfileVObj);
-            }
-            PopulateAllInOnePackageSpace();
-        }
-
-        private void PopulateAllInOnePackageSpace()
-        {
-            var package = KPackageProfilesList.FirstOrDefault(p => p.PackageId == IKPackageProfileConstant.DefaultAllInPackageId);
-            if (package is null)
-            {
-                var packageProfileVObj = new KPackageProfileVObj();
-                packageProfileVObj.Update(INotifyUtil.CreatePackageProfileForAllNotification());
-                packageProfileVObj.PopulateAppIconAsync();
-                KPackageProfilesList.Add(packageProfileVObj);
-            }
-        }
-
-        public override void PopulateAddPackageToSpace(KPackageProfile packageProfile, string spaceId)
-        {
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private async Task AddKToastSpace(KSpace spaceData)
-        {
-        }
-
-        #endregion
-
-        #region PresenterCallBack
-
-        public class UpdateKToastsNotificationPresenterCallback : IUpdateKToastPresenterCallback
-        {
-            private KToastListViewModel _presenter { get; set; }
-
-            public UpdateKToastsNotificationPresenterCallback(KToastListViewModel presenter)
-            {
-                _presenter = presenter;
-            }
-
-            public void OnCanceled(ZResponse<UpdateKToastResponse> response)
-            {
-            }
-
-            public void OnError(ZError error)
-            {
-            }
-
-            public void OnFailed(ZResponse<UpdateKToastResponse> response)
-            {
-            }
-
-            public void OnIgnored(ZResponse<UpdateKToastResponse> response)
-            {
-            }
-
-            public void OnProgress(ZResponse<UpdateKToastResponse> response)
-            {
-            }
-
-            public void OnSuccess(ZResponse<UpdateKToastResponse> response)
-            {
-                _presenter.DispatcherQueue.TryEnqueue(() =>
+                if (HasMoreData && !IsLoadingMore && !IsLoading)
                 {
-                    _ = _presenter.AddKToastNotification(response.Data.KToastData);
-                });
+                    LoadMoreNotifications();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error handling scroll to bottom: {ex.Message}");
             }
         }
 
-        public class GetAllKToastsNotificationPresenterCallback : IGetKToastPresenterCalback
+        private async Task<KToastVObj> CreateKToastVObj(KToastBObj toastData)
+        {
+            try
+            {
+                var kToastViewData = new KToastVObj(toastData.NotificationData, toastData.ToastPackageProfile);
+                
+                if (IconCache.ContainsKey(kToastViewData.ToastPackageProfile.PackageFamilyName))
+                {
+                    kToastViewData.AppIcon = IconCache[kToastViewData.ToastPackageProfile.PackageFamilyName];
+                }
+                else
+                {
+                    var (icon, success) = await kToastViewData.SetAppIcon();
+                    if (success)
+                    {
+                        IconCache[kToastViewData.ToastPackageProfile.PackageFamilyName] = icon;
+                    }
+                }
+                return kToastViewData;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(LogManager.GetCallerInfo(), $"Error creating KToastVObj: {ex.Message}");
+                return new KToastVObj(toastData.NotificationData, toastData.ToastPackageProfile);
+            }
+        }
+
+        public override void  UpdateKToastNotification(KToastVObj toastData)
+        {
+            UpdateKToastRequest request = new UpdateKToastRequest(toastData, INotifyConstant.CurrentUser);
+            UpdateKToast updateKToast = new UpdateKToast(request,default);
+            updateKToast.Execute();
+        }
+        #endregion
+
+        #region PresenterCallbacks
+
+        public class GetKToastsNotificationPresenterCallback : IGetKToastPresenterCalback
         {
             private KToastListViewModel _presenter { get; set; }
+            private bool _isLoadingMore { get; set; }
 
-            public GetAllKToastsNotificationPresenterCallback(KToastListViewModel presenter)
+            public GetKToastsNotificationPresenterCallback(KToastListViewModel presenter, bool isLoadingMore = false)
             {
                 _presenter = presenter;
+                _isLoadingMore = isLoadingMore;
             }
 
             public void OnCanceled(ZResponse<GetKToastsResponse> response)
             {
+                _presenter.DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_isLoadingMore)
+                    {
+                        _presenter.IsLoadingMore = false;
+                        _presenter.CurrentPage--; // Rollback page increment
+                    }
+                    else
+                    {
+                        _presenter.IsLoading = false;
+                    }
+                });
             }
 
             public void OnError(ZError error)
             {
+                _presenter.DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_isLoadingMore)
+                    {
+                        _presenter.IsLoadingMore = false;
+                        _presenter.CurrentPage--; // Rollback page increment
+                    }
+                    else
+                    {
+                        _presenter.IsLoading = false;
+                    }
+                    _presenter.Logger.Error(LogManager.GetCallerInfo(), $"Error loading notifications: {error?.ErrorObject?.ToString() ?? "Unknown error"}");
+                });
             }
 
             public void OnFailed(ZResponse<GetKToastsResponse> response)
             {
+                _presenter.DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_isLoadingMore)
+                    {
+                        _presenter.IsLoadingMore = false;
+                        _presenter.CurrentPage--; // Rollback page increment
+                    }
+                    else
+                    {
+                        _presenter.IsLoading = false;
+                    }
+                });
             }
 
             public void OnIgnored(ZResponse<GetKToastsResponse> response)
             {
+                _presenter.DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_isLoadingMore)
+                    {
+                        _presenter.IsLoadingMore = false;
+                        _presenter.CurrentPage--; // Rollback page increment
+                    }
+                    else
+                    {
+                        _presenter.IsLoading = false;
+                    }
+                });
             }
 
             public void OnProgress(ZResponse<GetKToastsResponse> response)
             {
+                // Handle progress if needed
             }
 
             public async void OnSuccess(ZResponse<GetKToastsResponse> response)
             {
-                _presenter.DispatcherQueue.TryEnqueue(() =>
+                try
                 {
-                    if (response.Data.ViewType is ViewType.Package && response.Data.PackageId is not IKPackageProfileConstant.DefaultAllInPackageId)
+                    _presenter.DispatcherQueue.TryEnqueue(async () =>
                     {
-                        _ = _presenter.PopulateKToastNotificationsByPackageId(response.Data.PackageId, response.Data.ToastDataNotifications);
-                    }
-                    else
-                    {
-                        _ = _presenter.PopulateKToastNotifications(response.Data.ToastDataNotifications);
-                    }
-                });
-            }
-        }
+                        var data = response.Data;
+                        
+                        // Update pagination state
+                        _presenter.HasMoreData = data.HasMoreData;
 
-        public class GetAllSpacePresenterCallback : IGetAllSpacePresenterCallback
-        {
-            private KToastListViewModel _presenter { get; set; }
+                        // Process notifications
+                        foreach (var toastData in data.ToastDataNotifications)
+                        {
+                            var kToastVObj = await _presenter.CreateKToastVObj(toastData);
+                            _presenter.KToastNotifications.Add(kToastVObj);
+                        }
 
-            public GetAllSpacePresenterCallback(KToastListViewModel presenter)
-            {
-                _presenter = presenter;
-            }
+                        // Update loading states
+                        if (_isLoadingMore)
+                        {
+                            _presenter.IsLoadingMore = false;
+                        }
+                        else
+                        {
+                            _presenter.IsLoading = false;
+                        }
 
-            public void OnCanceled(ZResponse<GetAllSpaceResponse> response)
-            {
-            }
+                        _presenter.UpdateTotalCountText();
 
-            public void OnError(ZError error)
-            {
-            }
-
-            public void OnFailed(ZResponse<GetAllSpaceResponse> response)
-            {
-            }
-
-            public void OnIgnored(ZResponse<GetAllSpaceResponse> response)
-            {
-            }
-
-            public void OnProgress(ZResponse<GetAllSpaceResponse> response)
-            {
-            }
-
-            public async void OnSuccess(ZResponse<GetAllSpaceResponse> response)
-            {
-                _presenter.DispatcherQueue.TryEnqueue(() =>
+                        _presenter.Logger.Info(LogManager.GetCallerInfo(), 
+                            $"Loaded {data.ToastDataNotifications.Count} notifications. Total: {_presenter.TotalCount}, HasMore: {_presenter.HasMoreData}");
+                    });
+                }
+                catch (Exception ex)
                 {
-                    _ = _presenter.PopulateSpaces(response.Data.Spaces);
-                });
+                    _presenter.Logger.Error(LogManager.GetCallerInfo(), $"Error processing successful response: {ex.Message}");
+                }
             }
         }
 
-        public class GetPackageBySpacePresenterCallback : IGetPackageBySpacePresenterCallback
-        {
-            private KToastListViewModel _presenter { get; set; }
-
-            public GetPackageBySpacePresenterCallback(KToastListViewModel presenter)
-            {
-                _presenter = presenter;
-            }
-
-            public void OnCanceled(ZResponse<GetPackageBySpaceResponse> response)
-            {
-            }
-
-            public void OnError(ZError error)
-            {
-            }
-
-            public void OnFailed(ZResponse<GetPackageBySpaceResponse> response)
-            {
-            }
-
-            public void OnIgnored(ZResponse<GetPackageBySpaceResponse> response)
-            {
-            }
-
-            public void OnProgress(ZResponse<GetPackageBySpaceResponse> response)
-            {
-            }
-
-            public async void OnSuccess(ZResponse<GetPackageBySpaceResponse> response)
-            {
-                _presenter.DispatcherQueue.TryEnqueue(() =>
-                {
-                    _presenter.PopulatePackageBySpaceId(response.Data.SpaceId, response.Data.Packages);
-                });
-            }
-        }
-
-        public class AddPackageToSpacePresenterCallback : IAddPackageToSpacePresenterCallback
-        {
-            private KToastListViewModel _presenter { get; set; }
-
-            public AddPackageToSpacePresenterCallback(KToastListViewModel presenter)
-            {
-                _presenter = presenter;
-            }
-
-            public void OnCanceled(ZResponse<AddPackageToSpaceResponse> response)
-            {
-            }
-
-            public void OnError(ZError error)
-            {
-            }
-
-            public void OnFailed(ZResponse<AddPackageToSpaceResponse> response)
-            {
-            }
-
-            public void OnIgnored(ZResponse<AddPackageToSpaceResponse> response)
-            {
-            }
-
-            public void OnProgress(ZResponse<AddPackageToSpaceResponse> response)
-            {
-            }
-
-            public async void OnSuccess(ZResponse<AddPackageToSpaceResponse> response)
-            {
-            }
-        }
-
-        public class GetAllKPackageProfilesPresenterCallback : IGetAllKPackageProfilesPresenterCallback
+        public class GetAllAppsPresenterCallback : IGetAllKPackageProfilesPresenterCallback
         {
             private KToastListViewModel _presenter;
 
-            public GetAllKPackageProfilesPresenterCallback(KToastListViewModel presenter)
+            public GetAllAppsPresenterCallback(KToastListViewModel presenter)
             {
                 _presenter = presenter;
             }
@@ -426,6 +366,7 @@ namespace INotify.KToastViewModel.ViewModelContract
 
             public void OnError(ZError error)
             {
+                _presenter.Logger.Error(LogManager.GetCallerInfo(), $"Error loading available apps: {error?.ErrorObject?.ToString() ?? "Unknown error"}");
             }
 
             public void OnFailed(ZResponse<GetAllKPackageProfilesResponse> response)
@@ -440,15 +381,53 @@ namespace INotify.KToastViewModel.ViewModelContract
             {
             }
 
-            public async void OnSuccess(ZResponse<GetAllKPackageProfilesResponse> response)
+            public void OnSuccess(ZResponse<GetAllKPackageProfilesResponse> response)
             {
                 _presenter.DispatcherQueue.TryEnqueue(() =>
                 {
-                    _presenter.PopulatePackages(response.Data.KPackageProfiles);
+                    _presenter.AvailableApps.Clear();
+                    
+                    // Add "All Apps" option at the top
+                    _presenter.AvailableApps.Add(new KPackageProfile 
+                    { 
+                        PackageFamilyName = "", 
+                        AppDisplayName = "All Apps" 
+                    });
+
+                    // Add all packages
+                    foreach (var package in response.Data.KPackageProfiles)
+                    {
+                        _presenter.AvailableApps.Add(package);
+                    }
+
+                    _presenter.Logger.Info(LogManager.GetCallerInfo(), 
+                        $"Loaded {response.Data.KPackageProfiles.Count} available apps for filtering");
                 });
             }
         }
 
+        #endregion
+
+        #region Obsolete Methods - Kept for Compatibility
+        [Obsolete("This method is obsolete. Use LoadInitialNotifications instead.")]
+        public void LoadControl()
+        {
+            LoadInitialNotifications();
+        }
+
+        [Obsolete("This method is obsolete. Not supported in notification-only view.")]
+        public void UpdateViewType(ViewType viewType)
+        {
+            // Not applicable for notification-only view
+        }
+
+        [Obsolete("This method is obsolete. Not supported in notification-only view.")]
+        public void UpdateKToastNotifications(ObservableCollection<KToastNotification> kToastNotifications)
+        {
+            // Not applicable for notification-only view
+        }
+
+     
         #endregion
     }
 }

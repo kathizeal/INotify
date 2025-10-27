@@ -20,7 +20,7 @@ namespace INotifyLibrary.Model.Entity
         [PrimaryKey]
         public string NotificationId { get; set; }
 
-        public string PackageId { get; set; }
+        public string PackageFamilyName { get; set; }
 
         public DateTimeOffset CreatedTime 
         {
@@ -50,7 +50,7 @@ namespace INotifyLibrary.Model.Entity
             return new KToastNotification
             {
                 NotificationId = this.NotificationId,
-                PackageId = this.PackageId,
+                PackageFamilyName = this.PackageFamilyName,
                 CreatedTime = this.CreatedTime,
                 NotificationTitle = this.NotificationTitle,
                 NotificationMessage = this.NotificationMessage
@@ -62,7 +62,7 @@ namespace INotifyLibrary.Model.Entity
             if (newData != null)
             {
                 NotificationId = newData.NotificationId;
-                PackageId = newData.PackageId;
+                PackageFamilyName = newData.PackageFamilyName;
                 CreatedTime = newData.CreatedTime;
                 NotificationTitle = newData.NotificationTitle;
                 NotificationMessage = newData.NotificationMessage;

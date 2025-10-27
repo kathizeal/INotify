@@ -1,21 +1,37 @@
-﻿using System;
+﻿using AppList;
+using INotify.KToastView.Model;
+using INotifyLibrary.Util;
+using Microsoft.UI.Xaml.Media.Imaging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using INotify.KToastView.Model;
-using INotifyLibrary.Model;
-using INotifyLibrary.Model.Entity;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.Storage.Streams;
 using Windows.Storage;
+using Windows.Storage.Streams;
 
-namespace INotifyLibrary.Util
+namespace INotify.Util
 {
     public static class KToastUtil
     {
+        public static string GeneratePackageId(InstalledAppInfo app)
+        {
+            switch (app.Type)
+            {
+                case AppList.AppType.UWPApplication:
+                    return !string.IsNullOrEmpty(app.PackageFamilyName) ? app.PackageFamilyName : app.Name;
 
+                case AppList.AppType.Win32Application:
+                    if (!string.IsNullOrEmpty(app.ExecutablePath))
+                    {
+                        return System.IO.Path.GetFileNameWithoutExtension(app.ExecutablePath);
+                    }
+                    return app.DisplayName.Replace(" ", "").Replace(".", "").Replace("-", "");
+
+                default:
+                    return app.Name;
+            }
+        }
 
 
         public static async Task<(BitmapImage, bool)> SetAppIcon(this KToastVObj kToastViewData)
