@@ -18,12 +18,16 @@
   <ItemGroup>
     <Compile Remove=".github\**" />
     <Compile Remove="KToastView\ViewContract\**" />
+    <Compile Remove="View\**" />
     <EmbeddedResource Remove=".github\**" />
     <EmbeddedResource Remove="KToastView\ViewContract\**" />
+    <EmbeddedResource Remove="View\**" />
     <None Remove=".github\**" />
     <None Remove="KToastView\ViewContract\**" />
+    <None Remove="View\**" />
     <Page Remove=".github\**" />
     <Page Remove="KToastView\ViewContract\**" />
+    <Page Remove="View\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,8 +67,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\WinCommon\WinCommon.csproj" />
-    <ProjectReference Include="..\..\WinLogger\WinLogger.csproj" />
     <ProjectReference Include="..\INotifyLibrary\INotifyLibrary.csproj" />
     <ProjectReference Include="..\WinUI3Component\WinUI3Component.csproj" />
   </ItemGroup>
@@ -137,6 +139,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="View\" />
+    <PRIResource Remove="View\**" />
   </ItemGroup>
 </Project>

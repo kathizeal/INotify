@@ -9,7 +9,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:view="using:INotify.KToastView.View"
     xmlns:view1="using:INotify.View"
-    xmlns:viewmodels="using:INotify.ViewModels"
     Title="INotify - Smart Notification Manager"
     mc:Ignorable="d">
 
